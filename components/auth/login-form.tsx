@@ -37,7 +37,7 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { role: "user" },
+    defaultValues: { role: "admin" },
   });
 
   // 🔹 Watch the role selection
@@ -86,7 +86,7 @@ export function LoginForm() {
           throw new Error(result.message || "Invalid credentials");
         }
         setUser(result);
-        router.push(`${result.user_role}`);
+        router.push(`/`);
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -125,13 +125,17 @@ export function LoginForm() {
         <div className="space-y-4">
           {/* 🔹 Role Selection */}
           <div>
-            <Label>Login as</Label>
+            <Label className="text-gray-900 dark:text-gray-100">Login as</Label>
             <select
               {...register("role")}
-              className="w-full p-2 border rounded-md bg-white"
+              className="w-full p-2 border rounded-md bg-white dark:bg-secondary/50 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
             >
-              <option value="admin">Admin (Email & Password)</option>
-              <option value="user">User (Username/Phone & Password)</option>
+              <option value="admin" className="bg-secondary/50">
+                Admin (Email & Password)
+              </option>
+              <option value="user" className="bg-secondary/50">
+                User (Username/Phone & Password)
+              </option>
             </select>
           </div>
 

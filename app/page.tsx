@@ -12,6 +12,7 @@ const Home = () => {
 
   useEffect(() => {
     const checkUserSession = async () => {
+      console.log(user);
       if (user) {
         // User is already authenticated, redirect based on the role
         switch (user.role) {
@@ -30,7 +31,7 @@ const Home = () => {
         }
       } else {
         // No user in context, redirect to login
-        router.push("/auth");
+        router.push("/auth/login");
       }
     };
 

@@ -42,12 +42,12 @@ export async function POST(req: Request) {
       });
     } else {
       // 🔹 Manually authenticate for username/phone users
+      console.log(identifier);
       const { data: user, error } = await supabase
         .from("users")
         .select("*")
-        .or(`name.eq.${identifier},phone.eq.${identifier}`)
+        .or(`name.eq.${identifier},phone_number.eq.${identifier}`)
         .single();
-
       if (error || !user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return NextResponse.json(
-          { error: "Invalid credentials" },
+          { error: "Invalid password" },
           { status: 401 }
         );
       }

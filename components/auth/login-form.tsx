@@ -62,16 +62,13 @@ export function LoginForm() {
         // 🔹 Fetch user profile
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("role, full_name")
+          .select("*")
           .eq("user_id", authData.user.id)
           .single();
-
-        if (profileError || !profile || profile.role !== "admin") {
+        if (profileError || !profile || profile.user_role !== "admin") {
           throw new Error("You are not authorized as an admin");
         }
-
-        setUser(authData.user);
-
+        setUser(profile);
         router.push("/admin");
       } else {
         // 🔹 Regular User Login (via /api/auth/login)
@@ -88,10 +85,8 @@ export function LoginForm() {
         if (!response.ok) {
           throw new Error(result.message || "Invalid credentials");
         }
-        console.log(result, "result");
-        // Redirect based on role
-
-        console.log(result.user.role);
+        setUser(result);
+        router.push(`${result.user_role}`);
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -99,18 +94,18 @@ export function LoginForm() {
       setIsLoading(false);
     }
   }
-  React.useEffect(() => {
-    if (user) {
-      const roleRedirects: Record<UserRole, string> = {
-        admin: "/admin",
-        surveyor: "/surveyor",
-        client: "/client",
-      };
+  // React.useEffect(() => {
+  //   if (user) {
+  //     const roleRedirects: Record<UserRole, string> = {
+  //       admin: "/admin",
+  //       surveyor: "/surveyor",
+  //       client: "/client",
+  //     };
 
-      // Ensure that user.role is one of the keys of roleRedirects
-      router.push(roleRedirects[user.role as UserRole] || "/");
-    }
-  }, [user, router]);
+  //     // Ensure that user.role is one of the keys of roleRedirects
+  //     router.push(roleRedirects[user.role as UserRole] || "/");
+  //   }
+  // }, [user, router]);
   return (
     <div className="w-full max-w-[450px] mx-auto p-8 space-y-8">
       <div className="space-y-2 text-center">

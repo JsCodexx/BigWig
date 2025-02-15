@@ -11,7 +11,8 @@ import {
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Cookies from "js-cookie";
-import { User, UserRole } from "@/types/user";
+import { User } from "@/types/user";
+import { usePathname } from "next/navigation";
 
 // Define UserContext type
 interface UserContextType {
@@ -29,16 +30,15 @@ export const UserContext = createContext<UserContextType | undefined>(
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>();
   const [role, setRole] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
+  const pathname = usePathname(); // ✅ Works in App Router
 
   const checkUserSession = useCallback(async () => {
     console.log("Checking user session...");
-    setLoading(true); // ✅ Always set loading first
 
     try {
-      // 1️⃣ First, check Supabase session (for email users)
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -56,6 +56,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
         setUser(profile);
         setRole(profile.user_role);
+        router.push("/");
         return;
       }
 
@@ -72,23 +73,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           setUser(userData);
           console.log(userData.user_role);
           setRole(userData.user_role);
-
-          // ✅ Correct redirection
-          setTimeout(() => {
-            router.push(`/`); // ✅ Ensure it redirects properly
-          }, 100);
+          router.push(`/`);
         } else {
           console.log("Invalid token, logging out...");
           Cookies.remove("token");
-
-          setTimeout(() => {
-            router.push("/");
-          }, 100);
         }
-      } else {
-        setTimeout(() => {
-          router.push("/");
-        }, 100);
       }
     } catch (error) {
       console.error("Error checking session:", error);
@@ -96,11 +85,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false); // ✅ Always set loading to false at the end
     }
   }, []);
-  // ✅ No unnecessary dependencies
 
   useEffect(() => {
-    checkUserSession();
-  }, [router]); // ✅ Only run when `checkUserSession` changes
+    // ✅ Prevent redirect loop when user is on login page
+    if (pathname !== "/auth/login") {
+      checkUserSession();
+    }
+  }, [pathname]);
 
   return (
     <UserContext.Provider value={{ user, role, loading, setUser }}>

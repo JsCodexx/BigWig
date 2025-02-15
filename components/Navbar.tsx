@@ -102,15 +102,15 @@ export function Navbar() {
           </button>
 
           {/* Logout Button */}
-          {role && (
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-1 p-2 bg-gray-700 rounded-md hover:bg-gray-600"
-            >
-              <LogOut size={18} />
-              <span>{role ? "logout" : "login"}</span>
-            </button>
-          )}
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-1 p-2 bg-gray-700 rounded-md hover:bg-gray-600"
+          >
+            <LogOut size={18} />
+            <span>{role ? "logout" : "login"}</span>
+          </button>
+
           <button
             onClick={() => (window.location.href = "/")}
             className="flex items-center space-x-1 p-2 bg-gray-700 rounded-md hover:bg-gray-600"

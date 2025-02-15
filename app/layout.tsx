@@ -22,17 +22,11 @@ export default function RootLayout({
 function AppContent({ children }: { children: React.ReactNode }) {
   const { loading, role } = useUser(); // ✅ Fetch user role from context
 
-  const shouldShowNavbar = (pathname: string) => {
-    return !["/login", "/signup", "/auth/callback", "/auth/verify"].includes(
-      pathname
-    );
-  };
-
   if (loading) return <div>bua...</div>;
 
   return (
     <>
-      {shouldShowNavbar(window.location.pathname) && <Navbar />}
+      <Navbar />
       <div className="min-h-[calc(100vh-40px)] pt-[50px]">{children}</div>{" "}
     </>
   );

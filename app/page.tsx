@@ -10,33 +10,33 @@ const Home = () => {
   const router = useRouter();
   const { user } = useUser(); // Fetch user data from context
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      console.log(user);
-      if (user) {
-        // User is already authenticated, redirect based on the role
-        switch (user.role) {
-          case "admin":
-            router.push("/admin");
-            break;
-          case "surveyor":
-            router.push("/surveyor");
-            break;
-          case "client":
-            router.push("/client");
-            break;
-          default:
-            router.push("/");
-            break;
-        }
-      } else {
-        // No user in context, redirect to login
-        router.push("/auth/login");
-      }
-    };
+  // useEffect(() => {
+  //   const checkUserSession = async () => {
+  //     console.log(user);
+  //     if (user) {
+  //       // User is already authenticated, redirect based on the role
+  //       switch (user.user_role) {
+  //         case "admin":
+  //           router.push("/admin");
+  //           break;
+  //         case "surveyor":
+  //           router.push("/surveyor");
+  //           break;
+  //         case "client":
+  //           router.push("/client");
+  //           break;
+  //         default:
+  //           router.push("/");
+  //           break;
+  //       }
+  //     } else {
+  //       // No user in context, redirect to login
+  //       router.push("/auth/login");
+  //     }
+  //   };
 
-    checkUserSession();
-  }, [user, router]); // Listen for changes in user context
+  //   checkUserSession();
+  // }, [user, router]); 
 
   return (
     <div>

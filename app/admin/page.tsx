@@ -16,11 +16,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "user_id, full_name, email, user_role, phone_number, status, created_at, updated_at"
-        );
+      const { data, error } = await supabase.from("users").select("*");
 
       if (error) {
         console.error("Error fetching users:", error);
@@ -32,7 +28,6 @@ const AdminDashboard = () => {
 
     fetchUsers();
   }, []);
-  console.log("users", users);
   // Apply filters
   const filteredUsers = users.filter((user) => {
     return (

@@ -34,22 +34,14 @@ export function Navbar() {
     try {
       // 1️⃣ Sign out from Supabase
       await supabase.auth.signOut();
-
-      // 2️⃣ Clear all cookies
       Cookies.remove("token");
-      Cookies.remove("auth_token"); // Remove any other auth-related cookies
-
-      // 3️⃣ Clear local storage
-      localStorage.clear();
-      sessionStorage.clear(); // Also clear session storage
-
-      // 4️⃣ Redirect user to login page
+      Cookies.remove("auth_token");
+      sessionStorage.clear();
       window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-  console.log(role);
   const navItems = {
     admin: [
       { name: "Manage Users", href: "/admin" },

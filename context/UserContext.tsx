@@ -56,7 +56,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
         setUser(profile);
         setRole(profile.user_role);
-        router.push("/");
         return;
       }
 
@@ -73,7 +72,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           setUser(userData);
           console.log(userData.user_role);
           setRole(userData.user_role);
-          router.push(`/`);
         } else {
           console.log("Invalid token, logging out...");
           Cookies.remove("token");

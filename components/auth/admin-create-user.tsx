@@ -14,14 +14,14 @@ import bcrypt from "bcryptjs";
 
 const formSchema = z
   .object({
-    phone: z.string().min(10, "Phone number must be at least 10 digits"),
+    phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
     name: z.string().min(2, "Username is required"),
     fullName: z.string().min(2, "Full name is required"),
     address: z.string().min(5, "Address is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
-    role: z.enum(["client", "surveyor"], {
-      message: "Please select a valid role",
+    user_role: z.enum(["client", "surveyor"], {
+      message: "Please select a valid user_role",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -49,23 +49,25 @@ export function AdminCreateUserForm() {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
-      const { error } = await supabase.from("users").insert([
+      const { status, error } = await supabase.from("users").insert([
         {
-          phone: data.phone,
+          phone_number: data.phone_number,
           password: hashedPassword,
           full_name: data.fullName,
           name: data.name,
           address: data.address,
-          role: data.role,
+          user_role: data.user_role,
         },
       ]);
-
+      console.log(status);
+      if (status === 201) {
+        router.push("/admin");
+      }
       if (error) {
         throw error;
       }
 
       Toast({ title: "User created successfully" });
-      router.push("/admin/users");
     } catch (error) {
       Toast({ title: "Error creating user", variant: "destructive" });
     } finally {
@@ -95,10 +97,14 @@ export function AdminCreateUserForm() {
         </div>
 
         <div>
-          <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" {...register("phone")} disabled={isLoading} />
-          {errors.phone && (
-            <p className="text-red-500">{errors.phone.message}</p>
+          <Label htmlFor="phone_number">Phone</Label>
+          <Input
+            id="phone_number"
+            {...register("phone_number")}
+            disabled={isLoading}
+          />
+          {errors.phone_number && (
+            <p className="text-red-500">{errors.phone_number.message}</p>
           )}
         </div>
 
@@ -137,18 +143,25 @@ export function AdminCreateUserForm() {
         </div>
 
         <div>
-          <Label htmlFor="role">Role</Label>
+          <Label
+            htmlFor="user_role"
+            className="text-gray-900 dark:text-gray-100"
+          >
+            Role
+          </Label>
           <select
-            id="role"
-            className="w-full p-2 border rounded"
-            {...register("role")}
+            id="user_role"
+            className="w-full p-2 border rounded bg-secondary/50 dark:bg-secondary/50 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+            {...register("user_role")}
             disabled={isLoading}
           >
-            <option value="">Select a role</option>
+            <option value="">Select a user_role</option>
             <option value="client">Client</option>
             <option value="surveyor">Surveyor</option>
           </select>
-          {errors.role && <p className="text-red-500">{errors.role.message}</p>}
+          {errors.user_role && (
+            <p className="text-red-500">{errors.user_role.message}</p>
+          )}
         </div>
 
         <Button

@@ -19,7 +19,7 @@ const AdminDashboard = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select(
-          "user_id, full_name, email, role, phone_number, status, created_at, updated_at"
+          "user_id, full_name, email, user_role, phone_number, status, created_at, updated_at"
         );
 
       if (error) {
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
   // Apply filters
   const filteredUsers = users.filter((user) => {
     return (
-      (roleFilter ? user.role === roleFilter : true) &&
+      (roleFilter ? user.user_role === roleFilter : true) &&
       (statusFilter ? user.status === statusFilter : true)
     );
   });
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
                   </td>
                   <td className="border border-gray-300 p-2">{user.email}</td>
                   <td className="border border-gray-300 p-2 capitalize">
-                    {user.role}
+                    {user.user_role}
                   </td>
                   <td className="border border-gray-300 p-2">
                     {user.phone_number}

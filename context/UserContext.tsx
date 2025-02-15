@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -32,50 +33,74 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      console.log("Checking user session...");
+  const checkUserSession = useCallback(async () => {
+    console.log("Checking user session...");
+    setLoading(true); // ✅ Always set loading first
 
+    try {
       // 1️⃣ First, check Supabase session (for email users)
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (session) {
-        setUser(session.user);
-        if (session.user.role) {
-          setRole(session.user.role); // Set role here if available
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          console.error("Error fetching profile:", profileError);
+          return; // ⛔ Avoid calling `setState()` if there's an error
         }
-        setLoading(false);
+        setUser(profile);
+        setRole(profile.user_role);
         return;
       }
 
       // 2️⃣ If no Supabase session, check custom JWT token
       const token = Cookies.get("token");
-      console.log(token, "token");
       if (token) {
         console.log("Using custom JWT authentication...");
         const response = await fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
-          setRole(userData.role); // Set role from the response
-          setLoading(false);
+          console.log(userData.user_role);
+          setRole(userData.user_role);
+
+          // ✅ Correct redirection
+          setTimeout(() => {
+            router.push(`/`); // ✅ Ensure it redirects properly
+          }, 100);
         } else {
-          setLoading(false);
-          Cookies.remove("token"); // Remove invalid token
-          router.push("/auth/login"); // Redirect to login if token is invalid
+          console.log("Invalid token, logging out...");
+          Cookies.remove("token");
+
+          setTimeout(() => {
+            router.push("/");
+          }, 100);
         }
       } else {
-        setLoading(false);
-        router.push("/auth/login"); // Redirect to login if no token
+        setTimeout(() => {
+          router.push("/");
+        }, 100);
       }
-    };
+    } catch (error) {
+      console.error("Error checking session:", error);
+    } finally {
+      setLoading(false); // ✅ Always set loading to false at the end
+    }
+  }, []);
+  // ✅ No unnecessary dependencies
 
+  useEffect(() => {
     checkUserSession();
-  }, [router, supabase.auth]);
+  }, [router]); // ✅ Only run when `checkUserSession` changes
 
   return (
     <UserContext.Provider value={{ user, role, loading, setUser }}>

@@ -3,8 +3,8 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Sun, Moon, LogOut } from "lucide-react";
-
+import { Sun, Moon, LogOut, LayoutDashboardIcon } from "lucide-react";
+import Cookies from "js-cookie";
 export function Navbar() {
   const { role } = useUser(); // ✅ Get role from context
   const supabase = createClientComponentClient();
@@ -31,10 +31,25 @@ export function Navbar() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/auth/login"; // Redirect after logout
-  };
+    try {
+      // 1️⃣ Sign out from Supabase
+      await supabase.auth.signOut();
 
+      // 2️⃣ Clear all cookies
+      Cookies.remove("token");
+      Cookies.remove("auth_token"); // Remove any other auth-related cookies
+
+      // 3️⃣ Clear local storage
+      localStorage.clear();
+      sessionStorage.clear(); // Also clear session storage
+
+      // 4️⃣ Redirect user to login page
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+  console.log(role);
   const navItems = {
     admin: [
       { name: "Manage Users", href: "/admin" },
@@ -87,12 +102,21 @@ export function Navbar() {
           </button>
 
           {/* Logout Button */}
+          {role && (
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-1 p-2 bg-gray-700 rounded-md hover:bg-gray-600"
+            >
+              <LogOut size={18} />
+              <span>{role ? "logout" : "login"}</span>
+            </button>
+          )}
           <button
-            onClick={handleLogout}
+            onClick={() => (window.location.href = "/")}
             className="flex items-center space-x-1 p-2 bg-gray-700 rounded-md hover:bg-gray-600"
           >
-            <LogOut size={18} />
-            <span>Logout</span>
+            <LayoutDashboardIcon size={18} />
+            <span>Explore</span>
           </button>
         </div>
       </div>

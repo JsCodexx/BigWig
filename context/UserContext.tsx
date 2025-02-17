@@ -42,7 +42,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (session) {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
@@ -66,7 +65,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
+        console.log(response);
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);

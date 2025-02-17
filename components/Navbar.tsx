@@ -35,8 +35,8 @@ export function Navbar() {
       // 1️⃣ Sign out from Supabase
       await supabase.auth.signOut();
       Cookies.remove("token");
-      Cookies.remove("auth_token");
-      sessionStorage.clear();
+      Cookies.remove("sb-ebpmscwwmktnudufncts-auth-token");
+      sessionStorage.removeItem("supabase.auth.token"); // Remove only Supabase session
       window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout failed:", error);
@@ -52,8 +52,8 @@ export function Navbar() {
     ],
     surveyor: [
       { name: "Submitted Surveys", href: "/surveyor/submitted" },
-      { name: "Create a Survey", href: "/surveyor/create" },
-      { name: "List of Surveys", href: "/surveyor/list" },
+      { name: "Create a Survey", href: "/surveyor/add-survey" },
+      { name: "List of Surveys", href: "/surveyor" },
       { name: "Notifications", href: "/surveyor/notifications" },
       { name: "Products", href: "/products" },
     ],

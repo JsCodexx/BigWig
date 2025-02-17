@@ -20,3 +20,4 @@ export interface Billboard {
   avatar?: string | null;
   gallery?: string[];
 }
+

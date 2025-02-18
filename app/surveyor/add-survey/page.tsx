@@ -108,6 +108,15 @@ export default function SubmitSurvey() {
       setErrors({});
       return;
     }
+    let surveyStatus = "";
+    console.log(user);
+    if (user.user_role === "client") {
+      surveyStatus = "client_approved";
+    } else if (user.user_role === "surveyor") {
+      surveyStatus = "pending_admin_review";
+    } else {
+      surveyStatus = "in_progress";
+    }
     const payload = {
       title: surveyTitle,
       billboards,
@@ -118,6 +127,7 @@ export default function SubmitSurvey() {
       clientName,
       phoneNumber,
       description,
+      survey_status: surveyStatus,
     };
     await fetch("/api/submit-survey", {
       method: "POST",

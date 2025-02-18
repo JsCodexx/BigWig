@@ -45,7 +45,7 @@ export function Navbar() {
   const navItems = {
     admin: [
       { name: "Manage Users", href: "/admin" },
-      { name: "Orders", href: "/admin/orders" },
+      { name: "Surveys", href: "/surveyor" },
       { name: "Notifications", href: "/admin/notifications" },
       { name: "Remarks", href: "/admin/remarks" },
       { name: "Products", href: "/products" },

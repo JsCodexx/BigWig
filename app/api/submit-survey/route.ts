@@ -17,6 +17,7 @@ export async function POST(req: Request) {
       clientName,
       shopAddress,
       shopName,
+      survey_status,
     } = await req.json();
 
     // Insert survey
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
           shop_address: shopAddress,
           client_name: clientName,
           phone_number: phoneNumber,
+          survey_status,
         },
       ])
       .select()
@@ -47,8 +49,8 @@ export async function POST(req: Request) {
     // Insert billboards
     const formattedBillboards = billboards.map((b: any) => ({
       survey_id: surveyId,
-      billboard_name_id: b.nameId,
-      billboard_type_id: b.typeId,
+      billboard_name_id: b.billboard_name_id,
+      billboard_type_id: b.billboard_type_id,
       width: b.width,
       height: b.height,
       quantity: parseInt(b.quantity),

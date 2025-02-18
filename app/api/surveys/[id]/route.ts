@@ -17,12 +17,13 @@ export async function GET(
     const { data: survey, error } = await supabase
       .from("surveys")
       .select(
-        "id, title, description, client_name, phone_number, shop_name, shop_address, status, created_at, surveyor_id, client_id, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity)"
+        "id, title, description, client_name, phone_number, shop_name, shop_address, survey_status, created_at, surveyor_id, client_id, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity)"
       )
       .eq("id", surveyId)
       .single();
 
     if (error) {
+      console.log(error);
       return NextResponse.json({ error: "Survey not found" }, { status: 404 });
     }
 

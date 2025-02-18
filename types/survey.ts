@@ -6,8 +6,9 @@ export interface Survey {
   phone_number?: string;
   shop_name?: string;
   shop_address?: string;
-  status: string;
+  survey_status: string;
   created_at: string;
+  client_id?: string;
 }
 
 export interface SurveyBillboard {

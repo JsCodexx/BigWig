@@ -1,68 +1,134 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Megaphone, Tv, Briefcase } from "lucide-react";
+import { useState } from "react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils"; // Utility function for conditional classes
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 const services = [
   {
-    title: "Digital Billboards",
-    description:
-      "Engage your audience with high-resolution digital displays for maximum impact.",
-    icon: <Tv className="h-10 w-10" />,
+    title: "Advertisement",
+    types: [
+      { name: "Billboard SMDS Steamer", image: "/images/slide1.webp" },
+      { name: "Corporate Shop Branding", image: "/images/slide2.webp" },
+      { name: "Advertising Taxation Vendor", image: "/images/slide3.webp" },
+      { name: "Graphic Designing", image: "/images/slide4.webp" },
+      { name: "Panaflex Printing", image: "/images/slide5.webp" },
+      { name: "Workshop Facility", image: "/images/slide1.webp" },
+    ],
   },
   {
-    title: "Traditional Billboards",
-    description:
-      "Reach a wider audience with bold and large-format static advertising.",
-    icon: <Megaphone className="h-10 w-10" />,
+    title: "3D Visulization",
+    types: [
+      { name: "3D Architectural Walkthrough", image: "/images/slide1.webp" },
+      { name: "3D Floor plan Rendoring", image: "/images/slide1.webp" },
+      { name: "3D Interior Exterior Rendoring", image: "/images/slide1.webp" },
+      { name: "3D Animation ", image: "/images/slide1.webp" },
+      { name: "Arcetectural Visualization", image: "/images/slide1.webp" },
+      { name: "Ecommerce Product Visulization", image: "/images/slide1.webp" },
+    ],
   },
   {
-    title: "Custom Campaigns",
-    description:
-      "Tailor your advertising strategy to fit your brand’s unique needs.",
-    icon: <Briefcase className="h-10 w-10" />,
+    title: "Import Export",
+    types: [
+      { name: "Event Branding", image: "/images/slide1.webp" },
+      { name: "Vehicle Wraps", image: "/images/slide1.webp" },
+      { name: "Mall Advertising", image: "/images/slide1.webp" },
+      { name: "Airport Advertising", image: "/images/slide1.webp" },
+      { name: "Train Station Ads", image: "/images/slide1.webp" },
+      { name: "Cinema Ads", image: "/images/slide1.webp" },
+    ],
+  },
+  {
+    title: "Specialty Advertising",
+    types: [
+      { name: "Augmented Reality Ads", image: "/images/slide1.webp" },
+      { name: "Drone Advertising", image: "/images/slide1.webp" },
+      { name: "Holographic Displays", image: "/images/slide1.webp" },
+      { name: "Projection Mapping", image: "/images/slide1.webp" },
+      { name: "Eco-Friendly Billboards", image: "/images/slide1.webp" },
+      { name: "Skywriting Ads", image: "/images/slide1.webp" },
+    ],
   },
 ];
 
 const OurServices = () => {
   const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="py-16">
-      <h2 className="text-4xl font-bold text-center">Our Services</h2>
-      <p className="text-center text-muted-foreground mt-4 max-w-2xl mx-auto">
-        Transform your brand visibility with our innovative billboard solutions.
-      </p>
+    <section className="py-16 px-6 bg-gray-100 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl font-bold text-center text-red-500">
+          Our Services
+        </h2>
+        <p className="text-center text-muted-foreground mt-4 max-w-3xl mx-auto">
+          Choose from a variety of high-impact advertising solutions tailored to
+          your brand’s needs.
+        </p>
 
-      <div className="grid md:grid-cols-3 gap-8 mt-12 px-6">
-        {services.map((service, idx) => (
-          <Card
-            key={idx}
-            className={cn(
-              "p-8 rounded-xl shadow-xl transform transition-all duration-300 hover:scale-105",
-              theme === "dark"
-                ? "bg-gray-800 text-white"
-                : "bg-[#990100] text-white"
-            )}
-          >
-            <CardContent className="flex flex-col items-center text-center">
-              <div
-                className={cn(
-                  "p-4 rounded-full mb-4",
-                  theme === "dark"
-                    ? "bg-white/20 text-white"
-                    : "bg-white/30 text-[#990100]"
-                )}
-              >
-                {service.icon}
-              </div>
-              <h3 className="text-2xl font-semibold">{service.title}</h3>
-              <p className="mt-2 text-white/90">{service.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {/* Tabs */}
+        <div className="flex justify-center mt-10 border-b border-gray-300 dark:border-gray-700">
+          {services.map((service, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveTab(index)}
+              className={`px-6 py-3 text-lg font-semibold relative transition-all duration-300 ${
+                activeTab === index
+                  ? "text-red-500"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              {service.title}
+              {activeTab === index && (
+                <motion.div
+                  layoutId="underline"
+                  className="absolute left-0 bottom-0 w-full h-1 bg-red-500 rounded-full"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Selected Service Types with Animation */}
+        <div className="mt-12">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
+            >
+              {services[activeTab].types.map((type, idx) => (
+                <motion.div
+                  key={idx}
+                  className="relative h-48 rounded-lg overflow-hidden shadow-lg group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                >
+                  {/* Background Image */}
+                  <Image
+                    src={type.image}
+                    alt={type.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="group-hover:scale-110 transition-transform duration-500"
+                  />
+
+                  {/* Glass Effect on Hover */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                    <span className="text-white text-xl font-semibold">
+                      {type.name}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </section>
   );

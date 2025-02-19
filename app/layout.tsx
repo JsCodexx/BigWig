@@ -1,7 +1,8 @@
 "use client";
 import { UserProvider, useUser } from "@/context/UserContext";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function RootLayout({
   children,
@@ -21,13 +22,24 @@ export default function RootLayout({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { loading, role } = useUser(); // ✅ Fetch user role from context
-
+  const { expanded } = useSidebar();
   if (loading) return <div>bua...</div>;
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-[calc(100vh-40px)] pt-[50px]">{children}</div>{" "}
-    </>
+    <div className="flex transition-all duration-300">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content - Adjust Width Dynamically */}
+      <div className="w-full flex justify-end">
+        <div
+          className={`transition-all duration-300 ${
+            expanded ? "w-[calc(100%-16rem)]" : "w-[calc(100%-4rem)]"
+          }`}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }

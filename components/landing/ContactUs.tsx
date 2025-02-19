@@ -40,7 +40,7 @@ const ContactUs = () => {
   };
 
   return (
-    <section className="py-16 px-6 bg-gray-100 dark:bg-gray-900">
+    <section className="py-16 px-6 bg-white dark:bg-gray-900">
       <h2 className="text-4xl font-bold text-center">Contact Us</h2>
       <p className="text-center text-muted-foreground mt-4 max-w-2xl mx-auto">
         Have questions? Need a custom advertising solution? Send us a message,

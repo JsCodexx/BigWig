@@ -13,6 +13,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Cookies from "js-cookie";
 import { User } from "@/types/user";
 import { usePathname } from "next/navigation";
+import { SidebarProvider } from "./SidebarContext";
 
 // Define UserContext type
 interface UserContextType {
@@ -91,9 +92,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname]);
 
   return (
-    <UserContext.Provider value={{ user, role, loading, setUser }}>
-      {children}
-    </UserContext.Provider>
+    <SidebarProvider>
+      <UserContext.Provider value={{ user, role, loading, setUser }}>
+        {children}
+      </UserContext.Provider>
+    </SidebarProvider>
   );
 };
 

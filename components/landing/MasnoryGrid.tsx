@@ -18,7 +18,7 @@ const MasonryGrid = () => {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   return (
-    <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 p-4">
+    <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 py-16 px-6">
       {images.map((image, index) => (
         <motion.div
           key={index}

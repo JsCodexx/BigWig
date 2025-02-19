@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +12,8 @@ import ClientsSlider from "./ClientSlider";
 import OurServices from "./OurServices";
 import ContactUs from "./ContactUs";
 import OurMission from "./OurMission";
-
+import WeOffer from "./WeOffer";
+import { motion } from "framer-motion";
 export default function Landing() {
   return (
     <div className="bg-background text-foreground">
@@ -25,14 +25,22 @@ export default function Landing() {
       {/* Our Mission */}
       <OurMission />
 
+      {/* We Offer */}
+      <WeOffer />
+
       {/* Our Services */}
       <OurServices />
 
       {/* Gallery */}
-      <section className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Pinterest Gallery
-        </h1>
+      <section className="min-h-screen bg-white dark:bg-gray-900 p-4 text-center">
+        <motion.h2
+          className="text-4xl font-bold text-red-500"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          Gallery
+        </motion.h2>
         <MasonryGrid />
       </section>
 

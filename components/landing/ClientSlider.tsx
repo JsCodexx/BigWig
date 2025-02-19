@@ -3,13 +3,18 @@
 import Image from "next/image";
 
 const clientLogos = [
-  { src: "/logos/nike.png", alt: "Nike" },
-  { src: "/logos/adidas.png", alt: "Adidas" },
-  { src: "/logos/lv.jpg", alt: "Louis Vuitton" },
-  { src: "/logos/puma.png", alt: "Puma" },
-  { src: "/logos/gucci.webp", alt: "Gucci" },
-  { src: "/logos/apple.png", alt: "Apple" },
-  { src: "/logos/samsung.jpg", alt: "Samsung" },
+  { src: "/logos/bahria.png", alt: "Bahria" },
+  { src: "/logos/cda.png", alt: "CDA" },
+  { src: "/logos/gfc.jpg", alt: "GFC" },
+  { src: "/logos/hemani.png", alt: "Hemani" },
+  { src: "/logos/imarat.jpg", alt: "Imarat" },
+  { src: "/logos/j.png", alt: "J." },
+  { src: "/logos/khadi.jpg", alt: "Khaadi" },
+  { src: "/logos/limelight.jpg", alt: "Limelight" },
+  { src: "/logos/nha.webp", alt: "NHA" },
+  { src: "/logos/dimond.jpg", alt: "DimondFoam" },
+  { src: "/logos/nlc.png", alt: "NLC" },
+  { src: "/logos/sana.jpg", alt: "SanaSafinaz" },
 ];
 
 // Duplicate logos for seamless looping
@@ -17,7 +22,7 @@ const scrollingLogos = [...clientLogos, ...clientLogos];
 
 const ClientsSlider = () => {
   return (
-    <section className="py-16 text-center overflow-hidden">
+    <section className="py-16 text-center overflow-hidden bg-gray-100">
       <h2 className="text-3xl font-bold mb-4">Our Clients</h2>
       <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
         Trusted by global brands, we take pride in partnering with industry

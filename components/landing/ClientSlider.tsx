@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { motion } from "framer-motion";
 const clientLogos = [
   { src: "/logos/bahria.png", alt: "Bahria" },
   { src: "/logos/cda.png", alt: "CDA" },
@@ -23,12 +24,24 @@ const scrollingLogos = [...clientLogos, ...clientLogos];
 const ClientsSlider = () => {
   return (
     <section className="py-16 text-center overflow-hidden bg-gray-100">
-      <h2 className="text-3xl font-bold mb-4">Our Clients</h2>
-      <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+      <motion.h2
+        className="text-4xl font-bold text-red-500"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+      >
+        Our Clients
+      </motion.h2>
+      <motion.p
+        className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+      >
         Trusted by global brands, we take pride in partnering with industry
         leaders to deliver outstanding advertising solutions. Our clients
         include some of the world’s most recognized and respected companies.
-      </p>
+      </motion.p>
 
       <div className="relative w-full overflow-hidden">
         <div className="flex whitespace-nowrap animate-scroll">

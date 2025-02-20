@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
+import { motion } from "framer-motion";
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
@@ -40,12 +41,24 @@ const ContactUs = () => {
   };
 
   return (
-    <section className="py-16 px-6 bg-white dark:bg-gray-900">
-      <h2 className="text-4xl font-bold text-center">Contact Us</h2>
-      <p className="text-center text-muted-foreground mt-4 max-w-2xl mx-auto">
+    <section className="py-16 px-6 bg-white dark:bg-gray-900 text-center">
+      <motion.h2
+        className="text-4xl font-bold text-red-500"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+      >
+        Contact Us
+      </motion.h2>
+      <motion.p
+        className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+      >
         Have questions? Need a custom advertising solution? Send us a message,
         and our team will get back to you shortly.
-      </p>
+      </motion.p>
       <div className="max-w-lg mx-auto mt-10 bg-white dark:bg-gray-900 border p-8 rounded-xl shadow-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

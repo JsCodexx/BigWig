@@ -1,72 +1,85 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { createClient } from "@supabase/supabase-js";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// Image data with text overlays
-const slides = [
-  {
-    src: "/images/slide1.webp",
-    title: "High-Impact Billboard Ads",
-    subtitle: "Boost your brand visibility",
-  },
-  {
-    src: "/images/slide2.webp",
-    title: "Premium Ad Spaces",
-    subtitle: "Strategic locations for maximum exposure",
-  },
-  {
-    src: "/images/slide3.webp",
-    title: "Digital Billboards",
-    subtitle: "Dynamic advertising solutions",
-  },
-  {
-    src: "/images/slide4.webp",
-    title: "24/7 Exposure",
-    subtitle: "Reach audiences around the clock",
-  },
-  {
-    src: "/images/slide5.webp",
-    title: "Innovative Ad Displays",
-    subtitle: "Cutting-edge billboard technology",
-  },
-];
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const HeroSlider = () => {
-  return (
-    <Swiper
-      modules={[Navigation, Pagination, Autoplay]}
-      navigation
-      pagination={{ clickable: true }}
-      autoplay={{ delay: 3000 }}
-      loop
-      className="w-full h-screen"
-    >
-      {slides.map((slide, index) => (
-        <SwiperSlide key={index} className="relative w-full h-screen">
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <Image
-              src={slide.src}
-              alt={slide.title}
-              fill
-              className="object-cover"
-              priority={index === 0} // Load first image first for performance
-            />
-          </div>
+  const [slides, setSlides] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-          {/* Overlay Content */}
-          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-center px-6">
-            <h2 className="text-4xl md:text-6xl font-bold">{slide.title}</h2>
-            <p className="text-lg md:text-xl mt-2">{slide.subtitle}</p>
-          </div>
-        </SwiperSlide>
-      ))}
-    </Swiper>
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
+  const fetchSlides = async () => {
+    const { data, error } = await supabase
+      .from("slides")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching slides:", error);
+    } else {
+      setSlides(data);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-white">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+<Swiper
+  modules={[Navigation, Pagination, Autoplay]}
+  navigation
+  pagination={{ clickable: true }}
+  autoplay={{ delay: 3000 }}
+  loop
+  className="w-full h-[40vh] sm:h-[60vh] md:h-[70vh] lg:h-[85vh]" // Set a fixed height
+>
+  {slides.map((slide, index) => (
+    <SwiperSlide key={slide.id} className="relative w-full h-full">
+      {/* Background Image Container */}
+      <div className="relative w-full h-full">
+        <Image
+          src={slide.image_url}
+          alt={slide.title}
+          fill
+          className="object-cover"
+          priority={index === 0} 
+        />
+      </div>
+
+      {/* Overlay Content */}
+      <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
+        <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">
+          {slide.title}
+        </h2>
+        <p className="text-sm sm:text-lg md:text-xl mt-2">
+          {slide.subtitle}
+        </p>
+      </div>
+    </SwiperSlide>
+  ))}
+</Swiper>
+
   );
 };
 

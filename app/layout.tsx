@@ -33,7 +33,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       {/* Main Content - Adjust Width Dynamically */}
       <div className="w-full flex justify-end">
         <div
-          className={`transition-all duration-300 ${
+          className={`transition-all duration-1000 ${
             expanded ? "w-[calc(100%-16rem)]" : "w-[calc(100%-4rem)]"
           }`}
         >

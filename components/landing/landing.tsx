@@ -18,7 +18,7 @@ export default function Landing() {
   return (
     <div className="bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative w-full h-screen">
+      <section className="relative h-[40vh] sm:h-[60vh] md:h-[70vh] lg:h-[85vh]">
         <HeroSlider />
       </section>
 

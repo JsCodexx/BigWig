@@ -13,6 +13,7 @@ import {
   Bell,
   FileText,
   ShoppingCart,
+  Clapperboard,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { useSidebar } from "@/context/SidebarContext";
@@ -45,6 +46,11 @@ export function Sidebar() {
     admin: [
       { name: "Manage Users", href: "/admin", icon: <Users size={22} /> },
       { name: "Surveys", href: "/surveyor", icon: <FileText size={22} /> },
+      {
+        name: "Carousel",
+        href: "/admin/carousel",
+        icon: <Clapperboard size={22} />,
+      },
       {
         name: "Notifications",
         href: "/admin/notifications",

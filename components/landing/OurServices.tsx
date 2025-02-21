@@ -57,15 +57,25 @@ const OurServices = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="py-16 px-6 bg-gray-100 dark:bg-gray-900">
+    <section className="py-16 px-6 bg-gray-100 dark:bg-gray-900 text-center">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl font-bold text-center text-red-500">
+        <motion.h2
+          className="text-4xl font-bold text-red-500"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
           Our Services
-        </h2>
-        <p className="text-center text-muted-foreground mt-4 max-w-3xl mx-auto">
+        </motion.h2>
+        <motion.p
+          className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
           Choose from a variety of high-impact advertising solutions tailored to
           your brand’s needs.
-        </p>
+        </motion.p>
 
         {/* Tabs */}
         <div className="flex justify-center mt-10 border-b border-gray-300 dark:border-gray-700">

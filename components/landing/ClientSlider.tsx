@@ -43,7 +43,7 @@ const ClientsSlider = () => {
         include some of the world’s most recognized and respected companies.
       </motion.p>
 
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full mt-10 overflow-hidden">
         <div className="flex whitespace-nowrap animate-scroll">
           {scrollingLogos.map((logo, idx) => (
             <div key={idx} className="mx-6 flex-shrink-0 hover:zoom-in-110">

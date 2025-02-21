@@ -32,17 +32,27 @@ export default function Landing() {
       <OurServices />
 
       {/* Gallery */}
-      <section className="min-h-screen bg-white dark:bg-gray-900 p-4 text-center">
+      <div className="max-w-6xl py-16 px-6 mx-auto text-center">
         <motion.h2
           className="text-4xl font-bold text-red-500"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          Gallery
+         Our Gallery
         </motion.h2>
-        <MasonryGrid />
-      </section>
+        <motion.p
+          className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          We are committed to revolutionizing billboard advertising by
+          delivering innovative, high-visibility, and eco-friendly solutions
+          that help brands create lasting impressions.
+        </motion.p>
+      </div>
+      <MasonryGrid />
 
       {/* Our Clients */}
 

@@ -78,26 +78,30 @@ const OurServices = () => {
         </motion.p>
 
         {/* Tabs */}
-        <div className="flex justify-center mt-10 border-b border-gray-300 dark:border-gray-700">
-          {services.map((service, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveTab(index)}
-              className={`px-6 py-3 text-lg font-semibold relative transition-all duration-300 ${
+        <div className="mt-10 border-b border-gray-300 dark:border-gray-700">
+          <div className="flex justify-center overflow-x-auto scrollbar-hide gap-4 sm:gap-6">
+            {services.map((service, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveTab(index)}
+                className={`relative px-6 py-3 text-lg font-semibold transition-all duration-300 whitespace-nowrap 
+              ${
                 activeTab === index
                   ? "text-red-500"
                   : "text-gray-600 dark:text-gray-400"
-              }`}
-            >
-              {service.title}
-              {activeTab === index && (
-                <motion.div
-                  layoutId="underline"
-                  className="absolute left-0 bottom-0 w-full h-1 bg-red-500 rounded-full"
-                />
-              )}
-            </button>
-          ))}
+              }
+            `}
+              >
+                {service.title}
+                {activeTab === index && (
+                  <motion.div
+                    layoutId="underline"
+                    className="absolute left-0 bottom-0 w-full h-1 bg-red-500 rounded-full"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Selected Service Types with Animation */}

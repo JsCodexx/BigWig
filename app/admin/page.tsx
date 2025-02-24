@@ -39,8 +39,8 @@ const AdminDashboard = () => {
   if (loading) return <p className="text-center mt-4">Loading users...</p>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-red-700">Admin Dashboard</h1>
+    <div className="py-16 px-6 max-w-5xl mx-auto">
+      <h1 className="text-4xl font-bold text-red-500">Admin Dashboard</h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 my-4">
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
       {/* Users Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-          <thead className="bg-red-700 dark:bg-gray-950 text-white">
+          <thead className="bg-red-500 dark:bg-gray-950 text-white">
             <tr>
               <th className="border border-gray-300 dark:border-gray-700 p-2">
                 Full Name
@@ -85,12 +85,6 @@ const AdminDashboard = () => {
               </th>
               <th className="border border-gray-300 dark:border-gray-700 p-2">
                 Status
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Created At
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Updated At
               </th>
             </tr>
           </thead>
@@ -120,12 +114,6 @@ const AdminDashboard = () => {
                   >
                     {user.status}
                   </td>
-                  <td className="border border-gray-300 p-2">
-                    {new Date(user.created_at).toLocaleString()}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {new Date(user.updated_at).toLocaleString()}
-                  </td>
                 </tr>
               ))
             ) : (
@@ -143,7 +131,7 @@ const AdminDashboard = () => {
       <div className="mt-6">
         <button
           onClick={() => router.push("/admin/user-signup")}
-          className="bg-red-700 text-white flex justify-center items-center gap-2 px-4 py-2 rounded min-w-[50px] hover:bg-opacity-80 transition"
+          className="bg-red-600 text-white flex justify-center items-center gap-2 px-4 py-2 rounded min-w-[50px] hover:bg-red-700 transition"
         >
           <span>
             <Plus />

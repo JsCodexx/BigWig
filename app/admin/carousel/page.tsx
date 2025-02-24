@@ -133,8 +133,10 @@ const Carousel = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Manage Carousel Slides</h1>
+    <div className="py-16 px-6 max-w-5xl mx-auto">
+      <h1 className="text-4xl  font-bold mb-4 text-red-500">
+        BigWig Carousel Slides
+      </h1>
 
       <div className="grid gap-4 mb-6">
         <Input
@@ -166,30 +168,32 @@ const Carousel = () => {
       </div>
 
       <div className="overflow-x-auto w-full">
-        <Table className="min-w-full border rounded-lg overflow-hidden">
-          <TableHead>
-            <TableRow className="bg-gray-100 dark:bg-gray-800">
-              <TableCell className="p-3 font-semibold">Image</TableCell>
-              <TableCell className="p-3 font-semibold">Title</TableCell>
-              <TableCell className="p-3 font-semibold">Subtitle</TableCell>
-              <TableCell className="p-3 text-center font-semibold">
+        <Table className="w-full border rounded-lg overflow-hidden">
+          <TableHead className="w-full">
+            <TableRow className="bg-gray-100 w-full dark:bg-gray-800">
+              <TableCell className="p-3 w-full font-semibold">Image</TableCell>
+              <TableCell className="p-3 w-full font-semibold">Title</TableCell>
+              <TableCell className="p-3 w-full font-semibold">
+                Subtitle
+              </TableCell>
+              <TableCell className="p-3 w-full text-center font-semibold">
                 Actions
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {slides.map((slide) => (
-              <TableRow key={slide.id} className="border-b">
-                <TableCell className="p-3 w-5">
+              <TableRow key={slide.id} className="border-b w-full">
+                <TableCell className="p-3  w-full">
                   <img
                     src={slide.image_url}
                     alt={slide.title}
                     className="w-20 h-12 object-cover rounded-md"
                   />
                 </TableCell>
-                <TableCell className="p-3">{slide.title}</TableCell>
-                <TableCell className="p-3">{slide.subtitle}</TableCell>
-                <TableCell className="p-3 text-center">
+                <TableCell className="p-3 w-full">{slide.title}</TableCell>
+                <TableCell className="p-3 w-full">{slide.subtitle}</TableCell>
+                <TableCell className="p-3 w-full text-center">
                   <Button
                     variant="destructive"
                     onClick={() => handleDelete(slide.id, slide.image_url)}

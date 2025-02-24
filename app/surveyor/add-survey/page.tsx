@@ -173,10 +173,8 @@ export default function SubmitSurvey() {
   }, [billboards]);
 
   return (
-    <div className="p-6 max-w-3xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-        Submit Survey
-      </h1>
+    <div className="py-16 px-6 max-w-3xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
+      <h1 className="text-4xl font-bold text-red-500">Submit Survey</h1>
       <div className="w-full flex flex-col justify-center items-center gap-4">
         <div className="w-full flex justify-center items-center gap-4">
           <div className="flex flex-col w-full">
@@ -335,11 +333,17 @@ export default function SubmitSurvey() {
         </div>
       ))}
       <div className="w-full flex justify-start gap-4 items-center">
-        <Button onClick={addBillboard} className="mt-4 bg-red-500 text-white">
+        <Button
+          onClick={addBillboard}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+        >
           Add Billboard
         </Button>
 
-        <Button onClick={handleSubmit} className="mt-4 bg-red-500 text-white">
+        <Button
+          onClick={handleSubmit}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+        >
           Submit Survey
         </Button>
       </div>

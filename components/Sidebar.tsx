@@ -14,6 +14,7 @@ import {
   FileText,
   ShoppingCart,
   Clapperboard,
+  PenLine,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { useSidebar } from "@/context/SidebarContext";
@@ -62,13 +63,13 @@ export function Sidebar() {
     surveyor: [
       {
         name: "Submitted Surveys",
-        href: "/surveyor/submitted",
+        href: "/surveyor",
         icon: <FileText size={22} />,
       },
       {
         name: "Create a Survey",
         href: "/surveyor/add-survey",
-        icon: <FileText size={22} />,
+        icon: <PenLine size={22} />,
       },
       {
         name: "Notifications",

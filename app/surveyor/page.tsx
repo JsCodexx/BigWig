@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -139,11 +140,19 @@ const SurveyorDashboard = () => {
   }, [statuses, activeTab]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-        Surveyor Dashboard
-      </h1>
-
+    <div className="py-16 px-6 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl mb-4 font-bold text-red-500">
+          Surveyor Dashboard
+        </h1>
+        <Button
+          className="bg-red-600 hover:bg-red-700"
+          onClick={() => router.push("/surveyor/add-survey")}
+        >
+          <Plus />
+          Add Survey
+        </Button>
+      </div>
       {/* Tabs Navigation */}
       <Tabs
         value={activeTab || ""}
@@ -197,12 +206,20 @@ const SurveyorDashboard = () => {
                     {/* Assign Client Button (Admin Only) */}
                     {user?.user_role === "admin" && !survey.client_id && (
                       <Button
-                        className="mt-4 bg-blue-500 text-white w-full"
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
                         onClick={() => setSelectedSurvey(survey.id)}
                       >
                         Assign Client
                       </Button>
                     )}
+                    {/* Update surveys */}
+
+                    <Button
+                      className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                      onClick={() => router.push(`surveyor/${survey.id}`)}
+                    >
+                      Update Survey
+                    </Button>
 
                     {/* Status Dropdown */}
                     <Select

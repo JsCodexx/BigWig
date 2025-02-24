@@ -59,7 +59,7 @@ const ContactUs = () => {
         Have questions? Need a custom advertising solution? Send us a message,
         and our team will get back to you shortly.
       </motion.p>
-      <div className="max-w-lg mx-auto mt-10 bg-white dark:bg-gray-900 border p-8 rounded-xl shadow-lg">
+      <div className="max-w-lg text-left text-gray-600 mx-auto mt-10 bg-white dark:bg-gray-900 border p-8 rounded-xl shadow-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block font-medium">Name</label>
@@ -126,7 +126,7 @@ const ContactUs = () => {
               "w-full text-white font-semibold py-2 rounded-lg transition-all duration-300",
               theme === "dark"
                 ? "bg-red-700 hover:bg-red-600"
-                : "bg-[#990100] hover:bg-red-700"
+                : "bg-red-600 hover:bg-red-700"
             )}
             disabled={loading}
           >

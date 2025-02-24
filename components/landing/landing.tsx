@@ -14,6 +14,7 @@ import ContactUs from "./ContactUs";
 import OurMission from "./OurMission";
 import WeOffer from "./WeOffer";
 import { motion } from "framer-motion";
+import BillboardPreview from "./BillboardPreview";
 export default function Landing() {
   return (
     <div className="bg-background text-foreground">
@@ -39,7 +40,7 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-         Our Gallery
+          Our Gallery
         </motion.h2>
         <motion.p
           className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
@@ -55,8 +56,10 @@ export default function Landing() {
       <MasonryGrid />
 
       {/* Our Clients */}
-
       <ClientsSlider />
+
+      {/* Boards */}
+      <BillboardPreview />
 
       {/* Contact Us */}
       <ContactUs />

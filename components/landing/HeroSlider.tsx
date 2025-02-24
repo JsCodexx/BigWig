@@ -142,7 +142,7 @@ const HeroSlider = () => {
                   </div>
 
                   {/* Type */}
-                  <div className="flex items-start gap-1 flex-col w-full mb-3">
+                  <div className="xl:flex items-start hidden gap-1 flex-col w-full mb-3">
                     <label htmlFor="type" className="text-foreground/80 pl-1">
                       Type
                     </label>

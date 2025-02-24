@@ -19,5 +19,6 @@ export interface Billboard {
   equipped_until?: string | null;
   avatar?: string | null;
   gallery?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
-

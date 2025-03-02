@@ -3,6 +3,7 @@ import { UserProvider, useUser } from "@/context/UserContext";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { useSidebar } from "@/context/SidebarContext";
+import { Navbar } from "@/components/Navbar";
 
 export default function RootLayout({
   children,
@@ -26,19 +27,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   if (loading) return <div>bua...</div>;
 
   return (
-    <div className="flex transition-all duration-300">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen">
+      {/* Navbar */}
+      <Navbar />
 
-      {/* Main Content - Adjust Width Dynamically */}
-      <div className="w-full flex justify-end">
-        <div
-          className={`transition-all duration-1000 ${
-            expanded ? "w-[calc(100%-16rem)]" : "w-[calc(100%-4rem)]"
-          }`}
-        >
-          {children}
-        </div>
+      {/* Content Area */}
+      <div className="mt-16 h-[calc(100vh-4rem)] overflow-auto bg-gray-50 dark:bg-gray-800">
+        {children}
       </div>
     </div>
   );

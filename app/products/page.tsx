@@ -1,37 +1,26 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   BillboardCard,
   BillboardFilter,
 } from "@/components/billboard/billboard-components";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronRight, Filter, Plus, Search } from "lucide-react";
 import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
+import { Billboard } from "@/types/product";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-type Billboard = {
-  id: number;
-  length: string;
-  width: string;
-  location: string;
-  facing_to: string;
-  status: "equipped" | "available" | "out_of_order";
-  equipped_until?: string | null;
-  avatar?: string | null;
-  gallery?: string[];
-};
-
 export default function BillboardsPage() {
   const [billboards, setBillboards] = useState<Billboard[]>([]);
   const [filteredBillboards, setFilteredBillboards] = useState<Billboard[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>("all");
   const { user } = useUser();
+  const router = useRouter();
   const [location, setLocation] = useState<{
     city: string;
     country: string;
@@ -64,7 +53,7 @@ export default function BillboardsPage() {
 
     if (!selectedStatus || selectedStatus === "all") {
       setFilteredBillboards(filtered);
-      return; 
+      return;
     }
 
     if (selectedStatus) {
@@ -82,28 +71,60 @@ export default function BillboardsPage() {
     console.log(filteredBillboards);
   }, [filteredBillboards]);
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
+    <div className="mb-4 md:px-16 px-2 max-w-full mx-auto">
       <div
         className="mb-8 w-full flex justify-between
        items-center"
-      >
-        <h1 className="text-4xl font-bold text-red-500">Billboards</h1>
-        {user && user.user_role === "admin" && (
-          <Button className="bg-red-600 hover:bg-red-700">
-            <Plus />
-            Add Board
-          </Button>
-        )}
+      ></div>
+      {/* Breadcrumbs */}
+      <nav className="flex items-center text-sm text-gray-600 mb-4">
+        <span onClick={() => router.push("/")}>Home</span>
+        <ChevronRight size={14} className="mx-2" />
+        <span className="font-medium text-red-500">Shop Boards</span>
+      </nav>
+      {/* Search Input */}
+      <div className="flex max-w-xl items-center border border-gray-300 rounded-md px-2 py-2">
+        <Search size={18} className="text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search location..."
+          className="ml-2 outline-none text-sm"
+        />
       </div>
-
       <BillboardFilter
         selectedStatus={selectedStatus}
         onSelectStatus={setSelectedStatus}
       />
+      {/* Heading + Filter Row */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            Residential Properties for Sale in Islamabad
+          </h1>
+          <p className="text-sm text-gray-500">
+            {filteredBillboards.length} properties available
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Filter Button */}
+          <button className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md text-sm hover:bg-gray-300 transition-colors">
+            <Filter size={18} />
+            More Filters
+          </button>
+
+          {/* New Listings Button */}
+          {user && user.user_role === "admin" && (
+            <button className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition-colors">
+              + New Listings
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBillboards.map((billboard) => (
-          <BillboardCard key={billboard.id} billboard={billboard} />
+          <BillboardCard key={billboard.id} board={billboard} />
         ))}
       </div>
     </div>

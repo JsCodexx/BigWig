@@ -6,16 +6,16 @@ import { motion } from "framer-motion";
 const clientLogos = [
   { src: "/logos/bahria.png", alt: "Bahria" },
   { src: "/logos/cda.png", alt: "CDA" },
-  { src: "/logos/gfc.jpg", alt: "GFC" },
+  { src: "/logos/gfc.png", alt: "GFC" },
   { src: "/logos/hemani.png", alt: "Hemani" },
-  { src: "/logos/imarat.jpg", alt: "Imarat" },
-  { src: "/logos/j.png", alt: "J." },
-  { src: "/logos/khadi.jpg", alt: "Khaadi" },
+  { src: "/logos/imarat.png", alt: "Imarat" },
+  { src: "/logos/j.jpg", alt: "J." },
+  { src: "/logos/khadi.png", alt: "Khaadi" },
   { src: "/logos/limelight.jpg", alt: "Limelight" },
-  { src: "/logos/nha.webp", alt: "NHA" },
-  { src: "/logos/dimond.jpg", alt: "DimondFoam" },
+  { src: "/logos/nha.png", alt: "NHA" },
+  { src: "/logos/diamond.jpg", alt: "DimondFoam" },
   { src: "/logos/nlc.png", alt: "NLC" },
-  { src: "/logos/sana.jpg", alt: "SanaSafinaz" },
+  { src: "/logos/sana.png", alt: "SanaSafinaz" },
 ];
 
 // Duplicate logos for seamless looping
@@ -52,7 +52,7 @@ const ClientsSlider = () => {
                 alt={logo.alt}
                 width={100}
                 height={100}
-                className="h-16 w-auto hover:zoom-in-150"
+                className="h-16 w-16 hover:zoom-in-150 fill-slate-600"
               />
             </div>
           ))}

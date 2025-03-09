@@ -19,9 +19,12 @@ export default function Landing() {
   return (
     <div className="bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative h-[40vh] sm:h-[60vh] md:h-[70vh] lg:h-[85vh]">
+      <section className="relative">
         <HeroSlider />
       </section>
+
+      {/* Boards */}
+      <BillboardPreview />
 
       {/* Our Mission */}
       <OurMission />
@@ -57,9 +60,6 @@ export default function Landing() {
 
       {/* Our Clients */}
       <ClientsSlider />
-
-      {/* Boards */}
-      <BillboardPreview />
 
       {/* Contact Us */}
       <ContactUs />

@@ -9,7 +9,7 @@ const OurMission = () => {
   const { theme } = useTheme();
 
   return (
-    <section className="relative py-16 px-6 bg-[#f3f3f3] dark:bg-gray-900 md:mt-11">
+    <section className="relative py-16 px-6 bg-[#f3f3f3] dark:bg-gray-900 ">
       {/* Top-left corner design */}
       <div className="absolute top-0 left-0 w-24 h-24 border-l-4 border-t-4 border-red-500"></div>
       {/* Bottom-right corner design */}

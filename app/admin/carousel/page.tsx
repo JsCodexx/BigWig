@@ -22,8 +22,8 @@ const Carousel = () => {
   const [slides, setSlides] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [image, setImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     fetchSlides();

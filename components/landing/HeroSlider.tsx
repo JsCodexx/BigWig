@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, EffectFade } from "swiper/modules";
 import { createClient } from "@supabase/supabase-js";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import { Button } from "../ui/button";
 import LocationSearch from "../ui/LocationSearch";
 
 // Initialize Supabase client
@@ -53,36 +51,23 @@ const HeroSlider = () => {
       pagination={{ clickable: true }}
       effect="fade"
       allowTouchMove={false}
-      className="w-full h-[50vh]  sm:h-[40vh] md:h-[70vh] lg:h-[85vh] xl:h-[90vh]"
+      className="w-full h-[50vh] sm:h-[40vh] md:h-[70vh] lg:h-[85vh] xl:h-[90vh]"
     >
       {slides.map((slide, index) => (
-        <SwiperSlide key={slide.id} className="relative w-full h-full">
-          {/* Background Image */}
-          <div className="relative w-full h-full min-h-screen overflow-hidden">
-            <Image
-              src={slide.image_url}
-              alt={slide.title}
-              fill
-              className="object-cover w-full h-full"
-              priority={index === 0}
-            />
-          </div>
+        <SwiperSlide
+          key={slide.id}
+          className="relative w-full h-full"
+        >
+          {/* Background Image (Full Width) */}
+          <div
+            className="absolute inset-0 w-full h-full bg-center bg-cover"
+            style={{ backgroundImage: `url(${slide.image_url})` }}
+          ></div>
 
           {/* Overlay Content */}
-          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
-            {/* Show only title & subtitle on mobile, full content on larger screens */}
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
             <div className="w-full flex flex-col gap-4 justify-around items-center">
-              {/* Title & Subtitle (Always visible) */}
-              <div className="block sm:block md:block lg:block xl:block">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-red-500">
-                  {slide.title}
-                </h2>
-                <p className="text-sm sm:text-lg md:text-xl mt-2">
-                  {slide.subtitle}
-                </p>
-              </div>
-
-              {/* Filter Section (Hide on mobile, show on medium screens & above) */}
+              {/* Filter Section (Show only on larger screens) */}
               <div className="lg:flex hidden w-[50%]">
                 <LocationSearch
                   onSelectLocation={(location) =>

@@ -115,7 +115,10 @@ export default function BillboardsPage() {
 
           {/* New Listings Button */}
           {user && user.user_role === "admin" && (
-            <button className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition-colors">
+            <button
+              onClick={() => router.push("/admin/add-board")}
+              className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition-colors"
+            >
               + New Listings
             </button>
           )}

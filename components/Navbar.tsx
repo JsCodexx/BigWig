@@ -6,42 +6,31 @@ import { useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import {
   Menu,
-  Sun,
-  Moon,
   LogOut,
-  LayoutDashboardIcon,
   Users,
   Bell,
   FileText,
   ShoppingCart,
   Clapperboard,
   PenLine,
+  UserCircle2,
+  ListOrdered,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
 
 export function Navbar() {
-  const { role } = useUser();
+  const { role, user } = useUser();
   const supabase = createClientComponentClient();
-  const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
-    document.documentElement.classList.toggle("dark", !darkMode);
-    localStorage.setItem("theme", darkMode ? "light" : "dark");
-  };
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      Cookies.remove("token");
-      Cookies.remove("sb-ebpmscwwmktnudufncts-auth-token");
-      sessionStorage.removeItem("supabase.auth.token");
-      window.location.href = "/auth/login";
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await supabase.auth.signOut();
+    Cookies.remove("token");
+    Cookies.remove("sb-ebpmscwwmktnudufncts-auth-token");
+    sessionStorage.removeItem("supabase.auth.token");
+    window.location.href = "/auth/login";
   };
 
   const navItems = {
@@ -54,12 +43,12 @@ export function Navbar() {
         icon: <Clapperboard size={20} />,
       },
       {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: <Bell size={20} />,
+        name: "Quotes",
+        href: "/admin/quotes",
+        icon: <ListOrdered size={20} />,
       },
-      { name: "Remarks", href: "/admin/remarks", icon: <FileText size={20} /> },
-      { name: "Products", href: "/products", icon: <ShoppingCart size={20} /> },
+      // { name: "Remarks", href: "/admin/remarks", icon: <FileText size={20} /> },
+      { name: "Boards", href: "/products", icon: <ShoppingCart size={20} /> },
     ],
     surveyor: [
       {
@@ -73,44 +62,47 @@ export function Navbar() {
         icon: <PenLine size={20} />,
       },
       {
-        name: "Notifications",
-        href: "/surveyor/notifications",
-        icon: <Bell size={20} />,
+        name: "Assigned Quotes",
+        href: "/surveyor/quotes",
+        icon: <ListOrdered size={20} />,
       },
-      { name: "Products", href: "/products", icon: <ShoppingCart size={20} /> },
     ],
     client: [
       {
         name: "My Quotes",
         href: "/client/quotes",
-        icon: <FileText size={20} />,
+        icon: <ListOrdered size={20} />,
       },
       {
-        name: "Notifications",
-        href: "/client/notifications",
-        icon: <Bell size={20} />,
-      },
-      {
-        name: "Submitted Remarks",
-        href: "/client/remarks",
+        name: "My Surveys",
+        href: "/client/surveys",
         icon: <FileText size={20} />,
       },
-      { name: "Products", href: "/products", icon: <ShoppingCart size={20} /> },
+      // {
+      //   name: "Submitted Remarks",
+      //   href: "/client/remarks",
+      //   icon: <FileText size={20} />,
+      // },
     ],
   };
 
-  // Motion variants for smooth open & close animation
+  // Motion animation settings
   const menuVariants = {
     open: {
       height: "auto",
       opacity: 1,
-      transition: { duration: 0.4, ease: "easeInOut" },
+      transition: { duration: 0.3, ease: "easeInOut" },
     },
     closed: {
       height: 0,
       opacity: 0,
-      transition: { duration: 0.4, ease: "easeInOut" },
+      transition: { duration: 0.3, ease: "easeInOut" },
     },
+  };
+
+  const dropdownVariants = {
+    open: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+    closed: { opacity: 0, y: -10, transition: { duration: 0.2 } },
   };
 
   return (
@@ -119,22 +111,23 @@ export function Navbar() {
         <div className="flex justify-between h-16 items-center">
           {/* Left - Logo & Toggle Button */}
           <div className="flex items-center space-x-4">
-            {/* Menu Toggle for Small Screens */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 text-gray-600 dark:text-white xl:hidden"
-            >
-              <Menu size={26} />
-            </button>
+            {user?.user_role === "admin" && (
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 text-gray-600 dark:text-white xl:hidden"
+              >
+                <Menu size={26} />
+              </button>
+            )}
             <Link href="/" className="text-xl font-bold text-red-600">
               BigWig
             </Link>
           </div>
 
-          {/* Center - Navigation for XL Screens */}
-          <div className="hidden xl:flex space-x-6">
-            {navItems[role as keyof typeof navItems]?.map(
-              ({ name, href, icon }) => (
+          {/* Center - Navigation for XL Screens (Only Admin) */}
+          {role === "admin" && (
+            <div className="hidden xl:flex space-x-6">
+              {navItems.admin.map(({ name, href, icon }) => (
                 <Link
                   key={href}
                   href={href}
@@ -142,28 +135,54 @@ export function Navbar() {
                 >
                   <span>{name}</span>
                 </Link>
-              )
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Right - Dark Mode & Logout */}
+          {/* Right - Profile Dropdown & Logout */}
           <div className="flex items-center space-x-4">
-            {/* Dark Mode */}
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 text-gray-600 dark:text-white"
-            >
-              {darkMode ? <Sun size={22} /> : <Moon size={22} />}
-            </button>
+            {/* Profile Dropdown for Surveyors & Clients */}
+            {role !== "admin" && (
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="p-2 text-gray-600 dark:text-white flex items-center space-x-2"
+                >
+                  <UserCircle2 size={28} />
+                </button>
 
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="p-2 text-gray-600 dark:text-white flex items-center space-x-2"
-            >
-              <LogOut size={22} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+                {/* Dropdown Menu */}
+                <motion.div
+                  initial="closed"
+                  animate={dropdownOpen ? "open" : "closed"}
+                  variants={dropdownVariants}
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+                >
+                  {navItems[role as keyof typeof navItems]?.map(
+                    ({ name, href, icon }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        className="flex items-center px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setDropdownOpen(false)} // Close dropdown on click
+                      >
+                        {icon}
+                        <span className="ml-2">{name}</span>
+                      </Link>
+                    )
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
+                  >
+                    <LogOut size={22} />
+                    <span className="hidden sm:inline">Logout</span>
+                  </button>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Logout Button */}
           </div>
         </div>
       </div>
@@ -176,8 +195,8 @@ export function Navbar() {
         className="overflow-hidden xl:hidden bg-white dark:bg-gray-900 shadow-md"
       >
         <div className="py-2">
-          {navItems[role as keyof typeof navItems]?.map(
-            ({ name, href, icon }) => (
+          {role === "admin" &&
+            navItems.admin.map(({ name, href, icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -185,8 +204,7 @@ export function Navbar() {
               >
                 {icon} <span>{name}</span>
               </Link>
-            )
-          )}
+            ))}
         </div>
       </motion.div>
     </nav>

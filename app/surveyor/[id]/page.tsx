@@ -46,7 +46,7 @@ export default function EditSurvey() {
   const [billboards, setBillboards] = useState<SurveyBillboard[]>([]);
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [surveyorId, setSurveyorId] = useState<string>("");
   useEffect(() => {
     if (!surveyId) return;
     fetch(`/api/surveys/${surveyId}`)
@@ -59,6 +59,7 @@ export default function EditSurvey() {
         setShopAddress(data.shop_address);
         setDescription(data.description);
         setBillboards(data.survey_billboards || []);
+        setSurveyorId(data.surveyor_id || []);
       });
     fetch("/api/billboards/billboard-names")
       .then((res) => res.json())
@@ -67,7 +68,19 @@ export default function EditSurvey() {
       .then((res) => res.json())
       .then(setBillboardTypes);
   }, [surveyId]);
-
+  const addBillboard = () => {
+    setBillboards([
+      ...billboards,
+      {
+        billboard_name_id: "",
+        width: "",
+        height: "",
+        billboard_type_id: "",
+        clientId: "",
+        quantity: "",
+      },
+    ]);
+  };
   const updateBillboard = (
     index: number,
     field: keyof SurveyBillboard,
@@ -99,7 +112,7 @@ export default function EditSurvey() {
     const payload = {
       title: surveyTitle,
       billboards,
-      surveyorId: user?.id,
+      surveyorId,
       shopAddress,
       shopName,
       clientName,
@@ -112,7 +125,7 @@ export default function EditSurvey() {
       body: JSON.stringify(payload),
     });
     alert("Survey updated successfully!");
-    // router.push("/surveys");
+    router.push("/surveyor");
   };
   useEffect(() => {
     console.log(billboards);
@@ -264,9 +277,20 @@ export default function EditSurvey() {
           </select>
         </div>
       ))}
-      <Button onClick={handleUpdate} className="bg-red-500 text-white">
-        Update Survey
-      </Button>
+      <div className="w-full flex justify-start gap-4 items-center">
+        <Button
+          onClick={addBillboard}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+        >
+          Add Shopboard
+        </Button>
+        <Button
+          onClick={handleUpdate}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+        >
+          Update Survey
+        </Button>
+      </div>
     </div>
   );
 }

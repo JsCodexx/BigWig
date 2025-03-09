@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const {
       title,
       description,
-      clientId,
+      client_id,
       surveyorId,
       billboards,
       phoneNumber,
@@ -18,8 +18,8 @@ export async function POST(req: Request) {
       shopAddress,
       shopName,
       survey_status,
+      publicURL,
     } = await req.json();
-
     // Insert survey
     const { data: surveyData, error: surveyError } = await supabase
       .from("surveys")
@@ -27,13 +27,14 @@ export async function POST(req: Request) {
         {
           title,
           description,
-          client_id: clientId,
+          client_id,
           surveyor_id: surveyorId,
           shop_name: shopName,
           shop_address: shopAddress,
           client_name: clientName,
           phone_number: phoneNumber,
           survey_status,
+          form_image: publicURL,
         },
       ])
       .select()
@@ -45,7 +46,6 @@ export async function POST(req: Request) {
     }
 
     const surveyId = surveyData.id;
-
     // Insert billboards
     const formattedBillboards = billboards.map((b: any) => ({
       survey_id: surveyId,

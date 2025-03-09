@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useTheme } from "next-themes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -18,15 +17,15 @@ import {
 } from "@/components/ui/select";
 import { Upload, Image as ImageIcon, Trash } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-// 🎯 Define form validation schema
 const formSchema = z.object({
   length: z.string().min(1, "Required"),
   width: z.string().min(1, "Required"),
   location: z.string().min(1, "Required"),
   facing_to: z.string().min(1, "Required"),
   status: z.enum(["equipped", "available", "out_of_order"]),
-  equipped_until: z.string().optional(), // Only needed when status = equipped
+  equipped_until: z.string().optional(),
   avatar: z.string().optional(),
   gallery: z.array(z.string()).optional(),
 });
@@ -34,11 +33,10 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export function BillboardForm() {
-  const { theme } = useTheme();
   const supabase = createClientComponentClient();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
-
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -57,7 +55,7 @@ export function BillboardForm() {
     if (!file) return;
 
     const { data, error } = await supabase.storage
-      .from("files") // 👈 Your Supabase storage bucket name
+      .from("files")
       .upload(`images/${Date.now()}_${file.name}`, file);
 
     if (error) {
@@ -77,67 +75,114 @@ export function BillboardForm() {
   };
 
   const onSubmit = async (data: FormData) => {
-    console.log("Form Data:", data); // ✅ Log data to check values before submitting
+    console.log("Form Data:", data);
     const { error } = await supabase.from("bill_boards").insert(data);
 
     if (error) {
       console.error("Error saving billboard:", error);
     } else {
       alert("Billboard saved successfully!");
+      router.push("/products");
+    }
+  };
+  const handleDelete = async (imageUrl: string) => {
+    if (!imageUrl) {
+      console.error("No image URL provided, skipping storage deletion.");
+      return;
+    }
+
+    try {
+      // Extract correct file path from URL
+      const filePath = imageUrl.split("/public/files/images/")[1];
+
+      if (!filePath) {
+        console.error("Invalid image URL format:", imageUrl);
+        return;
+      }
+
+      console.log("Deleting image from storage:", `images/${filePath}`);
+
+      // Delete the image from Supabase Storage
+      const { error: storageError } = await supabase.storage
+        .from("files") // Ensure this is the correct bucket name
+        .remove([`images/${filePath}`]); // Make sure to include "images/"
+
+      if (storageError) {
+        console.error("Error deleting image from storage:", storageError);
+        return;
+      }
+
+      console.log("Image deleted successfully:", filePath);
+    } catch (err) {
+      console.error("Error extracting file path:", err);
+      return;
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-red-700 dark:text-red-500">
+    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold text-center text-red-700 dark:text-red-500">
         Billboard Form
       </h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
+        {/* Length & Width */}
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <Label htmlFor="length">Length</Label>
-            <Input id="length" {...register("length")} />
+            <Input id="length" {...register("length")} className="mt-1" />
             {errors.length && (
-              <p className="text-red-500">{errors.length.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.length.message}
+              </p>
             )}
           </div>
 
           <div>
             <Label htmlFor="width">Width</Label>
-            <Input id="width" {...register("width")} />
+            <Input id="width" {...register("width")} className="mt-1" />
             {errors.width && (
-              <p className="text-red-500">{errors.width.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.width.message}
+              </p>
             )}
           </div>
         </div>
 
+        {/* Location */}
         <div>
           <Label htmlFor="location">Location</Label>
-          <Input id="location" {...register("location")} />
+          <Input id="location" {...register("location")} className="mt-1" />
           {errors.location && (
-            <p className="text-red-500">{errors.location.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.location.message}
+            </p>
           )}
         </div>
 
+        {/* Facing To */}
         <div>
           <Label htmlFor="facing_to">Facing To</Label>
-          <Input id="facing_to" {...register("facing_to")} />
+          <Input id="facing_to" {...register("facing_to")} className="mt-1" />
           {errors.facing_to && (
-            <p className="text-red-500">{errors.facing_to.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.facing_to.message}
+            </p>
           )}
         </div>
 
+        {/* Status */}
         <div>
           <Label htmlFor="status">Status</Label>
           <Select
-            onValueChange={(value) => {
+            onValueChange={(value) =>
               setValue(
                 "status",
                 value as "equipped" | "available" | "out_of_order"
-              ); // Type assertion
-            }}
+              )
+            }
           >
-            <SelectTrigger>
+            <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select a status" />
             </SelectTrigger>
             <SelectContent>
@@ -146,12 +191,9 @@ export function BillboardForm() {
               <SelectItem value="out_of_order">Out of Order</SelectItem>
             </SelectContent>
           </Select>
-          {errors.status && (
-            <p className="text-red-500">{errors.status.message}</p>
-          )}
         </div>
 
-        {/* Equipped Time */}
+        {/* Equipped Until */}
         {watch("status") === "equipped" && (
           <div>
             <Label htmlFor="equipped_until">Equipped Until</Label>
@@ -159,6 +201,7 @@ export function BillboardForm() {
               id="equipped_until"
               type="datetime-local"
               {...register("equipped_until")}
+              className="mt-1"
             />
           </div>
         )}
@@ -166,15 +209,25 @@ export function BillboardForm() {
         {/* Avatar Upload */}
         <div>
           <Label>Avatar (Main Image)</Label>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mt-2">
             {avatarPreview ? (
-              <Image
-                src={avatarPreview}
-                width={80}
-                height={80}
-                className="rounded-lg"
-                alt="Avatar Preview"
-              />
+              <div className="relative">
+                <Image
+                  src={avatarPreview}
+                  width={80}
+                  height={80}
+                  className="rounded-lg shadow-md"
+                  alt="Avatar Preview"
+                />
+                {/* Delete Button */}
+                <button
+                  type="button"
+                  className="absolute top-0 right-0 bg-red-600 p-1 rounded-full text-white shadow-md"
+                  onClick={() => handleDelete(avatarPreview)}
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
               <ImageIcon className="w-20 h-20 text-gray-500" />
             )}
@@ -189,24 +242,20 @@ export function BillboardForm() {
         {/* Gallery Upload */}
         <div>
           <Label>Gallery Images</Label>
-          <div className="flex gap-4">
+          <div className="flex gap-4 mt-2">
             {galleryPreviews.map((src, index) => (
               <div key={index} className="relative">
                 <Image
                   src={src}
                   width={60}
                   height={60}
-                  className="rounded-lg"
+                  className="rounded-lg shadow-md"
                   alt={`Gallery Image ${index + 1}`}
                 />
                 <button
                   type="button"
-                  className="absolute top-0 right-0 bg-red-500 p-1 rounded-full text-white"
-                  onClick={() => {
-                    setGalleryPreviews(
-                      galleryPreviews.filter((_, i) => i !== index)
-                    );
-                  }}
+                  className="absolute top-0 right-0 bg-red-600 p-1 rounded-full text-white shadow-md"
+                  onClick={() => handleDelete(src)}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
@@ -221,7 +270,7 @@ export function BillboardForm() {
           </div>
         </div>
 
-        <Button type="submit" className="bg-red-700 text-white w-full">
+        <Button type="submit" className="w-full bg-red-700 text-white py-2">
           Save Billboard
         </Button>
       </form>

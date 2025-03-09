@@ -87,7 +87,7 @@ export function BillboardCard({ board }: { board: Billboard }) {
         )} */}
         {/* Example 'View Details' */}
         <button
-          onClick={() => router.push(`/properties/${board?.id}`)}
+          onClick={() => router.push(`/products/${board?.id}`)}
           className="mt-3 underline text-sm text-blue-600 hover:text-blue-800"
         >
           View Details

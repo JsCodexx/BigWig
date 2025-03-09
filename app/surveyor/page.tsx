@@ -41,7 +41,7 @@ const SurveyorDashboard = () => {
       let query = supabase
         .from("surveys")
         .select(
-          "id, title, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at"
+          "id, title, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
         );
 
       if (user.user_role !== "admin") {
@@ -142,9 +142,7 @@ const SurveyorDashboard = () => {
   return (
     <div className="py-16 px-6 max-w-5xl mx-auto">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl mb-4 font-bold text-red-500">
-          Surveyor Dashboard
-        </h1>
+        <h1 className="text-4xl mb-4 font-bold text-red-500">Surveys</h1>
         <Button
           className="bg-red-600 hover:bg-red-700"
           onClick={() => router.push("/surveyor/add-survey")}
@@ -175,7 +173,19 @@ const SurveyorDashboard = () => {
                   key={survey.id}
                   className="bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
                 >
-                  <CardHeader>
+                  <CardHeader className="pb-0">
+                    <div className="flex justify-center items-center">
+                      <div
+                        className="w-48 h-60 bg-gray-200 dark:bg-gray-700 rounded-lg border-2 border-gray-400 shadow-lg"
+                        style={{
+                          backgroundImage: `url(${survey.form_image})`,
+                          backgroundSize: "contain", // Ensures the full image is visible
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                        }}
+                      ></div>
+                    </div>
+
                     <CardTitle className="text-xl font-semibold text-red-500">
                       {survey.title}
                     </CardTitle>
@@ -187,7 +197,7 @@ const SurveyorDashboard = () => {
                     <p className="text-gray-700 dark:text-gray-300">
                       {survey.description || "No description provided."}
                     </p>
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-1 space-y-1">
                       <p>
                         <strong>Client:</strong>{" "}
                         {survey.client_name || "Not assigned"}
@@ -214,19 +224,21 @@ const SurveyorDashboard = () => {
                     )}
                     {/* Update surveys */}
 
-                    <Button
-                      className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                      onClick={() => router.push(`surveyor/${survey.id}`)}
-                    >
-                      Update Survey
-                    </Button>
-
+                    {user.user_role === "admin" && (
+                      <Button
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                        onClick={() => router.push(`surveyor/${survey.id}`)}
+                      >
+                        Update Survey
+                      </Button>
+                    )}
                     {/* Status Dropdown */}
                     <Select
                       value={survey.survey_status}
                       onValueChange={(newStatus) =>
                         updateStatus(survey.id, newStatus)
                       }
+                      disabled={user.user_role !== "admin"}
                     >
                       <SelectTrigger className="mt-4 w-full bg-gray-100 dark:bg-gray-700">
                         <SelectValue>

@@ -9,6 +9,7 @@ export interface Survey {
   survey_status: string;
   created_at: string;
   client_id?: string;
+  form_image: string;
 }
 
 export interface SurveyBillboard {

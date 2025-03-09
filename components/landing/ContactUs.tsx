@@ -9,18 +9,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-
 import { motion } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
+// Initialize Supabase Client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Zod Schema for Form Validation
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
+  full_name: z.string().min(2, "Full Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
-  phone: z.string().regex(/^\d{10}$/, "Phone number must be 10 digits."),
-  message: z.string().min(10, "Message must be at least 10 characters."),
+  phone_number: z.string().min(11, "Phone number must be 10 digits."),
+  address: z.string().min(10, "Message must be at least 10 characters."),
 });
 
 const ContactUs = () => {
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
+  const [responseData, setResponseData] = useState<any>(null);
 
   const {
     register,
@@ -31,13 +41,59 @@ const ContactUs = () => {
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     setLoading(true);
-    setTimeout(() => {
-      console.log("Form Submitted:", data);
+
+    try {
+      // Step 1: Create a new quote in the quotes table (without address)
+      const { data: quote, error: quoteError } = await supabase
+        .from("quotes")
+        .insert([
+          {
+            name: data.name,
+            email: data.email,
+            phone_number: data.phone_number,
+            full_name: data.full_name,
+          },
+        ])
+        .select("name, email, phone_number, full_name")
+        .single();
+
+      if (quoteError) throw quoteError;
+
+      // Step 2: Check if the user already exists
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", data.email)
+        .single();
+
+      // Step 3: If user doesn't exist, create a new client user (includes address)
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash("12345678", 10);
+        const { error: userError } = await supabase.from("users").insert([
+          {
+            name: data.name,
+            full_name: data.full_name,
+            email: data.email,
+            phone_number: data.phone_number,
+            user_role: "client",
+            password: hashedPassword,
+            address: data.address, // Storing the address in users table
+          },
+        ]);
+
+        if (userError) throw userError;
+      }
+
+      // Set response data to display confirmation
+      setResponseData(quote);
       reset();
+    } catch (error: any) {
+      console.error("Error submitting form:", error.message);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -62,16 +118,30 @@ const ContactUs = () => {
       <div className="max-w-lg text-left text-gray-600 mx-auto mt-10 bg-white dark:bg-gray-900 border p-8 rounded-xl shadow-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block font-medium">Name</label>
+            <label className="block font-medium">User Name</label>
             <Input
               type="text"
               {...register("name")}
               className="mt-1"
-              placeholder="John Doe"
+              placeholder="username"
             />
             {errors.name && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.root?.message}
+                {String(errors.name.message)}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block font-medium">Full Name</label>
+            <Input
+              type="text"
+              {...register("full_name")}
+              className="mt-1"
+              placeholder="John Doe"
+            />
+            {errors.full_name && (
+              <p className="text-red-500 text-sm mt-1">
+                {String(errors.full_name.message)}
               </p>
             )}
           </div>
@@ -86,7 +156,7 @@ const ContactUs = () => {
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.root?.message}
+                {String(errors.email.message)}
               </p>
             )}
           </div>
@@ -95,13 +165,13 @@ const ContactUs = () => {
             <label className="block font-medium">Phone</label>
             <Input
               type="text"
-              {...register("phone")}
+              {...register("phone_number")}
               className="mt-1"
               placeholder="1234567890"
             />
-            {errors.phone && (
+            {errors.phone_number && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.root?.message}
+                {String(errors.phone_number.message)}
               </p>
             )}
           </div>
@@ -109,13 +179,13 @@ const ContactUs = () => {
           <div>
             <label className="block font-medium">Message</label>
             <Textarea
-              {...register("message")}
+              {...register("address")}
               className="mt-1"
-              placeholder="Write your message here..."
+              placeholder="Write your address here..."
             />
-            {errors.message && (
+            {errors.address && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.root?.message}
+                {String(errors.address.message)}
               </p>
             )}
           </div>
@@ -133,6 +203,21 @@ const ContactUs = () => {
             {loading ? "Sending..." : "Send Message"}
           </Button>
         </form>
+
+        {responseData && (
+          <div className="mt-6 p-4 border rounded-lg bg-green-100 text-green-700">
+            <h3 className="text-lg font-bold">Quote Created Successfully!</h3>
+            <p>
+              <strong>Name:</strong> {responseData.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {responseData.email}
+            </p>
+            <p>
+              <strong>Phone:</strong> {responseData.phone_number}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

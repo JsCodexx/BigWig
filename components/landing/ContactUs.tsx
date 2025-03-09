@@ -126,7 +126,9 @@ const ContactUs = () => {
               placeholder="username"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {String(errors.name.message)}
+              </p>
             )}
           </div>
           <div>
@@ -139,7 +141,7 @@ const ContactUs = () => {
             />
             {errors.full_name && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.full_name.message}
+                {String(errors.full_name.message)}
               </p>
             )}
           </div>
@@ -154,7 +156,7 @@ const ContactUs = () => {
             />
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
+                {String(errors.email.message)}
               </p>
             )}
           </div>
@@ -169,7 +171,7 @@ const ContactUs = () => {
             />
             {errors.phone_number && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.phone_number.message}
+                {String(errors.phone_number.message)}
               </p>
             )}
           </div>
@@ -183,7 +185,7 @@ const ContactUs = () => {
             />
             {errors.address && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.address.message}
+                {String(errors.address.message)}
               </p>
             )}
           </div>

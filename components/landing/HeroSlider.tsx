@@ -54,18 +54,15 @@ const HeroSlider = () => {
       className="w-full h-[50vh] sm:h-[40vh] md:h-[70vh] lg:h-[85vh] xl:h-[90vh]"
     >
       {slides.map((slide, index) => (
-        <SwiperSlide
-          key={slide.id}
-          className="relative w-full h-full"
-        >
+        <SwiperSlide key={slide.id} className="relative w-full h-full">
           {/* Background Image (Full Width) */}
           <div
-            className="absolute inset-0 w-full h-full bg-center bg-cover"
+            className="absolute inset-0 w-screen h-full bg-no-repeat bg-center bg-cover"
             style={{ backgroundImage: `url(${slide.image_url})` }}
           ></div>
 
           {/* Overlay Content */}
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
             <div className="w-full flex flex-col gap-4 justify-around items-center">
               {/* Filter Section (Show only on larger screens) */}
               <div className="lg:flex hidden w-[50%]">

@@ -7,14 +7,14 @@ import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, Heart, MapPin } from "lucide-react";
+import { Calendar, ChevronRight, Heart, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 export function BillboardCard({ board }: { board: Billboard }) {
   const router = useRouter();
   return (
     <div
       key={board?.id}
-      className="border rounded-md overflow-hidden shadow-sm"
+      className="border rounded-sm overflow-hidden w-[300px]"
     >
       <div className="relative">
         {/* Swiper Slider replacing single <img> */}
@@ -22,8 +22,19 @@ export function BillboardCard({ board }: { board: Billboard }) {
           modules={[Autoplay, Pagination]}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
           pagination={{ clickable: true }}
-          className="w-full h-48"
+          className="w-full"
         >
+          <style>
+            {`
+        .swiper-pagination-bullet {
+        background-color: rgb(111, 114, 111) !important; /* Gray-500 */
+        opacity: 1;
+}
+      .swiper-pagination-bullet-active {
+          background-color: rgb(220, 38, 38) !important; /* Darker Red */
+      }
+    `}
+          </style>
           {/* If board?.gallery has images, map them; otherwise fallback to board?.image */}
           {board?.gallery && board?.gallery.length > 0 ? (
             board?.gallery.map((imgUrl, index) => (
@@ -31,7 +42,7 @@ export function BillboardCard({ board }: { board: Billboard }) {
                 <img
                   src={imgUrl || "/placeholder.jpg"}
                   alt="Property"
-                  className="w-full h-48 object-cover"
+                  className="w-full h-36 object-fit"
                 />
               </SwiperSlide>
             ))
@@ -40,7 +51,7 @@ export function BillboardCard({ board }: { board: Billboard }) {
               <img
                 src={board?.avatar || "/placeholder.jpg"}
                 alt="Property"
-                className="w-full h-48 object-cover"
+                className="w-full h-36 object-cover"
               />
             </SwiperSlide>
           )}
@@ -52,28 +63,38 @@ export function BillboardCard({ board }: { board: Billboard }) {
         </button>
       </div>
 
-      <div className="p-4">
-        <p className=" mt-1 text-lg font-semibold">{board?.location}</p>
+      <div className="p-2 min-h-[120px]">
+        <p className=" mt-1 text-[18px] font-semibold text-[#37474F]">
+          {board?.location}
+        </p>
         <div className="flex justify-between items-center">
           <span className="flex">
-            <h2 className="text-gray-500 text-sm">{board?.facing_to}</h2>
+            <h2 className="text-[#37474F] text-[12px]">
+              Facing {board?.facing_to}
+            </h2>
           </span>
           <span className="flex items-center justify-center">
-            <MapPin className=" text-gray-500" size={10} />
-            <p className="text-red-600 text-sm">{board?.status}</p>
+            <MapPin className="text-gray-500" size={12} />
+            <p
+              className={`text-sm capitalize ${
+                board?.status === "equipped" ? "text-red-600" : "text-green-500"
+              }`}
+            >
+              {board?.status}
+            </p>
           </span>
         </div>
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-1">
           {board?.equipped_until && (
-            <p className="text-sm flex items-center gap-2 mt-1 text-gray-400">
-              <Calendar size={10} className="text-pink-500" /> Equipped Till:
+            <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F] ">
+              <Calendar size={10} className="text-pink-500" /> Equipped:
               {formatDistanceToNow(new Date(board?.equipped_until))}
             </p>
           )}
         </div>
         {/* Created At & Updated At */}
         {board?.created_at && (
-          <p className="text-sm flex items-center gap-2 mt-1 text-gray-400">
+          <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F]  mb-2">
             <Calendar size={10} className="text-pink-500" /> Added:{" "}
             {formatDistanceToNow(new Date(board?.created_at))} ago
           </p>
@@ -85,12 +106,20 @@ export function BillboardCard({ board }: { board: Billboard }) {
             {formatDistanceToNow(new Date(board?.updated_at))} ago
           </p>
         )} */}
-        {/* Example 'View Details' */}
+      </div>
+      {/* Example 'View Details' */}
+      <div className="w-full flex justify-center items-center">
+        <div className="w-[85%] h-[1px] bg-gray-200"></div>
+      </div>
+      <div className="w-full h-6 md:h-10 flex justify-center items-center p-1 sm:py-2">
         <button
           onClick={() => router.push(`/products/${board?.id}`)}
-          className="mt-3 underline text-sm text-blue-600 hover:text-blue-800"
+          className="mt-1 text-[14px] font-semibold text-[#37474F] flex justify-center items-center"
         >
-          View Details
+          {`View Details`}
+          <span>
+            <ChevronRight />
+          </span>
         </button>
       </div>
     </div>

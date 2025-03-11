@@ -46,13 +46,16 @@ const ClientsSlider = () => {
       <div className="relative w-full mt-10 overflow-hidden">
         <div className="flex whitespace-nowrap animate-scroll">
           {scrollingLogos.map((logo, idx) => (
-            <div key={idx} className="mx-6 flex-shrink-0 hover:zoom-in-110">
+            <div
+              key={idx}
+              className="mx-6 flex-shrink-0 hover:zoom-in-110 flex justify-center items-center"
+            >
               <Image
                 src={logo.src}
                 alt={logo.alt}
                 width={100}
                 height={100}
-                className="h-16 w-16 hover:zoom-in-150 fill-slate-600"
+                className="h-16 w-auto"
               />
             </div>
           ))}

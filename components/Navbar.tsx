@@ -48,7 +48,11 @@ export function Navbar() {
         icon: <ListOrdered size={20} />,
       },
       // { name: "Remarks", href: "/admin/remarks", icon: <FileText size={20} /> },
-      { name: "Boards", href: "/products", icon: <ShoppingCart size={20} /> },
+      {
+        name: "Billboards",
+        href: "/products",
+        icon: <ShoppingCart size={20} />,
+      },
     ],
     surveyor: [
       {
@@ -136,6 +140,13 @@ export function Navbar() {
                   <span>{name}</span>
                 </Link>
               ))}
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
+              >
+                <LogOut size={22} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
           )}
 
@@ -205,6 +216,13 @@ export function Navbar() {
                 {icon} <span>{name}</span>
               </Link>
             ))}
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
+          >
+            <LogOut size={22} />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </motion.div>
     </nav>

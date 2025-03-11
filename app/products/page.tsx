@@ -80,7 +80,7 @@ export default function BillboardsPage() {
       <nav className="flex items-center text-sm text-gray-600 mb-4">
         <span onClick={() => router.push("/")}>Home</span>
         <ChevronRight size={14} className="mx-2" />
-        <span className="font-medium text-red-500">Shop Boards</span>
+        <span className="font-medium text-red-500">Billboards</span>
       </nav>
       {/* Search Input */}
       <div className="flex max-w-xl items-center border border-gray-300 rounded-md px-2 py-2">

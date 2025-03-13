@@ -10,7 +10,6 @@ import { SurveyBillboard } from "@/types/survey";
 
 // Validation Schema
 const surveySchema = z.object({
-  surveyTitle: z.string().min(1, "Survey title is required"),
   clientName: z.string().min(1, "Client name is required"),
   shopName: z.string().min(1, "Shop name is required"),
   shopAddress: z.string().min(1, "Shop address is required"),
@@ -38,7 +37,6 @@ export default function EditSurvey() {
 
   const [billboardNames, setBillboardNames] = useState<Billboard[]>([]);
   const [billboardTypes, setBillboardTypes] = useState<BillboardType[]>([]);
-  const [surveyTitle, setSurveyTitle] = useState("");
   const [clientName, setClientName] = useState("");
   const [shopName, setShopName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -52,14 +50,13 @@ export default function EditSurvey() {
     fetch(`/api/surveys/${surveyId}`)
       .then((res) => res.json())
       .then((data) => {
-        setSurveyTitle(data.title);
         setClientName(data.client_name);
         setShopName(data.shop_name);
         setPhoneNumber(data.phone_number);
         setShopAddress(data.shop_address);
         setDescription(data.description);
         setBillboards(data.survey_billboards || []);
-        setSurveyorId(data.surveyor_id || []);
+        setSurveyorId(data.surveyor_id || null);
       });
     fetch("/api/billboards/billboard-names")
       .then((res) => res.json())
@@ -93,7 +90,6 @@ export default function EditSurvey() {
 
   const handleUpdate = async () => {
     const validation = surveySchema.safeParse({
-      surveyTitle,
       clientName,
       shopName,
       shopAddress,
@@ -110,7 +106,6 @@ export default function EditSurvey() {
     }
 
     const payload = {
-      title: surveyTitle,
       billboards,
       surveyorId,
       shopAddress,
@@ -140,17 +135,6 @@ export default function EditSurvey() {
       </h1>
       <div className="w-full flex flex-col justify-center items-center gap-4">
         <div className="w-full flex justify-center items-center gap-4">
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Survey Title"
-              value={surveyTitle}
-              onChange={(e) => setSurveyTitle(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.surveyTitle && (
-              <p className="text-red-500 text-sm">{errors.surveyTitle}</p>
-            )}
-          </div>
           <div className="flex flex-col w-full">
             <Input
               placeholder="Client Name"

@@ -129,9 +129,6 @@ const SurveyorDashboard = () => {
                           ></div>
                         </div>
 
-                        <CardTitle className="text-xl font-semibold text-red-500">
-                          {survey.title}
-                        </CardTitle>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(survey.created_at).toLocaleDateString()}
                         </p>

@@ -25,7 +25,6 @@ import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 const surveySchema = z.object({
-  surveyTitle: z.string().min(1, "Survey title is required"),
   clientName: z.string().min(1, "Client name is required"),
   shopName: z.string().min(1, "Shop name is required"),
   shopAddress: z.string().min(1, "Shop address is required"),
@@ -49,7 +48,6 @@ export default function SubmitSurvey() {
   const { user } = useUser(); // Get the logged-in user's info
   const [billboardNames, setBillboardNames] = useState<Shopboard[]>([]);
   const [billboardTypes, setBillboardTypes] = useState<BillboardType[]>([]);
-  const [surveyTitle, setSurveyTitle] = useState<string>("");
   const [clientName, setClientName] = useState<string>("");
   const [clientId, setClientId] = useState<string>("");
   const [shopName, setShopName] = useState<string>("");
@@ -103,7 +101,6 @@ export default function SubmitSurvey() {
 
   const handleSubmit = async () => {
     const validation = surveySchema.safeParse({
-      surveyTitle,
       clientName,
       shopName,
       shopAddress,
@@ -154,9 +151,8 @@ export default function SubmitSurvey() {
         .getPublicUrl(filePath);
 
       const payload = {
-        title: surveyTitle,
         billboards,
-        surveyorId: user.id,
+        surveyorId: user.user_role === "admin" ? null : user.id,
         client_id: clientId,
         shopAddress,
         shopName,
@@ -229,92 +225,21 @@ export default function SubmitSurvey() {
       setImage(file);
     }
   };
+  useEffect(() => {
+    console.log(clientId);
+  }, [clientId]);
   return (
     <div className="py-16 px-6 max-w-3xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
-      <h1 className="text-4xl font-bold text-red-500">Submit Survey</h1>
-      <div className="w-full flex flex-col justify-center items-center gap-4">
-        <div className="w-full flex justify-center items-center gap-4">
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Survey Title"
-              value={surveyTitle}
-              onChange={(e) => setSurveyTitle(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.surveyTitle && (
-              <p className="text-red-500 text-sm">{errors.surveyTitle}</p>
-            )}
-          </div>
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Client Name"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.clientName && (
-              <p className="text-red-500 text-sm">{errors.clientName}</p>
-            )}
-          </div>
-        </div>
+      <div className="w-full flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-red-500">Submit Survey</h1>
 
-        <div className="w-full flex justify-center items-center gap-4">
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Shop Address"
-              value={shopAddress}
-              onChange={(e) => setShopAddress(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.shopAddress && (
-              <p className="text-red-500 text-sm">{errors.shopAddress}</p>
-            )}
-          </div>
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.phoneNumber && (
-              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
-            )}
-          </div>
-        </div>
-        <div className="w-full flex justify-center items-center gap-4">
-          <div className="flex flex-col w-full">
-            <Input
-              placeholder="Shop Name"
-              value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
-              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            />
-            {errors.shopName && (
-              <p className="text-red-500 text-sm">{errors.shopName}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col w-full">
-            <Select onValueChange={(clientId) => setClientId(clientId)}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Assign Client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.description && (
-              <p className="text-red-500 text-sm">{errors.description}</p>
-            )}
-          </div>
-        </div>
+        <Button
+          onClick={addBillboard}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+        >
+          Add Shopboard
+        </Button>
       </div>
-
       {billboards.map((b, index) => (
         <div
           key={index}
@@ -432,9 +357,81 @@ export default function SubmitSurvey() {
           />
         </label>
       </div>
+      <div className="w-full flex flex-col justify-center items-center gap-4">
+        <div className="w-full flex justify-center items-center gap-4">
+          <div className="flex flex-col w-full">
+            <Input
+              placeholder="Shopkeeper Name"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            {errors.clientName && (
+              <p className="text-red-500 text-sm">{errors.clientName}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="w-full flex justify-center items-center gap-4">
+          <div className="flex flex-col w-full">
+            <Input
+              placeholder="Shop Address for board"
+              value={shopAddress}
+              onChange={(e) => setShopAddress(e.target.value)}
+              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            {errors.shopAddress && (
+              <p className="text-red-500 text-sm">{errors.shopAddress}</p>
+            )}
+          </div>
+          <div className="flex flex-col w-full">
+            <Input
+              placeholder="Cell #"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+            )}
+          </div>
+        </div>
+        <div className="w-full flex justify-center items-center gap-4">
+          <div className="flex flex-col w-full">
+            <Input
+              placeholder="Shop Name for board"
+              value={shopName}
+              onChange={(e) => setShopName(e.target.value)}
+              className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            {errors.shopName && (
+              <p className="text-red-500 text-sm">{errors.shopName}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col w-full">
+            <Select onValueChange={(clientId) => setClientId(clientId)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Assign Client" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.description && (
+              <p className="text-red-500 text-sm">{errors.description}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col w-full">
         <Textarea
-          placeholder="Description"
+          placeholder="Surveyor Remarks"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
@@ -444,13 +441,6 @@ export default function SubmitSurvey() {
         )}
       </div>
       <div className="w-full flex justify-start gap-4 items-center">
-        <Button
-          onClick={addBillboard}
-          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
-        >
-          Add Shopboard
-        </Button>
-
         <Button
           onClick={handleSubmit}
           className="mt-4 bg-red-600 hover:bg-red-700 text-white"

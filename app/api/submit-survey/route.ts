@@ -8,7 +8,6 @@ export async function POST(req: Request) {
   );
   try {
     const {
-      title,
       description,
       client_id,
       surveyorId,
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
       .from("surveys")
       .insert([
         {
-          title,
           description,
           client_id,
           surveyor_id: surveyorId,

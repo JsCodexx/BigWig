@@ -85,10 +85,21 @@ export function BillboardCard({ board }: { board: Billboard }) {
           </span>
         </div>
         <div className="flex justify-between items-center mb-1">
+          <a
+            href="https://www.flaticon.com/free-icons/out-of-stock"
+            title="out of stock icons"
+          >
+            Out of stock icons created by Hilmy Abiyyu A. - Flaticon
+          </a>
           {board?.equipped_until && (
             <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F] ">
-              <Calendar size={10} className="text-pink-500" /> Equipped:
-              {formatDistanceToNow(new Date(board?.equipped_until))}
+              <a
+                href="https://www.flaticon.com/free-icons/out-of-stock"
+                title="out of stock icons"
+              >
+                <Calendar size={10} className="text-pink-500" /> Equipped:
+                {formatDistanceToNow(new Date(board?.equipped_until))}
+              </a>
             </p>
           )}
         </div>

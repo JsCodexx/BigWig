@@ -41,7 +41,7 @@ const SurveyorDashboard = () => {
       let query = supabase
         .from("surveys")
         .select(
-          "id, title, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
+          "id, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
         );
 
       if (user.user_role !== "admin") {
@@ -185,10 +185,6 @@ const SurveyorDashboard = () => {
                         }}
                       ></div>
                     </div>
-
-                    <CardTitle className="text-xl font-semibold text-red-500">
-                      {survey.title}
-                    </CardTitle>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(survey.created_at).toLocaleDateString()}
                     </p>

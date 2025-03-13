@@ -17,7 +17,7 @@ export async function GET(
     const { data: survey, error } = await supabase
       .from("surveys")
       .select(
-        "id, title, description, client_name, phone_number, shop_name, shop_address, survey_status, created_at, surveyor_id, client_id, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity)"
+        "id, description, client_name, phone_number, shop_name, shop_address, survey_status, created_at, surveyor_id, client_id, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity)"
       )
       .eq("id", surveyId)
       .single();
@@ -49,7 +49,6 @@ export async function PUT(
 
   try {
     const {
-      title,
       description,
       clientId,
       surveyorId,
@@ -64,7 +63,6 @@ export async function PUT(
     const { error: surveyError } = await supabase
       .from("surveys")
       .update({
-        title,
         description,
         client_id: clientId,
         surveyor_id: surveyorId,

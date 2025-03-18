@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="text-center md:text-left mb-6 md:mb-0">
           <div className="flex items-center gap-2">
             <Image
-              src="/wLogo.png"
+              src="/wLogo.webp"
               alt="Company Logo"
               width={200}
               height={150}

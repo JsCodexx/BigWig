@@ -35,6 +35,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
+    console.log("first");
     try {
       if (role === "admin") {
         const { data: authData, error: authError } =

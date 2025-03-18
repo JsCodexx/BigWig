@@ -1,42 +1,42 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/autoplay";
-import { Autoplay } from "swiper/modules";
+import { motion } from "framer-motion";
 import HeroSlider from "./HeroSlider";
-import MasonryGrid from "./MasnoryGrid";
-import ClientsSlider from "./ClientSlider";
-import OurServices from "./OurServices";
-import ContactUs from "./ContactUs";
+import BillboardPreview from "./BillboardPreview";
 import OurMission from "./OurMission";
 import WeOffer from "./WeOffer";
-import { motion } from "framer-motion";
-import BillboardPreview from "./BillboardPreview";
+import OurServices from "./OurServices";
+import MasonryGrid from "./MasnoryGrid";
+import ClientsSlider from "./ClientSlider";
+import ContactUs from "./ContactUs";
+
 export default function Landing() {
   return (
     <div className="bg-background text-foreground">
-      {/* Hero Section */}
-      <section className="relative">
-        <HeroSlider />
-      </section>
+      {/* Hero Section (Full Width, No Container) */}
+      <HeroSlider />
 
-      {/* Boards */}
-      <BillboardPreview />
+      {/* Billboard Preview */}
+      <Section odd>
+        <BillboardPreview />
+      </Section>
 
       {/* Our Mission */}
-      <OurMission />
+      <Section even>
+        <OurMission />
+      </Section>
 
       {/* We Offer */}
-      <WeOffer />
+      <Section odd>
+        <WeOffer />
+      </Section>
 
       {/* Our Services */}
-      <OurServices />
+      <Section even>
+        <OurServices />
+      </Section>
 
       {/* Gallery */}
-      <div className="max-w-6xl py-16 px-6 mx-auto text-center">
+      <Section odd className="text-center">
         <motion.h2
           className="text-4xl font-bold text-red-500"
           initial={{ opacity: 0, y: -20 }}
@@ -55,19 +55,43 @@ export default function Landing() {
           delivering innovative, high-visibility, and eco-friendly solutions
           that help brands create lasting impressions.
         </motion.p>
-      </div>
-      <MasonryGrid />
+        <MasonryGrid />
+      </Section>
 
       {/* Our Clients */}
-      <ClientsSlider />
+      <Section even>
+        <ClientsSlider />
+      </Section>
 
       {/* Contact Us */}
-      <ContactUs />
+      <Section odd>
+        <ContactUs />
+      </Section>
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <footer className="py-6 bg-muted text-center">
-        <p>&copy; 2025 Billboard Advertising Co. All rights reserved.</p>
-      </footer>
+// ✅ Reusable Section Container with Alternating Colors
+function Section({
+  children,
+  className,
+  odd,
+  even,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  odd?: boolean;
+  even?: boolean;
+}) {
+  return (
+    <div
+      className={`${
+        even ? "bg-gray-100 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
+      } w-full`}
+    >
+      <div className={`max-w-7xl mx-auto py-16 px-6 ${className}`}>
+        {children}
+      </div>
     </div>
   );
 }

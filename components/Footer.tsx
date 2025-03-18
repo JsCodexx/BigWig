@@ -9,12 +9,19 @@ export default function Footer() {
         {/* Left Section - Logo & Copyright */}
         <div className="text-center md:text-left mb-6 md:mb-0">
           <div className="flex items-center gap-2">
-            <Image
+            {/* <Image
               src="/wLogo.webp"
               alt="Company Logo"
               width={200}
               height={150}
               priority
+            /> */}
+            <Image
+              src="/wLogo.webp"
+              alt="BigWig Logo"
+              width={150}
+              height={50}
+              className="h-auto w-auto"
             />
           </div>
           <p className="text-gray-400 text-sm mt-2">

@@ -33,7 +33,7 @@ const SurveyorSurveysPage = () => {
     setLoading(false);
   };
   useEffect(() => {
-    if (!user.id) return;
+    if (!user?.id) return;
 
     fetchSurveys();
   }, [user]);

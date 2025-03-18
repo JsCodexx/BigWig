@@ -8,7 +8,6 @@ import {
   Menu,
   LogOut,
   Users,
-  Bell,
   FileText,
   ShoppingCart,
   Clapperboard,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function Navbar() {
   const { role, user } = useUser();
@@ -33,6 +33,7 @@ export function Navbar() {
     window.location.href = "/auth/login";
   };
 
+  // Navigation links for different roles
   const navItems = {
     admin: [
       { name: "Manage Users", href: "/admin", icon: <Users size={20} /> },
@@ -47,7 +48,6 @@ export function Navbar() {
         href: "/admin/quotes",
         icon: <ListOrdered size={20} />,
       },
-      // { name: "Remarks", href: "/admin/remarks", icon: <FileText size={20} /> },
       {
         name: "Billboards",
         href: "/products",
@@ -82,78 +82,53 @@ export function Navbar() {
         href: "/client/surveys",
         icon: <FileText size={20} />,
       },
-      // {
-      //   name: "Submitted Remarks",
-      //   href: "/client/remarks",
-      //   icon: <FileText size={20} />,
-      // },
     ],
-  };
-
-  // Motion animation settings
-  const menuVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeInOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeInOut" },
-    },
-  };
-
-  const dropdownVariants = {
-    open: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-    closed: { opacity: 0, y: -10, transition: { duration: 0.2 } },
   };
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Left - Logo & Toggle Button */}
+          {/* Left - Logo & Menu Toggle */}
           <div className="flex items-center space-x-4">
             {user?.user_role === "admin" && (
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 text-gray-600 dark:text-white xl:hidden"
+                className="p-2 text-gray-600 dark:text-white md:hidden"
               >
                 <Menu size={26} />
               </button>
             )}
-            <Link href="/" className="text-xl font-bold text-red-600">
-              BigWig
+            <Link href="/">
+              <Image
+                src="/logo.webp"
+                alt="BigWig Logo"
+                width={150}
+                height={50}
+                className="h-auto w-auto"
+              />
             </Link>
           </div>
 
-          {/* Center - Navigation for XL Screens (Only Admin) */}
-          {role === "admin" && (
-            <div className="hidden xl:flex space-x-6">
-              {navItems.admin.map(({ name, href, icon }) => (
+          {/* Center - Navigation (Only Admin Above md) */}
+          {user?.user_role === "admin" && (
+            <div className="hidden md:flex space-x-6">
+              {navItems.admin.map(({ name, href }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="text-gray-700 dark:text-white flex items-center space-x-2 hover:text-red-600"
+                  className="text-gray-700 dark:text-white hover:text-red-600"
                 >
-                  <span>{name}</span>
+                  {name}
                 </Link>
               ))}
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
-              >
-                <LogOut size={22} />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
             </div>
           )}
 
-          {/* Right - Profile Dropdown & Logout */}
+          {/* Right - Profile Dropdown */}
           <div className="flex items-center space-x-4">
-            {/* Profile Dropdown for Surveyors & Clients */}
-            {role !== "admin" && (
+            {user ? (
+              // Profile Dropdown
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -164,67 +139,91 @@ export function Navbar() {
 
                 {/* Dropdown Menu */}
                 <motion.div
-                  initial="closed"
-                  animate={dropdownOpen ? "open" : "closed"}
-                  variants={dropdownVariants}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={
+                    dropdownOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
+                  }
+                  transition={{ duration: 0.2 }}
                   className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
                 >
-                  {navItems[role as keyof typeof navItems]?.map(
-                    ({ name, href, icon }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        className="flex items-center px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => setDropdownOpen(false)} // Close dropdown on click
-                      >
-                        {icon}
-                        <span className="ml-2">{name}</span>
-                      </Link>
-                    )
+                  {/* Admin Links (Only Below md) */}
+                  {user?.user_role === "admin" && (
+                    <div className="md:hidden">
+                      {navItems.admin.map(({ name, href, icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className="flex items-center px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {icon} <span className="ml-2">{name}</span>
+                        </Link>
+                      ))}
+                    </div>
                   )}
+
+                  {/* Surveyor & Client Links (Always in Dropdown) */}
+                  {role &&
+                    role !== "admin" &&
+                    navItems[role as keyof typeof navItems].map(
+                      ({ name, href, icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className="flex items-center px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {icon} <span className="ml-2">{name}</span>
+                        </Link>
+                      )
+                    )}
+
+                  {/* Logout Button */}
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
+                    className="w-full text-left px-4 py-2 text-gray-600 dark:text-white flex items-center space-x-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <LogOut size={22} />
-                    <span className="hidden sm:inline">Logout</span>
+                    <span>Logout</span>
                   </button>
                 </motion.div>
               </div>
+            ) : (
+              // Login Button if Not Logged In
+              <Link
+                href="/auth/login"
+                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg"
+              >
+                Login
+              </Link>
             )}
-
-            {/* Logout Button */}
           </div>
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu with Smooth Open & Close Animation */}
-      <motion.div
-        initial="closed"
-        animate={menuOpen ? "open" : "closed"}
-        variants={menuVariants}
-        className="overflow-hidden xl:hidden bg-white dark:bg-gray-900 shadow-md"
-      >
-        <div className="py-2">
-          {role === "admin" &&
-            navItems.admin.map(({ name, href, icon }) => (
+      {/* Mobile Dropdown Menu (Admin Links Only Below md) */}
+      {user?.user_role === "admin" && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={
+            menuOpen
+              ? { height: "auto", opacity: 1 }
+              : { height: 0, opacity: 0 }
+          }
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="overflow-hidden md:hidden bg-white dark:bg-gray-900 shadow-md"
+        >
+          <div className="py-2">
+            {navItems.admin.map(({ name, href, icon }) => (
               <Link
                 key={href}
                 href={href}
-                className="px-6 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center space-x-2"
+                className="px-6 py-2 text-gray-700 dark:text-white flex items-center space-x-2 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 {icon} <span>{name}</span>
               </Link>
             ))}
-          <button
-            onClick={handleLogout}
-            className="px-6 py-2 text-gray-600 dark:text-white flex items-center space-x-2"
-          >
-            <LogOut size={22} />
-            <span className="hidden sm:inline">Logout</span>
-          </button>
-        </div>
-      </motion.div>
+          </div>
+        </motion.div>
+      )}
     </nav>
   );
 }

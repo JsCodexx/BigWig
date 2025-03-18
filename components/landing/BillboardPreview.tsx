@@ -19,8 +19,6 @@ const BillboardPreview = () => {
   const router = useRouter();
 
   // Refs for custom navigation buttons
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
 
   useEffect(() => {
     const fetchBillboards = async () => {
@@ -49,10 +47,10 @@ const BillboardPreview = () => {
         Explore a selection of our premium billboard locations.
       </p>
 
-      <div className="relative w-full mt-6">
+      <div className="relative w-full mt-6 ">
         {billboards.length > 0 ? (
           <Swiper
-            modules={[Navigation, Autoplay, Pagination]}
+            modules={[Autoplay, Pagination]}
             autoplay={{
               delay: 2500,
               disableOnInteraction: false,
@@ -60,21 +58,16 @@ const BillboardPreview = () => {
             speed={1000}
             loop={true}
             rewind={false}
-            navigation={{
-              prevEl: prevRef.current,
-              nextEl: nextRef.current,
-            }}
             spaceBetween={20}
+            centeredSlides={billboards.length < 3} // ✅ Center only when there are 1-2 slides
             breakpoints={{
-              520: { slidesPerView: 2 },
-              768: { slidesPerView: 2 },
-              968: { slidesPerView: 3 },
-              1440: { slidesPerView: 4 },
+              720: { slidesPerView: Math.min(billboards.length, 2) },
+              1440: { slidesPerView: Math.min(billboards.length, 3) },
             }}
             className="w-full"
           >
             {billboards.map((billboard) => (
-              <SwiperSlide key={billboard.id}>
+              <SwiperSlide key={billboard.id} className="flex justify-center">
                 <BillboardCard board={billboard} />
               </SwiperSlide>
             ))}
@@ -86,7 +79,7 @@ const BillboardPreview = () => {
         )}
 
         {/* Navigation Buttons - Positioned at Bottom */}
-        <div className="absolute top-[50px] left-0 z-10">
+        {/* <div className="absolute top-[50px] left-0 z-10">
           <button
             ref={prevRef}
             className="text-red-700 min:w-5 p-2 rounded-lg shadow-lg"
@@ -102,7 +95,7 @@ const BillboardPreview = () => {
           >
             <ChevronRight className="text-4xl" />
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex justify-center mt-12">

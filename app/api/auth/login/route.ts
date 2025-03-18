@@ -46,8 +46,8 @@ export async function POST(req: Request) {
       const { data: user, error } = await supabase
         .from("users")
         .select("*")
-        .or(`name.eq.${identifier},phone_number.eq.${identifier}`)
-        .single();
+        .eq("name", identifier)
+        .maybeSingle();
       if (error || !user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }

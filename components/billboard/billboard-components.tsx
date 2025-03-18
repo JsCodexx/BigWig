@@ -3,7 +3,7 @@
 import { Billboard } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import { formatDistanceToNow } from "date-fns";
@@ -14,35 +14,49 @@ export function BillboardCard({ board }: { board: Billboard }) {
   return (
     <div
       key={board?.id}
-      className="border rounded-sm overflow-hidden w-[300px]"
+      className="border rounded-sm overflow-hidden md:w-[350px] w-[300px]"
     >
       <div className="relative">
         {/* Swiper Slider replacing single <img> */}
+
         <Swiper
-          modules={[Autoplay, Pagination]}
-          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          modules={[Pagination, Navigation]} // ✅ Add Navigation module
           pagination={{ clickable: true }}
+          navigation
           className="w-full"
         >
           <style>
             {`
-        .swiper-pagination-bullet {
+      .swiper-pagination-bullet {
         background-color: rgb(111, 114, 111) !important; /* Gray-500 */
         opacity: 1;
-}
+      }
       .swiper-pagination-bullet-active {
-          background-color: rgb(220, 38, 38) !important; /* Darker Red */
+        background-color: rgb(220, 38, 38) !important; /* Darker Red */
+      }
+      /* ✅ Smaller Navigation Buttons */
+      .swiper-button-next, .swiper-button-prev {
+        color: white !important;
+        background: rgba(0, 0, 0, 0.5); /* Dark transparent background */
+        width: 25px !important; /* Smaller Width */
+        height: 25px !important; /* Smaller Height */
+        border-radius: 50%; /* Circular Buttons */
+        font-size: 12px !important; /* Smaller Icons */
+      }
+      .swiper-button-next::after, .swiper-button-prev::after {
+        font-size: 14px !important; /* Reduce Icon Size */
+        font-weight: bold;
       }
     `}
           </style>
-          {/* If board?.gallery has images, map them; otherwise fallback to board?.image */}
+
           {board?.gallery && board?.gallery.length > 0 ? (
             board?.gallery.map((imgUrl, index) => (
               <SwiperSlide key={index}>
                 <img
                   src={imgUrl || "/placeholder.jpg"}
                   alt="Property"
-                  className="w-full h-36 object-fit"
+                  className="w-full h-36 object-cover"
                 />
               </SwiperSlide>
             ))
@@ -68,13 +82,12 @@ export function BillboardCard({ board }: { board: Billboard }) {
           {board?.location}
         </p>
         <div className="flex justify-between items-center">
-          <span className="flex">
-            <h2 className="text-[#37474F] text-[12px]">
-              Facing {board?.facing_to}
-            </h2>
-          </span>
+          <h2 className="text-[#37474F] text-[12px]">
+            Facing {board?.facing_to}
+          </h2>
+
           <span className="flex items-center justify-center">
-            <MapPin className="text-gray-500" size={12} />
+            <MapPin className="text-gray-600" size={12} />
             <p
               className={`text-sm capitalize ${
                 board?.status === "equipped" ? "text-red-600" : "text-green-500"
@@ -85,19 +98,13 @@ export function BillboardCard({ board }: { board: Billboard }) {
           </span>
         </div>
         <div className="flex justify-between items-center mb-1">
-          <a
-            href="https://www.flaticon.com/free-icons/out-of-stock"
-            title="out of stock icons"
-          >
-            Out of stock icons created by Hilmy Abiyyu A. - Flaticon
-          </a>
           {board?.equipped_until && (
             <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F] ">
+              <Calendar size={10} className="text-gray-600" /> Equipped:
               <a
                 href="https://www.flaticon.com/free-icons/out-of-stock"
                 title="out of stock icons"
               >
-                <Calendar size={10} className="text-pink-500" /> Equipped:
                 {formatDistanceToNow(new Date(board?.equipped_until))}
               </a>
             </p>
@@ -106,17 +113,10 @@ export function BillboardCard({ board }: { board: Billboard }) {
         {/* Created At & Updated At */}
         {board?.created_at && (
           <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F]  mb-2">
-            <Calendar size={10} className="text-pink-500" /> Added:{" "}
+            <Calendar size={10} className="text-gray-600" /> Added:{" "}
             {formatDistanceToNow(new Date(board?.created_at))} ago
           </p>
         )}
-
-        {/* {board?.updated_at && (
-          <p className="text-xs text-gray-400 flex items-center gap-2">
-            <Clock size={14} className="text-pink-500" /> Updated:{" "}
-            {formatDistanceToNow(new Date(board?.updated_at))} ago
-          </p>
-        )} */}
       </div>
       {/* Example 'View Details' */}
       <div className="w-full flex justify-center items-center">

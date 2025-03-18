@@ -1,9 +1,9 @@
 "use client";
 import { UserProvider, useUser } from "@/context/UserContext";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import { useSidebar } from "@/context/SidebarContext";
+import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -22,19 +22,27 @@ export default function RootLayout({
 }
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { loading, role } = useUser(); // ✅ Fetch user role from context
-  const { expanded } = useSidebar();
-  if (loading) return <div>bua...</div>;
+  const { loading } = useUser();
+  const pathname = usePathname();
+
+  const hiddenRoutes = ["/auth/login", "/auth/login/user"];
+  const hideNavAndFooter = hiddenRoutes.includes(pathname);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen">
-      {/* Navbar */}
-      <Navbar />
+    <div className="flex flex-col min-h-screen">
+      {/* Navbar (Fixed) */}
+      {!hideNavAndFooter && <Navbar />}
 
-      {/* Content Area */}
-      <div className="mt-16 h-[calc(100vh-4rem)] overflow-auto bg-gray-50 dark:bg-gray-800">
+      {/* Main Content Wrapper */}
+      <main className="flex-grow bg-gray-50 dark:bg-gray-800 pt-16">
+        {/* `pt-16` ensures content starts below the navbar (16 = 64px, same as navbar height) */}
         {children}
-      </div>
+      </main>
+
+      {/* Footer always at the bottom */}
+      {!hideNavAndFooter && <Footer />}
     </div>
   );
 }

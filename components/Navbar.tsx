@@ -14,6 +14,8 @@ import {
   PenLine,
   UserCircle2,
   ListOrdered,
+  DollarSign,
+  LayoutDashboard,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
@@ -36,15 +38,21 @@ export function Navbar() {
   // Navigation links for different roles
   const navItems = {
     admin: [
-      { name: "Manage Users", href: "/admin", icon: <Users size={20} /> },
+      { name: "Manage Users", href: "/admin/users", icon: <Users size={20} /> },
+      { name: "Dashboard", href: "/admin", icon: <LayoutDashboard size={20} /> },
       { name: "Surveys", href: "/surveyor", icon: <FileText size={20} /> },
+      {
+        name: "Payments",
+        href: "/admin/payments",
+        icon: <DollarSign size={20} />,
+      },
       {
         name: "Carousel",
         href: "/admin/carousel",
         icon: <Clapperboard size={20} />,
       },
       {
-        name: "Quotes",
+        name: "Assign Surveyor",
         href: "/admin/quotes",
         icon: <ListOrdered size={20} />,
       },
@@ -112,7 +120,7 @@ export function Navbar() {
 
           {/* Center - Navigation (Only Admin Above md) */}
           {user?.user_role === "admin" && (
-            <div className="hidden md:flex space-x-6">
+            <div className="hidden lg:flex lg:space-x-6 space-x-2">
               {navItems.admin.map(({ name, href }) => (
                 <Link
                   key={href}
@@ -148,7 +156,7 @@ export function Navbar() {
                 >
                   {/* Admin Links (Only Below md) */}
                   {user?.user_role === "admin" && (
-                    <div className="md:hidden">
+                    <div className="lg:hidden">
                       {navItems.admin.map(({ name, href, icon }) => (
                         <Link
                           key={href}

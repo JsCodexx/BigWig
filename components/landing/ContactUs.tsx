@@ -20,7 +20,6 @@ const supabase = createClient(
 
 // Zod Schema for Form Validation
 const contactSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
   full_name: z.string().min(2, "Full Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   phone_number: z.string().min(11, "Phone number must be 10 digits."),
@@ -50,13 +49,12 @@ const ContactUs = () => {
         .from("quotes")
         .insert([
           {
-            name: data.name,
             email: data.email,
             phone_number: data.phone_number,
             full_name: data.full_name,
           },
         ])
-        .select("name, email, phone_number, full_name")
+        .select(" email, phone_number, full_name")
         .single();
 
       if (quoteError) throw quoteError;
@@ -65,7 +63,7 @@ const ContactUs = () => {
       const { data: existingUser } = await supabase
         .from("users")
         .select("id")
-        .eq("email", data.email)
+        .eq("phone_number", data.phone_number)
         .single();
 
       // Step 3: If user doesn't exist, create a new client user (includes address)
@@ -73,7 +71,6 @@ const ContactUs = () => {
         const hashedPassword = await bcrypt.hash("12345678", 10);
         const { error: userError } = await supabase.from("users").insert([
           {
-            name: data.name,
             full_name: data.full_name,
             email: data.email,
             phone_number: data.phone_number,
@@ -118,21 +115,7 @@ const ContactUs = () => {
       <div className="max-w-lg text-left text-gray-600 mx-auto mt-10 bg-white dark:bg-gray-900 border p-8 rounded-xl shadow-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block font-medium">User Name</label>
-            <Input
-              type="text"
-              {...register("name")}
-              className="mt-1"
-              placeholder="username"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {String(errors.name.message)}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block font-medium">Full Name</label>
+            <label className="block font-medium">Name</label>
             <Input
               type="text"
               {...register("full_name")}
@@ -208,7 +191,7 @@ const ContactUs = () => {
           <div className="mt-6 p-4 border rounded-lg bg-green-100 text-green-700">
             <h3 className="text-lg font-bold">Quote Created Successfully!</h3>
             <p>
-              <strong>Name:</strong> {responseData.name}
+              <strong>Name:</strong> {responseData.full_name}
             </p>
             <p>
               <strong>Email:</strong> {responseData.email}

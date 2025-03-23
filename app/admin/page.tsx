@@ -1,146 +1,134 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
-import { User } from "@/types/user";
+import { supabase } from "@/app/lib/supabase/Clientsupabase";
+import { DollarSign, CheckCircle, Hourglass, BarChart3 } from "lucide-react";
 
-const AdminDashboard = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const supabase = createClientComponentClient();
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
-
-      if (error) {
-        console.error("Error fetching users:", error);
-      } else {
-        setUsers(data);
-      }
-      setLoading(false);
-    };
-
-    fetchUsers();
-  }, []);
-  // Apply filters
-  const filteredUsers = users.filter((user) => {
-    return (
-      (roleFilter ? user.user_role === roleFilter : true) &&
-      (statusFilter ? user.status === statusFilter : true)
-    );
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalReceived: 0,
+    pendingPayments: 0,
+    surveyStatusCounts: {} as Record<string, number>,
   });
 
-  if (loading) return <p className="text-center mt-4">Loading users...</p>;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const formattedDate = oneMonthAgo.toISOString();
+
+        const { data, error } = await supabase
+          .from("surveys")
+          .select(
+            "survey_status, payment_total, payment_advance, payment_pending"
+          )
+          .gte("created_at", formattedDate)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const statusCounts: Record<string, number> = {};
+        let totalRevenue = 0;
+        let totalReceived = 0;
+        let pendingPayments = 0;
+
+        data.forEach((survey) => {
+          statusCounts[survey.survey_status] =
+            (statusCounts[survey.survey_status] || 0) + 1;
+          totalRevenue += survey.payment_total;
+          totalReceived += survey.payment_advance;
+          pendingPayments += survey.payment_pending;
+        });
+
+        setStats({
+          totalRevenue,
+          totalReceived,
+          pendingPayments,
+          surveyStatusCounts: statusCounts,
+        });
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
-      <h1 className="text-4xl font-bold text-red-500">Admin Dashboard</h1>
+    <div className="p-6 min-h-screen bg-gray-100">
+      {/* Header */}
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        Dashboard Overview
+      </h1>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 my-4">
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="p-2 border rounded bg-background text-foreground"
-        >
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="surveyor">Surveyor</option>
-          <option value="client">Client</option>
-        </select>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="p-2 border rounded bg-background text-foreground"
-        >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Total Revenue"
+          value={stats.totalRevenue}
+          icon={<DollarSign className="text-red-700" />}
+        />
+        <StatCard
+          title="Received Payments"
+          value={stats.totalReceived}
+          icon={<CheckCircle className="text-green-600" />}
+        />
+        <StatCard
+          title="Pending Payments"
+          value={stats.pendingPayments}
+          icon={<Hourglass className="text-yellow-500" />}
+        />
       </div>
 
-      {/* Users Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-          <thead className="bg-red-500 dark:bg-gray-950 text-white">
-            <tr>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Full Name
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Email
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Role
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Phone
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.user_id}
-                  className="hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <td className="border border-gray-300 p-2">
-                    {user.full_name}
-                  </td>
-                  <td className="border border-gray-300 p-2">{user.email}</td>
-                  <td className="border border-gray-300 p-2 capitalize">
-                    {user.user_role}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {user.phone_number}
-                  </td>
-                  <td
-                    className={`border border-gray-300 p-2 font-bold ${
-                      user.status === "active"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {user.status}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="min-h-[50vh] col-span-4 w-full flex justify-center items-center">
-                <h1 className="dark:text-gray-500 text-black w-full">
-                  No User Found
-                </h1>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Manage Users Button */}
-      <div className="mt-6">
-        <button
-          onClick={() => router.push("/admin/user-signup")}
-          className="bg-red-600 text-white flex justify-center items-center gap-2 px-4 py-2 rounded min-w-[50px] hover:bg-red-700 transition"
-        >
-          <span>
-            <Plus />
-          </span>
-          Add User
-        </button>
+      {/* Survey Status Breakdown */}
+      <h2 className="text-2xl font-semibold text-gray-800 mt-8">
+        Survey Status Breakdown
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-4">
+        {Object.entries(stats.surveyStatusCounts).map(([status, count]) => (
+          <StatusCard key={status} status={status} count={count} />
+        ))}
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+// Reusable Statistic Card
+function StatCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: number;
+  icon: JSX.Element;
+}) {
+  return (
+    <div className="flex items-center p-5 bg-white rounded-2xl shadow-md border border-gray-200">
+      <div className="p-3 bg-red-100 rounded-full">{icon}</div>
+      <div className="ml-4">
+        <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
+        <p className="text-2xl font-bold text-gray-900">
+          ${value.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Reusable Status Card
+function StatusCard({ status, count }: { status: string; count: number }) {
+  return (
+    <div className="p-5 bg-white rounded-2xl shadow-md border border-gray-200 flex flex-col items-center">
+      <BarChart3 className="text-red-700 mb-2" />
+      <h3 className="text-lg font-semibold text-gray-700 capitalize">
+        {status.replace(/_/g, " ")}
+      </h3>
+      <p className="text-2xl font-bold text-gray-900">{count}</p>
+    </div>
+  );
+}
+
+export default Dashboard;

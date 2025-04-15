@@ -271,7 +271,9 @@ export default function SubmitSurvey() {
       {/* Left Side: Survey Form */}
       <div className="w-full lg:w-[55%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
         <div className="flex justify-between gap-4 items-center">
-          <h1 className="text-2xl font-bold text-red-700 mb-6">Submit Survey</h1>
+          <h1 className="text-2xl font-bold text-red-700 mb-6">
+            Submit Survey
+          </h1>
           <Button
             onClick={handleSubmit}
             className="bg-red-600 hover:bg-red-700 text-white"

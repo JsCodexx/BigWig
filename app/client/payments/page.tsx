@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "../../lib/supabase/Clientsupabase";
+import { useUser } from "@/context/UserContext";
 
 export default function PaymentsPage() {
   const [surveys, setSurveys] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function PaymentsPage() {
   const [selectedSurvey, setSelectedSurvey] = useState<any | null>(null);
   const [newAdvance, setNewAdvance] = useState("");
   const [newInstallationCharges, setNewInstallationCharges] = useState("");
+  const { user } = useUser();
 
   // Fetch surveys from Supabase
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function PaymentsPage() {
       const { data, error } = await supabase
         .from("surveys")
         .select("*")
+        .eq("client_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) console.error("Error fetching surveys:", error);
@@ -29,54 +32,58 @@ export default function PaymentsPage() {
     }
 
     fetchSurveys();
-  }, []);
+  }, [user]);
 
   // Handle advance & installation charges update
-  async function updatePaymentDetails() {
-    if (!selectedSurvey) return;
+  // async function updatePaymentDetails() {
+  //   if (!selectedSurvey) return;
 
-    const advanceAmount =
-      parseFloat(newAdvance) || selectedSurvey.payment_advance;
+  //   const advanceAmount =
+  //     parseFloat(newAdvance) || selectedSurvey.payment_advance;
+  //   const installationCost =
+  //     parseFloat(newInstallationCharges) || selectedSurvey.payment_installation;
 
-    if (advanceAmount < 0) return alert("Enter valid amounts");
+  //   if (advanceAmount < 0 || installationCost < 0)
+  //     return alert("Enter valid amounts");
 
-    // Recalculate total price & remaining balance
-    const updatedTotalPrice =
-      selectedSurvey.payment_billboard_total +
-      selectedSurvey.payment_installation;
-    const updatedRemainingBalance = updatedTotalPrice - advanceAmount;
+  //   // Recalculate total price & remaining balance
+  //   const updatedTotalPrice =
+  //     selectedSurvey.payment_billboard_total + installationCost;
+  //   const updatedRemainingBalance = updatedTotalPrice - advanceAmount;
 
-    const { error } = await supabase
-      .from("surveys")
-      .update({
-        payment_advance: advanceAmount,
-        payment_total: updatedTotalPrice,
-        payment_pending: updatedRemainingBalance,
-      })
-      .eq("id", selectedSurvey.id);
+  //   const { error } = await supabase
+  //     .from("surveys")
+  //     .update({
+  //       payment_advance: advanceAmount,
+  //       payment_installation: installationCost,
+  //       payment_total: updatedTotalPrice,
+  //       payment_pending: updatedRemainingBalance,
+  //     })
+  //     .eq("id", selectedSurvey.id);
 
-    if (error) {
-      console.error("Error updating payment:", error);
-      alert("Failed to update payment.");
-    } else {
-      alert("Payment details updated successfully!");
-      setSurveys((prev) =>
-        prev.map((s) =>
-          s.id === selectedSurvey.id
-            ? {
-                ...s,
-                payment_advance: advanceAmount,
-                payment_total: updatedTotalPrice,
-                payment_pending: updatedRemainingBalance,
-              }
-            : s
-        )
-      );
-      setSelectedSurvey(null);
-      setNewAdvance("");
-      setNewInstallationCharges("");
-    }
-  }
+  //   if (error) {
+  //     console.error("Error updating payment:", error);
+  //     alert("Failed to update payment.");
+  //   } else {
+  //     alert("Payment details updated successfully!");
+  //     setSurveys((prev) =>
+  //       prev.map((s) =>
+  //         s.id === selectedSurvey.id
+  //           ? {
+  //               ...s,
+  //               payment_advance: advanceAmount,
+  //               payment_installation: installationCost,
+  //               payment_total: updatedTotalPrice,
+  //               payment_pending: updatedRemainingBalance,
+  //             }
+  //           : s
+  //       )
+  //     );
+  //     setSelectedSurvey(null);
+  //     setNewAdvance("");
+  //     setNewInstallationCharges("");
+  //   }
+  // }
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
@@ -96,7 +103,6 @@ export default function PaymentsPage() {
               <th className="border p-2">Total Price</th>
               <th className="border p-2">Advance Paid</th>
               <th className="border p-2">Remaining Balance</th>
-              <th className="border p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -116,11 +122,11 @@ export default function PaymentsPage() {
                 <td className="border p-2 text-red-500">
                   ${survey.payment_pending}
                 </td>
-                <td className="border p-2">
+                {/* <td className="border p-2">
                   <Button onClick={() => setSelectedSurvey(survey)}>
-                    Update Advance
+                    Update Advance/Installation
                   </Button>
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>
@@ -128,13 +134,22 @@ export default function PaymentsPage() {
       )}
 
       {/* Payment Update Modal */}
-      {selectedSurvey && (
+      {/* {selectedSurvey && (
         <Dialog
           open={!!selectedSurvey}
           onOpenChange={() => setSelectedSurvey(null)}
         >
           <DialogContent>
             <DialogTitle>Update Payment Details</DialogTitle>
+
+            <Label>New Installation Charges:</Label>
+            <Input
+              type="number"
+              value={newInstallationCharges}
+              onChange={(e) => setNewInstallationCharges(e.target.value)}
+              placeholder="Enter installation charges"
+            />
+
             <Label className="mt-2">New Advance Amount:</Label>
             <Input
               type="number"
@@ -148,7 +163,7 @@ export default function PaymentsPage() {
             </Button>
           </DialogContent>
         </Dialog>
-      )}
+      )} */}
     </div>
   );
 }

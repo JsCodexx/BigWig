@@ -140,9 +140,9 @@ const SurveyorDashboard = () => {
   }, [statuses, activeTab]);
 
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
+    <div className="py-16 px-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl mb-4 font-bold text-red-500">Surveys</h1>
+        <h1 className="text-2xl font-bold text-red-700 mb-6">Surveys</h1>
         <Button
           className="bg-red-600 hover:bg-red-700"
           onClick={() => router.push("/surveyor/add-survey")}
@@ -241,7 +241,6 @@ const SurveyorDashboard = () => {
                       onValueChange={(newStatus) =>
                         updateStatus(survey.id, newStatus)
                       }
-                      disabled={user.user_role === "surveyor"} // Only Admin & Client can update
                     >
                       <SelectTrigger className="mt-4 w-full bg-gray-100 dark:bg-gray-700">
                         <SelectValue>

@@ -48,7 +48,7 @@ export default function BillboardList() {
   if (loading) return <p className="text-center text-lg">Loading...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="w-full">
       <h1 className="text-2xl font-bold text-red-700 dark:text-red-500 mb-6">
         All Billboards
       </h1>

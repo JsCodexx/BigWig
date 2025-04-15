@@ -40,7 +40,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold text-red-500">Users</h1>
+      <h1 className="text-2xl font-bold text-red-700 mb-6">Users</h1>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 my-4">

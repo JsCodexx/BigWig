@@ -34,9 +34,9 @@ const SurveyorSurveysPage = () => {
   }, [user]);
 
   return (
-    <div className=" flex justify-center items-center">
-      <div className="p-6 lg:max-w-6xl w-full">
-        <h2 className="text-2xl font-bold mb-4 text-red-600">My Quotes</h2>
+    <div className="w-full flex justify-center items-center">
+      <div className="py-16 px-6 max-w-7xl mx-auto">
+        <h2 className="text-2xl font-bold text-red-700 mb-6">My Quotes</h2>
         {loading ? (
           <p className="text-gray-500">Loading your quotes...</p>
         ) : surveys.length === 0 ? (

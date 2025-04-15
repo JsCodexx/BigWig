@@ -1,6 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
-import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { useUser } from "@/context/UserContext";
 import {
   CheckCircle,
@@ -10,75 +8,109 @@ import {
   Loader,
   Wrench,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const ClientDashboard = () => {
+const Surveys = () => {
   const { user } = useUser();
+  const [surveys, setSurveys] = useState([]);
   const [counts, setCounts] = useState({
-    pendingReview: 0,
+    assigned: 0,
     pendingInstallation: 0,
     completed: 0,
     installationInProgress: 0,
+    assignedQuotes: 0,
     others: 0,
   });
 
   useEffect(() => {
-    if (!user) return;
-
     async function fetchSurveys() {
-      const { data, error } = await supabase
-        .from("surveys")
-        .select("survey_status")
-        .eq("client_id", user.id);
-
-      if (error) {
-        console.error("Error fetching surveys:", error.message);
-        return;
-      }
-
-      const pendingReview = data.filter(
-        (s) => s.survey_status === "pending_admin_review"
-      ).length;
-      const pendingInstallation = data.filter(
-        (s) => s.survey_status === "pending_installation"
-      ).length;
-      const installationInProgress = data.filter(
-        (s) => s.survey_status === "installation_in_progress"
-      ).length;
-      const completed = data.filter(
-        (s) => s.survey_status === "completed"
-      ).length;
+      const responseForSurveys = await fetch(
+        `/api/surveys?surveyor_id=${user?.id}`
+      );
+      const responseForQuotes = await fetch(
+        `/api/quotes?surveyor_id=${user?.id}`
+      );
+      const data = await responseForSurveys.json();
       const others = data.filter(
-        (s) =>
+        (s: any) =>
           ![
             "installation_in_progress",
             "pending_installation",
             "completed",
-            "pending_admin_review",
           ].includes(s.survey_status)
       ).length;
-
+      const data2 = await responseForQuotes.json();
+      setSurveys(data);
+      const assignedQuotes = data2.length;
+      const assigned = data.length;
+      const installationInProgress = data.filter(
+        (s: any) => s.survey_status === "installation_in_progress"
+      ).length;
+      const pendingInstallation = data.filter(
+        (s: any) => s.survey_status === "pending_installation"
+      ).length;
+      const completed = data.filter(
+        (s: any) => s.survey_status === "completed"
+      ).length;
       setCounts({
-        pendingReview,
+        assigned,
         pendingInstallation,
         installationInProgress,
         completed,
+        assignedQuotes,
         others,
       });
     }
-
     fetchSurveys();
+    // Example Usage
   }, [user]);
+  async function deleteImage(imageUrl: string) {
+    try {
+      const res = await fetch("/api/delete-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+
+      if (!data.success) {
+        alert("Error deleting image: " + data.error);
+      } else {
+        alert("Image deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Failed to delete image:", error);
+      alert("Something went wrong!");
+    }
+  }
+
+  // Example Usage
+  const formImageUrl =
+    "https://ebpmscwwmktnudufncts.supabase.co/storage/v1/object/public/files/images/1742920958099.webp";
+
+  deleteImage(formImageUrl);
 
   return (
-    <div className="p-6 bg-gray-100 rounded-lg shadow-lg flex flex-col space-y-4">
-      <h2 className="text-xl font-semibold text-gray-800">Client Dashboard</h2>
+    <div className="py-16 px-6 max-w-7xl mx-auto bg-gray-100 rounded-lg shadow-lg flex flex-col space-y-4">
+      <h2 className="text-2xl font-bold text-red-700 mb-6">Survey Dashboard</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg shadow flex items-center space-x-3">
           <ClipboardList className="text-blue-600" size={28} />
           <div>
-            <p className="text-lg font-medium">Pending Review</p>
+            <p className="text-lg font-medium">Assigned Surveys</p>
             <p className="text-2xl font-bold text-gray-700">
-              {counts.pendingReview}
+              {counts.assigned}
+            </p>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow flex items-center space-x-3">
+          <ClipboardCheck className="text-blue-500" size={28} />
+          <div>
+            <p className="text-lg font-medium">Assigned Quotes</p>
+            <p className="text-2xl font-bold text-gray-700">
+              {counts.assignedQuotes}
             </p>
           </div>
         </div>
@@ -120,4 +152,4 @@ const ClientDashboard = () => {
     </div>
   );
 };
-export default ClientDashboard;
+export default Surveys;

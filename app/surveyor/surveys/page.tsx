@@ -73,7 +73,6 @@ const Surveys = () => {
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (!data.success) {
         alert("Error deleting image: " + data.error);
@@ -85,12 +84,6 @@ const Surveys = () => {
       alert("Something went wrong!");
     }
   }
-
-  // Example Usage
-  const formImageUrl =
-    "https://ebpmscwwmktnudufncts.supabase.co/storage/v1/object/public/files/images/1742920958099.webp";
-
-  deleteImage(formImageUrl);
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto bg-gray-100 rounded-lg shadow-lg flex flex-col space-y-4">

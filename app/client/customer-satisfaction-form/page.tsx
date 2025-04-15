@@ -188,7 +188,7 @@ const CustomerSatisfactionForm = () => {
           <label className="block">Comments:</label>
           <textarea
             className="w-full p-2 border"
-            
+
             {...register("client_comments")}
           />
           {errors.client_comments && (

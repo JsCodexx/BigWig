@@ -79,7 +79,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
     >
       <div>
         <Label className="text-gray-700">
-          {role === "admin" ? "Email" : "Username or Phone"}
+          {role === "admin" ? "Email" : "Phone"}
         </Label>
         <Input {...register("identifier")} disabled={isLoading} />
         {errors.identifier && (

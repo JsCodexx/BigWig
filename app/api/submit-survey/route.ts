@@ -49,6 +49,7 @@ export async function POST(req: Request) {
       survey_id: surveyId,
       billboard_name_id: b.billboard_name_id,
       billboard_type_id: b.billboard_type_id,
+      board_images: b.board_images,
       width: b.width,
       height: b.height,
       quantity: parseInt(b.quantity),

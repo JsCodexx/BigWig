@@ -48,6 +48,7 @@ const SurveyorSurveysPage = () => {
         console.error("Error updating status:", error.message);
         return;
       }
+      return;
       fetchSurveys();
     } catch (err) {
       console.error("Unexpected error:", err);
@@ -55,10 +56,8 @@ const SurveyorSurveysPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 text-red-600">
-        My Surveys
-      </h2>
+    <div className="py-16 px-6 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-red-600">My Surveys</h2>
 
       {loading ? (
         <p className="text-gray-500">Loading surveys...</p>

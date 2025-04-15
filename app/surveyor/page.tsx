@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase/Clientsupabase";
@@ -22,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { getAllowedStatusOptions } from "@/lib/utils";
 
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -140,9 +140,9 @@ const SurveyorDashboard = () => {
   }, [statuses, activeTab]);
 
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
+    <div className="py-16 px-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl mb-4 font-bold text-red-500">Surveys</h1>
+        <h1 className="text-2xl font-bold text-red-700 mb-6">Surveys</h1>
         <Button
           className="bg-red-600 hover:bg-red-700"
           onClick={() => router.push("/surveyor/add-survey")}
@@ -159,8 +159,15 @@ const SurveyorDashboard = () => {
       >
         <TabsList className="flex space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
           {statuses.map((status) => (
-            <TabsTrigger key={status} value={status} className="capitalize">
-              {status.replace(/_/g, " ")}
+            <TabsTrigger
+              key={status}
+              value={status}
+              className="capitalize flex items-center space-x-2"
+            >
+              <span>{status.replace(/_/g, " ")}</span>
+              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                {groupedSurveys[status]?.length}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -234,23 +241,18 @@ const SurveyorDashboard = () => {
                       onValueChange={(newStatus) =>
                         updateStatus(survey.id, newStatus)
                       }
-                      disabled={user.user_role !== "admin"}
                     >
                       <SelectTrigger className="mt-4 w-full bg-gray-100 dark:bg-gray-700">
                         <SelectValue>
                           {survey.survey_status &&
-                            survey?.survey_status.replace(/_/g, " ")}
+                            survey.survey_status.replace(/_/g, " ")}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {[
-                          "pending_admin_review",
-                          "admin_approved",
-                          "client_review",
-                          "client_approved",
-                          "in_progress",
-                          "completed",
-                        ].map((status) => (
+                        {getAllowedStatusOptions(
+                          user.user_role ? user?.user_role : "",
+                          survey.survey_status
+                        ).map((status) => (
                           <SelectItem
                             key={status}
                             value={status}

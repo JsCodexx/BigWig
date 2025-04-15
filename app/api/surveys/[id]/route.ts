@@ -17,7 +17,7 @@ export async function GET(
     const { data: survey, error } = await supabase
       .from("surveys")
       .select(
-        "id, description, client_name, phone_number, shop_name, shop_address, survey_status, created_at, surveyor_id, client_id, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity)"
+        "id, description, client_name, phone_number, shop_name, shop_address, survey_status, created_at, surveyor_id, client_id,form_image, survey_billboards (billboard_name_id, billboard_type_id, width, height, quantity,board_images)"
       )
       .eq("id", surveyId)
       .single();
@@ -48,28 +48,19 @@ export async function PUT(
   const surveyId = params.id;
 
   try {
-    const {
-      description,
-      clientId,
-      surveyorId,
-      billboards,
-      phoneNumber,
-      clientName,
-      shopAddress,
-      shopName,
-    } = await req.json();
-
+    const { billboards, formData } = await req.json();
+    console.log(billboards, formData);
     // Update survey details
     const { error: surveyError } = await supabase
       .from("surveys")
       .update({
-        description,
-        client_id: clientId,
-        surveyor_id: surveyorId,
-        shop_name: shopName,
-        shop_address: shopAddress,
-        client_name: clientName,
-        phone_number: phoneNumber,
+        description: formData.description,
+        client_id: formData.clientId,
+        surveyor_id: formData.surveyorId,
+        shop_name: formData.shopName,
+        shop_address: formData.shopAddress,
+        client_name: formData.clientName,
+        phone_number: formData.phoneNumber,
       })
       .eq("id", surveyId);
 
@@ -94,6 +85,7 @@ export async function PUT(
       billboard_type_id: b.billboard_type_id,
       width: b.width,
       height: b.height,
+      board_images: b.board_images,
       quantity: parseInt(b.quantity),
     }));
 

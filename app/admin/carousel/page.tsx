@@ -133,8 +133,8 @@ const Carousel = () => {
   };
 
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
-      <h1 className="text-4xl  font-bold mb-4 text-red-500">
+    <div className="py-16 px-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-red-700 mb-6">
         BigWig Carousel Slides
       </h1>
 

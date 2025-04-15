@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,14 +11,9 @@ import {
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
+import type { SurveyBillboard } from "@/types/survey";
 
-// Define types
-interface SurveyBillboard {
-  billboard_name_id: string;
-  width: string;
-  height: string;
-  billboard_type_id: string;
-}
+
 
 interface BoardsTableProps {
   billboards: SurveyBillboard[];
@@ -40,6 +36,7 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                 <TableHead>Width</TableHead>
                 <TableHead>Height</TableHead>
                 <TableHead>Type</TableHead>
+                <TableHead>Images</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -51,6 +48,21 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                     <TableCell>{board.width}</TableCell>
                     <TableCell>{board.height}</TableCell>
                     <TableCell>{board.billboard_type_id}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {/* Generate image previews */}
+                        {board.board_images.map((image:unknown, i) => (
+                          <img
+                            key={i}
+                            src={image as string} 
+                            alt={`preview-${i}`}
+                            width={50}
+                            height={50}
+                            className="rounded-md object-cover border"
+                          />
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"
@@ -64,7 +76,7 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     No billboards added yet.
                   </TableCell>
                 </TableRow>

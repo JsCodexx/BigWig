@@ -120,10 +120,8 @@ export function BillboardForm() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-center text-red-700 dark:text-red-500">
-        Billboard Form
-      </h1>
+    <div className="w-full bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-red-700 mb-6">Billboard Form</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
         {/* Length & Width */}

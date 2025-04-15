@@ -16,6 +16,7 @@ import {
   ListOrdered,
   DollarSign,
   LayoutDashboard,
+  DollarSignIcon,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
@@ -39,7 +40,11 @@ export function Navbar() {
   const navItems = {
     admin: [
       { name: "Manage Users", href: "/admin/users", icon: <Users size={20} /> },
-      { name: "Dashboard", href: "/admin", icon: <LayoutDashboard size={20} /> },
+      {
+        name: "Dashboard",
+        href: "/admin",
+        icon: <LayoutDashboard size={20} />,
+      },
       { name: "Surveys", href: "/surveyor", icon: <FileText size={20} /> },
       {
         name: "Payments",
@@ -61,6 +66,11 @@ export function Navbar() {
         href: "/products",
         icon: <ShoppingCart size={20} />,
       },
+      {
+        name: "Satisfactory Forms",
+        href: "/admin/client_comments",
+        icon: <FileText size={20} />,
+      },
     ],
     surveyor: [
       {
@@ -78,6 +88,11 @@ export function Navbar() {
         href: "/surveyor/quotes",
         icon: <ListOrdered size={20} />,
       },
+      {
+        name: "Payments",
+        href: "/surveyor/payments",
+        icon: <DollarSign size={20} />,
+      },
     ],
     client: [
       {
@@ -89,6 +104,12 @@ export function Navbar() {
         name: "My Surveys",
         href: "/client/surveys",
         icon: <FileText size={20} />,
+      },
+
+      {
+        name: "Payments",
+        href: "/client/payments",
+        icon: <DollarSignIcon size={20} />,
       },
     ],
   };

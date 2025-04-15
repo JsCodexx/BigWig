@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,7 +8,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Textarea } from "../ui/textarea";
 import { User } from "@/types/user";
@@ -135,11 +134,16 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
 
       {/* Client Selection */}
       <div className="w-full flex flex-col">
-        <Label htmlFor="clientId" className="mb-2 font-semibold text-gray-700">
+        <Label
+          htmlFor="clientId"
+          className="mb-2 font-semibold text-gray-700 dark:text-gray-200"
+        >
           Client Name for the board <span className="text-red-600">*</span>
         </Label>
+
         <Select
           required
+          value={formData.clientId || ""}
           onValueChange={(value) =>
             setFormData((prev: any) => ({ ...prev, clientId: value }))
           }
@@ -148,16 +152,21 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Client Name" />
           </SelectTrigger>
+
           <SelectContent>
+            <SelectItem disabled value="">
+              Select Client Name
+            </SelectItem>
             {clients
-              ?.filter((client) => client.id !== undefined)
+              ?.filter((client) => typeof client.id === "string") // only allow valid string ids
               .map((client) => (
-                <SelectItem key={client.id} value={client.id!}>
+                <SelectItem key={client.id} value={client.id as string}>
                   {client.full_name}
                 </SelectItem>
               ))}
           </SelectContent>
         </Select>
+
         {errors.clientId && (
           <p className="text-red-500 text-sm">{errors.clientId}</p>
         )}
@@ -185,9 +194,9 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
       {/* Image Upload & Preview */}
       <div className="flex lg:w-4/5 w-full flex-col md:flex-row items-center gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-lg">
         <div className="w-72 h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-lg overflow-hidden border-2 border-dashed border-gray-400">
-          {previewImage ? (
+          {previewImage || formData.form_image ? (
             <Image
-              src={previewImage}
+              src={previewImage || formData.form_image}
               alt="Uploaded preview"
               width={300}
               height={200}

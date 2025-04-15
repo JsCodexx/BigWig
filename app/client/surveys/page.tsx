@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
+import { getAllowedStatusOptions } from "@/lib/utils";
 
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -31,7 +32,7 @@ const SurveyorDashboard = () => {
       let query = supabase
         .from("surveys")
         .select(
-          "id, title, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
+          "id, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
         )
         .eq("client_id", user.id);
 
@@ -90,9 +91,9 @@ const SurveyorDashboard = () => {
       ) : surveys.length === 0 ? (
         <p className="text-gray-500">You do not have any active Order.</p>
       ) : (
-        <div className="py-16 px-6 max-w-5xl mx-auto">
+        <div className="py-16 px-6 max-w-7xl mx-auto">
           <div className="flex justify-between items-center">
-            <h1 className="text-4xl mb-4 font-bold text-red-500">Surveys</h1>
+            <h1 className="text-2xl font-bold text-red-700 mb-6">Surveys</h1>
           </div>
           {/* Tabs Navigation */}
           <Tabs
@@ -154,35 +155,45 @@ const SurveyorDashboard = () => {
                             {survey.shop_address || "N/A"}
                           </p>
                         </div>
-
                         {/* Status Dropdown */}
                         <Select
                           value={survey.survey_status}
                           onValueChange={(newStatus) =>
                             updateStatus(survey.id, newStatus)
                           }
-                          disabled={user.user_role === "surveyor"}
                         >
                           <SelectTrigger className="mt-4 w-full bg-gray-100 dark:bg-gray-700">
                             <SelectValue>
                               {survey.survey_status &&
-                                survey?.survey_status.replace(/_/g, " ")}
+                                survey.survey_status.replace(/_/g, " ")}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {["client_review", "client_approved"].map(
-                              (status) => (
-                                <SelectItem
-                                  key={status}
-                                  value={status}
-                                  className="capitalize"
-                                >
-                                  {status.replace(/_/g, " ")}
-                                </SelectItem>
-                              )
-                            )}
+                            {getAllowedStatusOptions(
+                              user.user_role ? user?.user_role : "",
+                              survey.survey_status
+                            ).map((status) => (
+                              <SelectItem
+                                key={status}
+                                value={status}
+                                className="capitalize"
+                              >
+                                {status.replace(/_/g, " ")}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
+                        {survey.survey_status === "completed" && (
+                          <Button
+                            onClick={() =>
+                              router.push(
+                                `/client/customer-satisfaction-form?survey_id=${survey.id}`
+                              )
+                            }
+                          >
+                            Fill Satisfactory Form
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))}

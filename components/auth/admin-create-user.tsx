@@ -54,7 +54,6 @@ export function AdminCreateUserForm() {
           phone_number: data.phone_number,
           password: hashedPassword,
           full_name: data.fullName,
-          name: data.name,
           address: data.address,
           user_role: data.user_role,
         },
@@ -83,13 +82,7 @@ export function AdminCreateUserForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <Label htmlFor="name">Username</Label>
-          <Input id="name" {...register("name")} disabled={isLoading} />
-          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="fullName">Full Name</Label>
+          <Label htmlFor="fullName">Name</Label>
           <Input id="fullName" {...register("fullName")} disabled={isLoading} />
           {errors.fullName && (
             <p className="text-red-500">{errors.fullName.message}</p>

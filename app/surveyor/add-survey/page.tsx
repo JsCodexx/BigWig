@@ -10,7 +10,7 @@ import {
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext"; // Assuming a user context exists
-import { SurveyBillboard } from "@/types/survey";
+import type { SurveyBillboard } from "@/types/survey";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { useRouter } from "next/navigation";
 import { BoardsTable } from "@/components/surveys/BoardsTable";
@@ -38,6 +38,7 @@ export default function SubmitSurvey() {
     billboard_type_id: "",
     clientId: "",
     quantity: "",
+    board_images: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,6 +47,7 @@ export default function SubmitSurvey() {
   const [clients, setClients] = useState<any[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
+  const [resetPreview, setResetPreview] = useState(false);
   const [formData, setFormData] = useState({
     shopName: "",
     shopAddress: "",
@@ -54,9 +56,7 @@ export default function SubmitSurvey() {
     clientId: "",
     description: "",
   });
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
+
   // Handle input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -77,6 +77,8 @@ export default function SubmitSurvey() {
   const removeBillboard = (index: number) => {
     setBillboards((prev) => prev.filter((_, i) => i !== index));
   };
+
+  // Add shopboard to the array
   const addBillboard = () => {
     setBillboards([...billboards, newBoard]);
     // Reset form fields for the next board
@@ -87,23 +89,32 @@ export default function SubmitSurvey() {
       billboard_type_id: "",
       clientId: "",
       quantity: "",
+      board_images: [],
     });
+    // ✅ Trigger reset signal for image preview in child
+    setResetPreview(true);
+
+    // Immediately turn it off so future changes can trigger again
+    setTimeout(() => setResetPreview(false), 100);
   };
 
+  // on change add details in the board
   const updateNewBoard = (
     field: keyof SurveyBillboard,
-    value: string | number
+    value: string | number | File[] // accept File[] for board_images
   ) => {
-    console.log(field, value);
-    setNewBoard((prev) => ({ ...prev, [field]: value.toString() }));
+    setNewBoard((prev) => ({
+      ...prev,
+      [field]: field === "board_images" ? value : value.toString(),
+    }));
   };
 
   const handleSubmit = async () => {
     if (!user) {
       alert("User not logged in");
-      setErrors({});
       return;
     }
+
     let surveyStatus = "";
     if (user?.user_role === "client") {
       surveyStatus = "client_approved";
@@ -114,45 +125,90 @@ export default function SubmitSurvey() {
     } else {
       surveyStatus = "in_progress";
     }
+
     if (!image) {
-      window.alert("Please upload form image");
-    } else {
-      const fileExt = image.name.split(".").pop();
-      const originalName = image.name.replace(`.${fileExt}`, "");
-      const fileName = `${Date.now()}_${originalName}.${fileExt}`;
-      const filePath = `images/${fileName}`;
+      alert("Please upload a form image");
+      return;
+    }
 
-      const { data, error } = await supabase.storage
-        .from("files")
-        .upload(filePath, image);
-      if (error) {
-        console.error("Upload error:", error);
-        return;
-      }
+    // 🔼 Upload main form image
+    const formUpload = new FormData();
+    formUpload.append("file", image);
 
-      const { data: publicURL } = supabase.storage
-        .from("files")
-        .getPublicUrl(filePath);
+    const formRes = await fetch("/api/upload", {
+      method: "POST",
+      body: formUpload,
+    });
 
-      const payload = {
-        description: formData.description,
-        client_id: formData.clientId, // Match API expectation
-        surveyorId: user?.user_role === "admin" ? null : user?.id,
-        billboards,
-        phoneNumber: formData.phoneNumber,
-        clientName: formData.clientName,
-        shopAddress: formData.shopAddress,
-        shopName: formData.shopName,
-        survey_status: surveyStatus,
-        publicURL: publicURL.publicUrl,
-      };
-      await fetch("/api/submit-survey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const formDataJson = await formRes.json();
+    if (!formDataJson.url) {
+      alert("Form image upload failed!");
+      return;
+    }
+
+    // 🔁 Upload each image inside billboards[].board_images using same `/api/upload`
+    const updatedBillboards = await Promise.all(
+      billboards.map(async (board) => {
+        const imagesToUpload = board.board_images
+          .map(({ file }) => file)
+          .filter((file): file is File => !!file);
+
+        const uploadedUrls = await Promise.all(
+          imagesToUpload.map(async (file) => {
+            try {
+              const fileUpload = new FormData();
+              fileUpload.append("file", file);
+
+              const res = await fetch("/api/upload", {
+                method: "POST",
+                body: fileUpload,
+              });
+
+              if (!res.ok) {
+                console.warn("Upload failed with status:", res.status);
+                return null;
+              }
+
+              const imgData = await res.json();
+              return imgData.url || null;
+            } catch (err) {
+              console.error("Upload error:", err);
+              return null;
+            }
+          })
+        );
+
+        return {
+          ...board,
+          board_images: uploadedUrls.filter(Boolean),
+        };
+      })
+    );
+
+    // 🎯 Final payload to save
+    const payload = {
+      description: formData.description,
+      client_id: formData.clientId,
+      surveyorId: user?.user_role === "admin" ? null : user?.id,
+      billboards: updatedBillboards,
+      phoneNumber: formData.phoneNumber,
+      clientName: formData.clientName,
+      shopAddress: formData.shopAddress,
+      shopName: formData.shopName,
+      survey_status: surveyStatus,
+      publicURL: formDataJson.url, // ✅ Main image
+    };
+
+    const saveRes = await fetch("/api/submit-survey", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (saveRes.ok) {
       alert("Survey Submitted!");
-      // router.push("/surveyor");
+    } else {
+      alert("Survey submission failed.");
     }
   };
 
@@ -209,12 +265,13 @@ export default function SubmitSurvey() {
       setImage(file);
     }
   };
+
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-6 p-6">
+    <div className="py-16 px-6 max-w-7xl mx-autoflex flex-col lg:flex-row gap-6 p-6">
       {/* Left Side: Survey Form */}
       <div className="w-full lg:w-[55%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
         <div className="flex justify-between gap-4 items-center">
-          <h1 className="text-3xl font-bold text-red-500">Submit Survey</h1>
+          <h1 className="text-2xl font-bold text-red-700 mb-6">Submit Survey</h1>
           <Button
             onClick={handleSubmit}
             className="bg-red-600 hover:bg-red-700 text-white"
@@ -241,6 +298,7 @@ export default function SubmitSurvey() {
           userRole={user?.user_role || ""}
           updateNewBoard={updateNewBoard}
           openModal={openModal}
+          resetPreview={resetPreview}
         />
         <div className="w-full flex justify-between items-center">
           <Button

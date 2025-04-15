@@ -32,7 +32,7 @@ const QuotesPage = () => {
     const fetchSurveyors = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("id, name")
+        .select("id, full_name")
         .eq("user_role", "surveyor");
       if (error) console.error(error);
       else setSurveyors(data);
@@ -63,8 +63,8 @@ const QuotesPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Quotes Management</h2>
+    <div className="py-16 px-6 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold text-red-700 mb-6">Quotes Management</h2>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border rounded-lg">
           <thead>
@@ -85,8 +85,8 @@ const QuotesPage = () => {
                 <td className="p-3">{quote.phone_number}</td>
                 <td className="p-3">
                   {quote.surveyor_id
-                    ? surveyors.find((s) => s.id === quote.surveyor_id)?.name ||
-                      "Assigned"
+                    ? surveyors.find((s) => s.id === quote.surveyor_id)
+                        ?.full_name || "Assigned"
                     : "Not Assigned"}
                 </td>
                 <td className="p-3">{quote.status}</td>
@@ -108,7 +108,7 @@ const QuotesPage = () => {
                     <SelectContent>
                       {surveyors.map((surveyor) => (
                         <SelectItem key={surveyor.id} value={surveyor.id}>
-                          {surveyor.name}
+                          {surveyor.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-
 import { z } from "zod";
 import { Button } from "../ui/button";
+import type { ImageType } from "@/types/survey";
 
 // ✅ Define Zod validation schema
 const boardSchema = z.object({
@@ -24,9 +24,10 @@ interface BoardDetailsProps {
   newBoard: any;
   billboardNames: { id: string; name: string }[];
   billboardTypes: { id: string; type_name: string }[];
-  updateNewBoard: (field: any, value: string | number) => void;
+  updateNewBoard: (field: any, value: string | number | any[]) => void;
   userRole: string;
-  openModal: (type: "name" | "type") => void;
+  openModal?: (type: "name" | "type") => void;
+  resetPreview: boolean;
 }
 
 const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
@@ -36,14 +37,16 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
   updateNewBoard,
   userRole,
   openModal,
+  resetPreview,
 }) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [boardImagePreviews, setBoardImagePreviews] = useState<string[]>([]);
+
   const handleValidation = (field: string, value: string | number) => {
     let parsedValue = value;
     if (["height", "width", "quantity"].includes(field)) {
       parsedValue = Number(value);
     }
-
     const result = boardSchema.safeParse({
       ...newBoard,
       [field]: parsedValue,
@@ -66,6 +69,34 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
     updateNewBoard(field, value);
   };
 
+  const handleBoardImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newFiles = Array.from(files);
+
+      // Convert new files into preview objects
+      const newImageObjects: ImageType[] = newFiles.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      }));
+      updateNewBoard("board_images", [
+        ...(newBoard.board_images || []),
+        ...newImageObjects,
+      ]);
+
+      setBoardImagePreviews((prev) => [
+        ...prev,
+        ...newImageObjects.map((img) => img.preview),
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    if (resetPreview) {
+      setBoardImagePreviews([]);
+    }
+  }, [resetPreview]);
+
   return (
     <div className="mt-4 p-4 space-y-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900">
       {/* Select Board Type & Board Detail */}
@@ -76,7 +107,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             <Label htmlFor="board_type" className="font-semibold text-gray-700">
               Select Board Type <span className="text-red-600">*</span>
             </Label>
-            {userRole === "admin" && (
+            {userRole === "admin" && openModal && (
               <Button
                 onClick={() => openModal("name")}
                 className=" text-gray-600 hover:bg-white underline bg-white  text-sm "
@@ -115,7 +146,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             >
               Select Board Detail <span className="text-red-600">*</span>
             </Label>
-            {userRole === "admin" && (
+            {userRole === "admin" && openModal && (
               <Button
                 onClick={() => openModal("type")}
                 className=" text-gray-600 hover:bg-white underline bg-white  text-sm "
@@ -195,6 +226,33 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
         {errors.quantity && (
           <p className="text-red-500 text-sm">{errors.quantity}</p>
         )}
+      </div>
+      <div>
+        <label className="block font-semibold mb-1 text-gray-700 dark:text-gray-300">
+          Upload Board Images
+        </label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleBoardImageChange}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+      file:rounded-lg file:border-0
+      file:text-sm file:font-semibold
+      file:bg-red-50 file:text-red-700
+      hover:file:bg-red-100
+      dark:file:bg-gray-700 dark:file:text-white dark:hover:file:bg-gray-600"
+        />
+      </div>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {boardImagePreviews.map((url, idx) => (
+          <img
+            key={idx}
+            src={url}
+            alt={`preview-${idx}`}
+            className="w-20 h-20 object-cover rounded-md border"
+          />
+        ))}
       </div>
     </div>
   );

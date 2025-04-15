@@ -22,9 +22,8 @@ export default function RootLayout({
 }
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { loading } = useUser();
+  const { loading, role } = useUser();
   const pathname = usePathname();
-
   const hiddenRoutes = ["/auth/login", "/auth/login/user"];
   const hideNavAndFooter = hiddenRoutes.includes(pathname);
 
@@ -42,7 +41,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer always at the bottom */}
-      {!hideNavAndFooter && <Footer />}
+      {!hideNavAndFooter && role !== "admin" && <Footer />}
     </div>
   );
 }

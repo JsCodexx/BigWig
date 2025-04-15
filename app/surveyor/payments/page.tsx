@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "../../lib/supabase/Clientsupabase";
+import { useUser } from "@/context/UserContext";
 
 export default function PaymentsPage() {
   const [surveys, setSurveys] = useState<any[]>([]);
@@ -13,7 +14,7 @@ export default function PaymentsPage() {
   const [selectedSurvey, setSelectedSurvey] = useState<any | null>(null);
   const [newAdvance, setNewAdvance] = useState("");
   const [newInstallationCharges, setNewInstallationCharges] = useState("");
-
+  const { user } = useUser();
   // Fetch surveys from Supabase
   useEffect(() => {
     async function fetchSurveys() {
@@ -21,6 +22,7 @@ export default function PaymentsPage() {
       const { data, error } = await supabase
         .from("surveys")
         .select("*")
+        .eq("surveyor_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) console.error("Error fetching surveys:", error);
@@ -29,29 +31,26 @@ export default function PaymentsPage() {
     }
 
     fetchSurveys();
-  }, []);
+  }, [user]);
 
   // Handle advance & installation charges update
   async function updatePaymentDetails() {
     if (!selectedSurvey) return;
 
-    const advanceAmount =
-      parseFloat(newAdvance) || selectedSurvey.payment_advance;
+    const installationCost =
+      parseFloat(newInstallationCharges) || selectedSurvey.payment_installation;
 
-    if (advanceAmount < 0) return alert("Enter valid amounts");
+    if (installationCost < 0) return alert("Enter valid amounts");
 
     // Recalculate total price & remaining balance
     const updatedTotalPrice =
-      selectedSurvey.payment_billboard_total +
-      selectedSurvey.payment_installation;
-    const updatedRemainingBalance = updatedTotalPrice - advanceAmount;
+      selectedSurvey.payment_billboard_total + installationCost;
 
     const { error } = await supabase
       .from("surveys")
       .update({
-        payment_advance: advanceAmount,
+        payment_installation: installationCost,
         payment_total: updatedTotalPrice,
-        payment_pending: updatedRemainingBalance,
       })
       .eq("id", selectedSurvey.id);
 
@@ -65,9 +64,8 @@ export default function PaymentsPage() {
           s.id === selectedSurvey.id
             ? {
                 ...s,
-                payment_advance: advanceAmount,
+                payment_installation: installationCost,
                 payment_total: updatedTotalPrice,
-                payment_pending: updatedRemainingBalance,
               }
             : s
         )
@@ -80,9 +78,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-red-700 mb-6">
-        Payment Management
-      </h1>
+      <h1 className="text-2xl font-bold text-red-700 mb-6">Payment Management</h1>
 
       {loading ? (
         <p>Loading...</p>
@@ -92,10 +88,6 @@ export default function PaymentsPage() {
             <tr className="bg-gray-100">
               <th className="border p-2">Client</th>
               <th className="border p-2">Installation Charges</th>
-              <th className="border p-2">Boards Price</th>
-              <th className="border p-2">Total Price</th>
-              <th className="border p-2">Advance Paid</th>
-              <th className="border p-2">Remaining Balance</th>
               <th className="border p-2">Actions</th>
             </tr>
           </thead>
@@ -105,20 +97,8 @@ export default function PaymentsPage() {
                 <td className="border p-2">{survey.client_name}</td>
                 <td className="border p-2">${survey.payment_installation}</td>
                 <td className="border p-2">
-                  ${survey.payment_billboard_total}
-                </td>
-                <td className="border p-2 font-bold">
-                  ${survey.payment_total}
-                </td>
-                <td className="border p-2 text-green-600">
-                  ${survey.payment_advance}
-                </td>
-                <td className="border p-2 text-red-500">
-                  ${survey.payment_pending}
-                </td>
-                <td className="border p-2">
                   <Button onClick={() => setSelectedSurvey(survey)}>
-                    Update Advance
+                    Update Installation
                   </Button>
                 </td>
               </tr>
@@ -135,12 +115,13 @@ export default function PaymentsPage() {
         >
           <DialogContent>
             <DialogTitle>Update Payment Details</DialogTitle>
-            <Label className="mt-2">New Advance Amount:</Label>
+
+            <Label>New Installation Charges:</Label>
             <Input
               type="number"
-              value={newAdvance}
-              onChange={(e) => setNewAdvance(e.target.value)}
-              placeholder="Enter advance amount"
+              value={newInstallationCharges}
+              onChange={(e) => setNewInstallationCharges(e.target.value)}
+              placeholder="Enter installation charges"
             />
 
             <Button onClick={updatePaymentDetails} className="mt-4">

@@ -23,6 +23,7 @@ export default function PaymentsPage() {
         .from("surveys")
         .select("*")
         .eq("surveyor_id", user.id)
+        .eq("survey_status", "installation_pending")
         .order("created_at", { ascending: false });
 
       if (error) console.error("Error fetching surveys:", error);
@@ -78,7 +79,9 @@ export default function PaymentsPage() {
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-red-700 mb-6">Payment Management</h1>
+      <h1 className="text-2xl font-bold text-red-700 mb-6">
+        Payment Management
+      </h1>
 
       {loading ? (
         <p>Loading...</p>

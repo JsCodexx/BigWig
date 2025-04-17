@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -11,18 +11,20 @@ import {
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
-import type { SurveyBillboard } from "@/types/survey";
-
-
+import type { BillboardType, Shopboard, SurveyBillboard } from "@/types/survey";
 
 interface BoardsTableProps {
   billboards: SurveyBillboard[];
   onRemoveBoard: (index: number) => void; // Function to remove board from parent state
+  billboardNames: Shopboard[];
+  billboardTypes: BillboardType[];
 }
 
 export const BoardsTable: React.FC<BoardsTableProps> = ({
   billboards,
   onRemoveBoard,
+  billboardNames,
+  billboardTypes,
 }) => {
   return (
     <div className="w-full">
@@ -43,18 +45,25 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
             <TableBody>
               {billboards.length > 0 ? (
                 billboards.map((board, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{board.billboard_name_id}</TableCell>
+                  <TableRow
+                    key={index}
+                    className="fles justify-center items-center"
+                  >
+                    {billboardNames.find(
+                      (name) => name.id === board.billboard_name_id
+                    )?.name || "Unknown"}
                     <TableCell>{board.width}</TableCell>
                     <TableCell>{board.height}</TableCell>
-                    <TableCell>{board.billboard_type_id}</TableCell>
+                    {billboardTypes.find(
+                      (type) => type.id === board.billboard_type_id
+                    )?.type_name || "Unknown"}
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
                         {/* Generate image previews */}
-                        {board.board_images.map((image:unknown, i) => (
+                        {board.board_images.map((image: any, i) => (
                           <img
                             key={i}
-                            src={image as string} 
+                            src={image.preview as any}
                             alt={`preview-${i}`}
                             width={50}
                             height={50}

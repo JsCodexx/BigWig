@@ -173,7 +173,12 @@ export function Navbar() {
                     dropdownOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
                   }
                   transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+                  className={`absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-all duration-300 
+    ${
+      dropdownOpen
+        ? "pointer-events-auto visible"
+        : "pointer-events-none invisible"
+    }`}
                 >
                   {/* Admin Links (Only Below md) */}
                   {user?.user_role === "admin" && (

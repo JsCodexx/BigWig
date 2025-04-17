@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,3 +29,12 @@ export const getAllowedStatusOptions = (
 
   return statusOptions[userRole]?.[currentStatus] || [currentStatus];
 };
+
+export const generalSurveySchema = z.object({
+  shopName: z.string().min(1, "Shop name is required."),
+  shopAddress: z.string().min(1, "Shop address is required."),
+  clientName: z.string().min(1, "Shopkeeper name is required."),
+  phoneNumber: z.string().min(1, "Phone number is required."),
+  clientId: z.string().min(1, "Client selection is required."),
+  description: z.string().min(1, "Surveyor remarks are required."),
+});

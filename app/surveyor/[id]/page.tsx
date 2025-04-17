@@ -48,7 +48,6 @@ export default function EditSurvey() {
     width: "",
     height: "",
     billboard_type_id: "",
-    clientId: "",
     quantity: "",
     board_images: [],
   });
@@ -255,9 +254,7 @@ export default function EditSurvey() {
 
   return (
     <div className="py-16 px-6 max-w-7xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold text-red-700 mb-6">
-        Update Survey
-      </h1>
+      <h1 className="text-2xl font-bold text-red-700 mb-6">Update Survey</h1>
       {/* General Survey Details */}
       <GeneralSurveyDetails
         errors={errors}

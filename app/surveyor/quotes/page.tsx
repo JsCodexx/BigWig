@@ -61,7 +61,7 @@ const SurveyorSurveysPage = () => {
 
       {loading ? (
         <p className="text-gray-500">Loading surveys...</p>
-      ) : surveys.length === 0 ? (
+      ) : surveys?.length === 0 ? (
         <p className="text-gray-500">No assigned surveys.</p>
       ) : (
         <div className="overflow-x-auto">
@@ -76,9 +76,9 @@ const SurveyorSurveysPage = () => {
               </tr>
             </thead>
             <tbody>
-              {surveys.map((survey) => (
+              {surveys?.map((survey) => (
                 <tr key={survey.id} className="border-t">
-                  <td className="p-3">{survey.name}</td>
+                  <td className="p-3">{survey.full_name}</td>
                   <td className="p-3">{survey.email}</td>
                   <td className="p-3">{survey.phone_number}</td>
                   <td className="p-3">{survey.status || "Pending"}</td>

@@ -142,8 +142,8 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
         </Label>
 
         <Select
-          required
-          value={formData.clientId || ""}
+          required={true}
+          value={formData?.clientId}
           onValueChange={(value) =>
             setFormData((prev: any) => ({ ...prev, clientId: value }))
           }

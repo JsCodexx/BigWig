@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col w-full">
         <UserProvider>
           <AppContent>{children}</AppContent>
         </UserProvider>
@@ -30,12 +30,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex w-full flex-col min-h-screen">
       {/* Navbar (Fixed) */}
       {!hideNavAndFooter && <Navbar />}
 
       {/* Main Content Wrapper */}
-      <main className="flex-grow bg-gray-50 dark:bg-gray-800 pt-16">
+      <main className="flex-grow w-full bg-gray-50 dark:bg-gray-800 pt-16">
         {/* `pt-16` ensures content starts below the navbar (16 = 64px, same as navbar height) */}
         {children}
       </main>

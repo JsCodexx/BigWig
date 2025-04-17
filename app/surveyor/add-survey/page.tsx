@@ -10,20 +10,21 @@ import {
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext"; // Assuming a user context exists
-import type { SurveyBillboard } from "@/types/survey";
+import type { BillboardType, Shopboard, SurveyBillboard } from "@/types/survey";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { useRouter } from "next/navigation";
 import { BoardsTable } from "@/components/surveys/BoardsTable";
 import GeneralSurveyDetails from "@/components/surveys/GeneralSurveyDetails";
 import BoardDetailsForm from "@/components/surveys/BoardDetailsForm";
-interface Shopboard {
-  id: string;
-  name: string;
-}
+import { generalSurveySchema } from "@/lib/utils";
 
-interface BillboardType {
-  id: string;
-  type_name: string;
+interface Errors {
+  shopName?: string;
+  shopAddress?: string;
+  clientName?: string;
+  phoneNumber?: string;
+  description?: string;
+  clientId?: string;
 }
 
 export default function SubmitSurvey() {
@@ -36,11 +37,10 @@ export default function SubmitSurvey() {
     width: "",
     height: "",
     billboard_type_id: "",
-    clientId: "",
     quantity: "",
     board_images: [],
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Errors>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"name" | "type">();
   const [newValue, setNewValue] = useState("");
@@ -48,12 +48,14 @@ export default function SubmitSurvey() {
   const [image, setImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
   const [resetPreview, setResetPreview] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const [formData, setFormData] = useState({
     shopName: "",
     shopAddress: "",
     clientName: "",
     phoneNumber: "",
-    clientId: "",
+    clientId: null,
     description: "",
   });
 
@@ -65,7 +67,6 @@ export default function SubmitSurvey() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const router = useRouter();
   useEffect(() => {
     fetch("/api/billboards/billboard-names")
       .then((res) => res.json())
@@ -87,7 +88,6 @@ export default function SubmitSurvey() {
       width: "",
       height: "",
       billboard_type_id: "",
-      clientId: "",
       quantity: "",
       board_images: [],
     });
@@ -110,11 +110,25 @@ export default function SubmitSurvey() {
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (!user) {
       alert("User not logged in");
+      setLoading(false);
       return;
     }
+    const result = generalSurveySchema.safeParse(formData);
 
+    if (!result.success) {
+      // Map Zod errors to your Errors object
+      const fieldErrors: Errors = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as keyof Errors;
+        fieldErrors[field] = err.message;
+      });
+      setErrors(fieldErrors);
+      setLoading(false);
+      return;
+    }
     let surveyStatus = "";
     if (user?.user_role === "client") {
       surveyStatus = "client_approved";
@@ -127,6 +141,7 @@ export default function SubmitSurvey() {
     }
 
     if (!image) {
+      setLoading(false);
       alert("Please upload a form image");
       return;
     }
@@ -142,6 +157,7 @@ export default function SubmitSurvey() {
 
     const formDataJson = await formRes.json();
     if (!formDataJson.url) {
+      setLoading(false);
       alert("Form image upload failed!");
       return;
     }
@@ -206,10 +222,15 @@ export default function SubmitSurvey() {
     });
 
     if (saveRes.ok) {
+      setLoading(false);
       alert("Survey Submitted!");
+      router.push("/surveyor");
     } else {
+      setLoading(false);
       alert("Survey submission failed.");
+      router.push("/surveyor");
     }
+    setLoading(false);
   };
 
   const openModal = (type: "name" | "type") => {
@@ -267,59 +288,68 @@ export default function SubmitSurvey() {
   };
 
   return (
-    <div className="py-16 px-6 max-w-7xl mx-autoflex flex-col lg:flex-row gap-6 p-6">
+    <div className="w-full flex flex-col justify-center items-center">
       {/* Left Side: Survey Form */}
-      <div className="w-full lg:w-[55%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
-        <div className="flex justify-between gap-4 items-center">
-          <h1 className="text-2xl font-bold text-red-700 mb-6">
-            Submit Survey
-          </h1>
-          <Button
-            onClick={handleSubmit}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            Submit Survey
-          </Button>
-        </div>
-        {/* General Survey Details */}
-        <GeneralSurveyDetails
-          errors={errors}
-          formData={formData}
-          setFormData={setFormData}
-          handleChange={handleChange}
-          clients={clients}
-          previewImage={previewImage}
-          handleImageChange={handleImageChange}
-        />
+      <div className="py-16 px-6 max-w-7xl mx-auto ">
+        <h1 className="text-2xl font-bold text-red-700 mb-6">Submit Survey</h1>
+        {/* Left: Submit Survey + Board Form (60%) */}
 
-        {/* Billboard Details Form */}
-        <BoardDetailsForm
-          billboardNames={billboardNames}
-          billboardTypes={billboardTypes}
-          newBoard={newBoard}
-          userRole={user?.user_role || ""}
-          updateNewBoard={updateNewBoard}
-          openModal={openModal}
-          resetPreview={resetPreview}
-        />
-        <div className="w-full flex justify-between items-center">
-          <Button
-            onClick={addBillboard}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            Add Shopboard
-          </Button>
+        <div className="flex flex-col lg:flex-row w-full gap-6">
+          <div className="w-full lg:w-[60%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
+            <div className="flex justify-between gap-4 items-center">
+              <Button
+                onClick={handleSubmit}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                disabled={loading}
+              >
+                {loading ? "Submitting.." : "Submit Survey"}
+              </Button>
+            </div>
+            {/* General Survey Details */}
+            <GeneralSurveyDetails
+              errors={errors}
+              formData={formData}
+              setFormData={setFormData}
+              handleChange={handleChange}
+              clients={clients}
+              previewImage={previewImage}
+              handleImageChange={handleImageChange}
+            />
+
+            {/* Billboard Details Form */}
+            <BoardDetailsForm
+              billboardNames={billboardNames}
+              billboardTypes={billboardTypes}
+              newBoard={newBoard}
+              userRole={user?.user_role || ""}
+              updateNewBoard={updateNewBoard}
+              openModal={openModal}
+              resetPreview={resetPreview}
+            />
+            <div className="w-full flex justify-between items-center">
+              <Button
+                onClick={addBillboard}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Add Shopboard
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Side: Boards Table */}
+          <div className="w-full lg:w-[40%] bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+              Added Billboards
+            </h2>
+            <BoardsTable
+              billboards={billboards}
+              onRemoveBoard={removeBillboard}
+              billboardNames={billboardNames}
+              billboardTypes={billboardTypes}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Right Side: Boards Table */}
-      <div className="w-full lg:w-[45%] bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-          Added Billboards
-        </h2>
-        <BoardsTable billboards={billboards} onRemoveBoard={removeBillboard} />
-      </div>
-
       {/* Modal for Adding Name/Type */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>

@@ -10,13 +10,19 @@ import {
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext"; // Assuming a user context exists
-import type { BillboardType, Shopboard, SurveyBillboard } from "@/types/survey";
+import type {
+  BillboardType,
+  FormDataType,
+  Shopboard,
+  SurveyBillboard,
+} from "@/types/survey";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { useRouter } from "next/navigation";
 import { BoardsTable } from "@/components/surveys/BoardsTable";
 import GeneralSurveyDetails from "@/components/surveys/GeneralSurveyDetails";
 import BoardDetailsForm from "@/components/surveys/BoardDetailsForm";
 import { generalSurveySchema } from "@/lib/utils";
+import { useUi } from "@/context/UiContext";
 
 interface Errors {
   shopName?: string;
@@ -49,13 +55,14 @@ export default function SubmitSurvey() {
   const [previewImage, setPreviewImage] = useState<string>("");
   const [resetPreview, setResetPreview] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { setSelectedQuote, selectedQuote } = useUi();
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     shopName: "",
     shopAddress: "",
     clientName: "",
     phoneNumber: "",
-    clientId: null,
+    clientId: "",
     description: "",
   });
 
@@ -109,6 +116,24 @@ export default function SubmitSurvey() {
     }));
   };
 
+  // Mark The quote completed
+  const markQuoteAsConducted = async () => {
+    if (!selectedQuote) return;
+
+    const response = await fetch(`/api/quotes?id=${selectedQuote}`, {
+      method: "PATCH",
+    });
+
+    if (response.ok) {
+      console.log("Survey successfully marked as conducted");
+      // Optionally refresh or update UI here
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to update quote status:", errorData.message);
+    }
+  };
+
+  // Submit the Survey
   const handleSubmit = async () => {
     setLoading(true);
     if (!user) {
@@ -223,6 +248,7 @@ export default function SubmitSurvey() {
 
     if (saveRes.ok) {
       setLoading(false);
+      markQuoteAsConducted();
       alert("Survey Submitted!");
       router.push("/surveyor");
     } else {
@@ -286,7 +312,9 @@ export default function SubmitSurvey() {
       setImage(file);
     }
   };
-
+  useEffect(() => {
+    console.log(selectedQuote);
+  }, [selectedQuote]);
   return (
     <div className="w-full flex flex-col justify-center items-center">
       {/* Left Side: Survey Form */}
@@ -296,15 +324,6 @@ export default function SubmitSurvey() {
 
         <div className="flex flex-col lg:flex-row w-full gap-6">
           <div className="w-full lg:w-[60%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
-            <div className="flex justify-between gap-4 items-center">
-              <Button
-                onClick={handleSubmit}
-                className="bg-red-600 hover:bg-red-700 text-white"
-                disabled={loading}
-              >
-                {loading ? "Submitting.." : "Submit Survey"}
-              </Button>
-            </div>
             {/* General Survey Details */}
             <GeneralSurveyDetails
               errors={errors}
@@ -325,6 +344,7 @@ export default function SubmitSurvey() {
               updateNewBoard={updateNewBoard}
               openModal={openModal}
               resetPreview={resetPreview}
+              setNewBoard={setNewBoard}
             />
             <div className="w-full flex justify-between items-center">
               <Button
@@ -333,13 +353,22 @@ export default function SubmitSurvey() {
               >
                 Add Shopboard
               </Button>
+              <div className="flex justify-between gap-4 items-center">
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting.." : "Submit Survey"}
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Right Side: Boards Table */}
           <div className="w-full lg:w-[40%] bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-              Added Billboards
+              Added Shopboard
             </h2>
             <BoardsTable
               billboards={billboards}

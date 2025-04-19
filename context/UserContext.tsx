@@ -21,6 +21,8 @@ interface UserContextType {
   role: any;
   loading: boolean;
   setUser: (user: any) => void;
+  selectedClient: string | null; // null means none is selected yet
+  setSelectedClient: (id: string | null) => void;
 }
 
 // ✅ Create UserContext
@@ -31,8 +33,8 @@ export const UserContext = createContext<UserContextType | undefined>(
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>();
   const [role, setRole] = useState<string | null>(null);
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const supabase = createClientComponentClient();
   const pathname = usePathname(); // ✅ Works in App Router
 
@@ -83,7 +85,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false); // ✅ Always set loading to false at the end
     }
   }, []);
-
   useEffect(() => {
     // ✅ Prevent redirect loop when user is on login page
     if (pathname !== "/auth/login") {
@@ -93,7 +94,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <UserContext.Provider value={{ user, role, loading, setUser }}>
+      <UserContext.Provider
+        value={{
+          user,
+          role,
+          loading,
+          setUser,
+          setSelectedClient,
+          selectedClient,
+        }}
+      >
         {children}
       </UserContext.Provider>
     </SidebarProvider>

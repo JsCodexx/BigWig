@@ -29,3 +29,11 @@ export interface BillboardType {
   id: string;
   type_name: string;
 }
+export interface FormDataType {
+  shopName: string;
+  shopAddress: string;
+  clientName: string;
+  phoneNumber: string;
+  clientId: string;
+  description: string;
+}

@@ -28,6 +28,7 @@ interface BoardDetailsProps {
   userRole: string;
   openModal?: (type: "name" | "type") => void;
   resetPreview: boolean;
+  setNewBoard: any;
 }
 
 const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
@@ -38,6 +39,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
   userRole,
   openModal,
   resetPreview,
+  setNewBoard,
 }) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [boardImagePreviews, setBoardImagePreviews] = useState<string[]>([]);
@@ -89,6 +91,13 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
         ...newImageObjects.map((img) => img.preview),
       ]);
     }
+  };
+  const removeImage = (url: string) => {
+    setNewBoard((prev: any) => ({
+      ...prev,
+      board_images: prev.board_images.filter((img: any) => img.preview !== url),
+    }));
+    setBoardImagePreviews((pre) => pre.filter((f) => f !== url));
   };
 
   useEffect(() => {
@@ -246,12 +255,19 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
       </div>
       <div className="flex flex-wrap gap-2 mt-2">
         {boardImagePreviews.map((url, idx) => (
-          <img
-            key={idx}
-            src={url}
-            alt={`preview-${idx}`}
-            className="w-20 h-20 object-cover rounded-md border"
-          />
+          <div className="relative w-20 h-20" key={idx}>
+            <img
+              src={url}
+              alt={`preview-${idx}`}
+              className="w-full object-cover rounded-md border"
+            />
+            <span
+              onClick={() => removeImage(url)}
+              className="h-5 w-5 absolute right-0 top-0 flex justify-center items-center bg-red-300 rounded-full"
+            >
+              X
+            </span>
+          </div>
         ))}
       </div>
     </div>

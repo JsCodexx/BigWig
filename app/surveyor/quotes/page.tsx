@@ -4,21 +4,25 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
+import { User } from "@/types/user";
+import { useUi } from "@/context/UiContext";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const SurveyorSurveysPage = () => {
-  const [surveys, setSurveys] = useState<any[]>([]);
+const SurveyorQuotesPage = () => {
+  const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
   const { user } = useUser();
+  const { setSelectedClient, setSelectedQuote } = useUi();
   // Fetch logged-in surveyor ID
 
-  // Fetch assigned surveys
-  const fetchSurveys = async () => {
+  // Fetch assigned quotes
+  const fetchquotes = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("quotes")
@@ -28,41 +32,60 @@ const SurveyorSurveysPage = () => {
     if (error) {
       console.error(error);
     } else {
-      setSurveys(data);
+      setQuotes(data);
+    }
+    setLoading(false);
+  };
+  const fetchUsers = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from("users").select("*");
+    if (error) {
+      console.error(error);
+    } else {
+      setUsers(data);
     }
     setLoading(false);
   };
   useEffect(() => {
     if (!user?.id) return;
-
-    fetchSurveys();
+    fetchUsers();
+    fetchquotes();
   }, [user]);
   const markCompleted = async (id: string) => {
     try {
       const { data, error } = await supabase
         .from("quotes") // Update the quotes table
         .update({ status: "conducted" }) // Set status to conducted
-        .eq("id", id); // Find the specific survey by ID
+        .eq("id", id); // Find the specific quotes by ID
 
       if (error) {
         console.error("Error updating status:", error.message);
         return;
       }
+      fetchquotes();
       return;
-      fetchSurveys();
     } catch (err) {
       console.error("Unexpected error:", err);
     }
   };
-
+  const conductSurvey = (phone_number: string, quotesId: string) => {
+    const foundUser = users.find((user) => user.phone_number === phone_number);
+    if (quotesId) {
+      setSelectedQuote(quotesId);
+    }
+    if (foundUser && foundUser.id) {
+      setSelectedClient(foundUser?.id);
+    }
+    router.push("/surveyor/add-survey");
+  };
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-red-600">My Surveys</h2>
+      <h2 className="text-2xl font-bold mb-4 text-red-600">My quotes</h2>
 
       {loading ? (
-        <p className="text-gray-500">Loading surveys...</p>
-      ) : surveys?.length === 0 ? (
-        <p className="text-gray-500">No assigned surveys.</p>
+        <p className="text-gray-500">Loading quotes...</p>
+      ) : quotes?.length === 0 ? (
+        <p className="text-gray-500">No assigned quotes.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border rounded-lg">
@@ -76,27 +99,29 @@ const SurveyorSurveysPage = () => {
               </tr>
             </thead>
             <tbody>
-              {surveys?.map((survey) => (
-                <tr key={survey.id} className="border-t">
-                  <td className="p-3">{survey.full_name}</td>
-                  <td className="p-3">{survey.email}</td>
-                  <td className="p-3">{survey.phone_number}</td>
-                  <td className="p-3">{survey.status || "Pending"}</td>
+              {quotes?.map((quotes) => (
+                <tr key={quotes.id} className="border-t">
+                  <td className="p-3">{quotes.full_name}</td>
+                  <td className="p-3">{quotes.email}</td>
+                  <td className="p-3">{quotes.phone_number}</td>
+                  <td className="p-3">{quotes.status || "Pending"}</td>
                   <td className="p-3 cursor-pointer flex gap-2">
-                    {survey.status === "pending" && (
+                    {quotes.status === "pending" && (
                       <button
                         className="p-1 text-red-500 border rounded bg-red-200"
-                        onClick={() => router.push("/surveyor/add-survey")}
+                        onClick={() =>
+                          conductSurvey(quotes.phone_number, quotes.id)
+                        }
                       >
                         Conduct
                       </button>
                     )}
                     <button
                       className="p-1  text-green-500 border rounded bg-green-200"
-                      onClick={() => markCompleted(survey.id)}
-                      disabled={survey.status === "conducted"}
+                      onClick={() => markCompleted(quotes.id)}
+                      disabled={quotes.status === "conducted"}
                     >
-                      {survey.status === "pending"
+                      {quotes.status === "pending"
                         ? "Mark as completed"
                         : "Completed"}
                     </button>
@@ -111,4 +136,4 @@ const SurveyorSurveysPage = () => {
   );
 };
 
-export default SurveyorSurveysPage;
+export default SurveyorQuotesPage;

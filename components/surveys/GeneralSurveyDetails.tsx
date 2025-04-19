@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import { Textarea } from "../ui/textarea";
 import { User } from "@/types/user";
+import { useUi } from "@/context/UiContext";
 
 // Define types for props
 
@@ -44,6 +45,15 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
   previewImage,
   handleImageChange,
 }) => {
+  const { selectedClient, setSelectedClient } = useUi();
+  useEffect(() => {
+    console.log(selectedClient);
+  }, [selectedClient]);
+  useEffect(() => {
+    if (selectedClient) {
+      setFormData((prev: any) => ({ ...prev, clientId: selectedClient }));
+    }
+  }, [selectedClient]);
   return (
     <div className="w-full flex flex-col justify-center items-center gap-4">
       {/* Shop Name & Shop Address */}
@@ -142,8 +152,8 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
         </Label>
 
         <Select
-          required={true}
-          value={formData?.clientId}
+          required
+          value={formData.clientId}
           onValueChange={(value) =>
             setFormData((prev: any) => ({ ...prev, clientId: value }))
           }
@@ -157,13 +167,22 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             <SelectItem disabled value="">
               Select Client Name
             </SelectItem>
-            {clients
-              ?.filter((client) => typeof client.id === "string") // only allow valid string ids
-              .map((client) => (
-                <SelectItem key={client.id} value={client.id as string}>
-                  {client.full_name}
-                </SelectItem>
-              ))}
+
+            {selectedClient
+              ? clients
+                  .filter((client) => client.id === selectedClient)
+                  .map((client) => (
+                    <SelectItem key={client.id} value={client.id as string}>
+                      {client.full_name}
+                    </SelectItem>
+                  ))
+              : clients
+                  .filter((client) => typeof client.id === "string")
+                  .map((client) => (
+                    <SelectItem key={client.id} value={client.id as string}>
+                      {client.full_name}
+                    </SelectItem>
+                  ))}
           </SelectContent>
         </Select>
 
@@ -211,7 +230,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
 
         {/* Upload Button */}
         <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-all">
-          Upload Image
+          {!previewImage ? "Upload Image" : "Change image"}
           <input
             type="file"
             accept="image/*"

@@ -4,6 +4,7 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { UiProvider } from "@/context/UiContext";
 
 export default function RootLayout({
   children,
@@ -13,9 +14,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col w-full">
-        <UserProvider>
-          <AppContent>{children}</AppContent>
-        </UserProvider>
+        <UiProvider>
+          <UserProvider>
+            <AppContent>{children}</AppContent>
+          </UserProvider>
+        </UiProvider>
       </body>
     </html>
   );

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { getAllowedStatusOptions } from "@/lib/utils";
+import { json } from "node:stream/consumers";
 
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -80,23 +81,57 @@ const SurveyorDashboard = () => {
 
   // Function to update survey status
   const updateStatus = async (surveyId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from("surveys")
-      .update({ survey_status: newStatus })
-      .eq("id", surveyId);
+    try {
+      // Check for installation status before proceeding
+      if (newStatus === "installation_completed") {
+        const { data, error: fetchError } = await supabase
+          .from("surveys")
+          .select("payment_installation")
+          .eq("id", surveyId)
+          .maybeSingle();
 
-    if (error) {
-      console.error("Error updating status:", error);
-      return;
+        if (fetchError) {
+          console.error("Error fetching payment data:", fetchError);
+          alert("Something went wrong while checking installation charges.");
+          return;
+        }
+
+        if (
+          !data ||
+          !data.payment_installation ||
+          data.payment_installation === 0
+        ) {
+          alert(
+            "Please update the installation charges before completing installation."
+          );
+          return;
+        }
+      }
+
+      // Proceed to update status
+      const { error: updateError } = await supabase
+        .from("surveys")
+        .update({ survey_status: newStatus })
+        .eq("id", surveyId);
+
+      if (updateError) {
+        console.error("Error updating status:", updateError);
+        alert("Failed to update survey status.");
+        return;
+      }
+
+      // Update local state
+      setSurveys((prevSurveys) =>
+        prevSurveys.map((survey) =>
+          survey.id === surveyId
+            ? { ...survey, survey_status: newStatus }
+            : survey
+        )
+      );
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      alert("Unexpected error occurred. Please try again.");
     }
-
-    setSurveys((prevSurveys) =>
-      prevSurveys.map((survey) =>
-        survey.id === surveyId
-          ? { ...survey, survey_status: newStatus }
-          : survey
-      )
-    );
   };
 
   // Function to assign a client to a survey
@@ -138,7 +173,6 @@ const SurveyorDashboard = () => {
       setActiveTab(statuses[0]);
     }
   }, [statuses, activeTab]);
-
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
@@ -227,14 +261,53 @@ const SurveyorDashboard = () => {
                     )}
                     {/* Update surveys */}
 
-                    {user.user_role === "admin" && (
-                      <Button
-                        className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                        onClick={() => router.push(`surveyor/${survey.id}`)}
-                      >
-                        Update Survey
-                      </Button>
-                    )}
+                    {(() => {
+                      const role = user?.user_role?.toLowerCase();
+                      const status = survey?.survey_status?.trim();
+
+                      if (
+                        (role === "admin" &&
+                          status === "pending_admin_review") ||
+                        (role === "client" && status === "client_review")
+                      ) {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Update Survey
+                          </Button>
+                        );
+                      }
+
+                      if (role === "admin" && status === "client_approved") {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Update Design
+                          </Button>
+                        );
+                      }
+
+                      if (
+                        role === "surveyor" &&
+                        status === "installation_completed"
+                      ) {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Upload Installation Images
+                          </Button>
+                        );
+                      }
+
+                      return null;
+                    })()}
+
                     {/* Status Dropdown */}
                     <Select
                       value={survey.survey_status}

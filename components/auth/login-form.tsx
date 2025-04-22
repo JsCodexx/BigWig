@@ -18,7 +18,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function LoginForm({ role }: { role: "admin" | "surveyor" | "client" }) {
+export function LoginForm({ role }: { role: "admin" | "user" }) {
   const router = useRouter();
   const supabase = createClientComponentClient();
   const { setUser } = useUser();

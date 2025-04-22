@@ -9,6 +9,7 @@ export interface Survey {
   created_at: string;
   client_id?: string;
   form_image: string;
+  survey_billboards?: SurveyBillboard;
 }
 export type ImageType = { file?: File; preview: string };
 export interface SurveyBillboard {
@@ -19,6 +20,8 @@ export interface SurveyBillboard {
   billboard_type_id: string;
   quantity: string | number;
   board_images: ImageType[];
+  board_designs?: File[];
+  installation_images?: File[];
 }
 export interface Shopboard {
   id: string;

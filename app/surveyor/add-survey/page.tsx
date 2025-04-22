@@ -45,6 +45,7 @@ export default function SubmitSurvey() {
     billboard_type_id: "",
     quantity: "",
     board_images: [],
+    board_designs: [],
   });
   const [errors, setErrors] = useState<Errors>({});
   const [modalOpen, setModalOpen] = useState(false);

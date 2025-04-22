@@ -63,7 +63,11 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
 
         const result = await response.json();
         setUser(result);
-        router.push("/");
+        if (result.user.user_role === "client") {
+          router.push("/client");
+        } else {
+          router.push("/surveyor");
+        }
       }
     } catch (error) {
       console.error("Login Error:", error);

@@ -12,10 +12,9 @@ export const getAllowedStatusOptions = (
   const statusOptions: Record<string, Record<string, string[]>> = {
     admin: {
       pending_admin_review: ["client_review"],
-      client_review: ["client_approved"],
       client_approved: ["installation_pending"],
-      installation_pending: ["installation_in_progress"],
-      installation_in_progress: ["installation_completed"],
+      // installation_pending: ["installation_in_progress"],
+      // installation_in_progress: ["installation_completed"],
       installation_completed: ["completed"],
     },
     client: {
@@ -38,3 +37,36 @@ export const generalSurveySchema = z.object({
   clientId: z.string().min(1, "Client selection is required."),
   description: z.string().min(1, "Surveyor remarks are required."),
 });
+
+const uploadImage = async (
+  img: File | { file: File } | string
+): Promise<string | null> => {
+  try {
+    if (typeof img === "string") {
+      return img; // already a URL
+    }
+
+    const file = img instanceof File ? img : img.file;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    return data.url || null;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    return null;
+  }
+};
+
+export const uploadImages = async (
+  images: (File | { file: File } | string)[]
+): Promise<string[]> => {
+  const results = await Promise.all(images.map(uploadImage));
+  return results.filter((url): url is string => Boolean(url));
+};

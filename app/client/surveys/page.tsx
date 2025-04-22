@@ -155,6 +155,27 @@ const SurveyorDashboard = () => {
                             {survey.shop_address || "N/A"}
                           </p>
                         </div>
+                        {/* Update surveys */}
+
+                        {(user.user_role === "admin" &&
+                          survey.survey_status === "pending_admin_review") ||
+                        (user.user_role === "client" &&
+                          survey.survey_status === "client_review") ? (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`/surveyor/${survey.id}`)}
+                          >
+                            Update Survey
+                          </Button>
+                        ) : user.user_role === "admin" &&
+                          survey.survey_status === "client_approved" ? (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`/surveyor/${survey.id}`)}
+                          >
+                            Update Design
+                          </Button>
+                        ) : null}
                         {/* Status Dropdown */}
                         <Select
                           value={survey.survey_status}

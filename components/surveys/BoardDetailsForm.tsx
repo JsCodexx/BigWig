@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { Button } from "../ui/button";
 import type { ImageType } from "@/types/survey";
+import ImageUploader from "../ImageUploader";
 
 // ✅ Define Zod validation schema
 const boardSchema = z.object({
@@ -105,7 +106,9 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
       setBoardImagePreviews([]);
     }
   }, [resetPreview]);
-
+  useEffect(() => {
+    console.log(newBoard);
+  }, [newBoard]);
   return (
     <div className="mt-4 p-4 space-y-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900">
       {/* Select Board Type & Board Detail */}
@@ -237,9 +240,9 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
         )}
       </div>
       <div>
-        <label className="block font-semibold mb-1 text-gray-700 dark:text-gray-300">
+        <Label className="mb-2 font-semibold text-gray-700">
           Upload Board Images
-        </label>
+        </Label>
         <input
           type="file"
           multiple

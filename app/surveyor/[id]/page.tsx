@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/context/UserContext";
 import { z } from "zod";
-import type { ImageType, SurveyBillboard } from "@/types/survey";
+import type {
+  BillboardType,
+  ImageType,
+  Shopboard,
+  SurveyBillboard,
+} from "@/types/survey";
 import GeneralSurveyDetails from "@/components/surveys/GeneralSurveyDetails";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
-import BoardDetailsForm from "@/components/surveys/BoardDetailsForm";
+import { Label } from "@/components/ui/label";
+import ImageUploader from "@/components/ImageUploader";
+import { uploadImages } from "@/lib/utils";
+import BoardDesignManager from "../components/BoardDesignManager";
 
 // Validation Schema
 const surveySchema = z.object({
@@ -23,22 +31,13 @@ const surveySchema = z.object({
 });
 
 // Interfaces
-interface Billboard {
-  id: string;
-  name: string;
-}
-
-interface BillboardType {
-  id: string;
-  type_name: string;
-}
 
 export default function EditSurvey() {
   const { user } = useUser();
   const router = useRouter();
   const { id: surveyId } = useParams();
 
-  const [billboardNames, setBillboardNames] = useState<Billboard[]>([]);
+  const [billboardNames, setBillboardNames] = useState<Shopboard[]>([]);
   const [billboardTypes, setBillboardTypes] = useState<BillboardType[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [billboards, setBillboards] = useState<SurveyBillboard[]>([]);
@@ -53,7 +52,6 @@ export default function EditSurvey() {
   });
   const [image, setImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
-  const [boardImagePreviews, setBoardImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     shopName: "",
     shopAddress: "",
@@ -62,6 +60,7 @@ export default function EditSurvey() {
     clientId: "",
     description: "",
     survey_billboards: [],
+    surveyStatus: "",
   });
   const mapSurveyToFormData = (data: any) => ({
     shopName: data.shop_name,
@@ -72,8 +71,10 @@ export default function EditSurvey() {
     description: data.description,
     survey_billboards: data.survey_billboards,
     form_image: data.form_image,
+    surveyStatus: data.survey_status,
+    board_designs: data.board_designs,
+    installation_images: data.installation_images,
   });
-  console.log(billboards, "billboards");
   useEffect(() => {
     if (!surveyId) return;
     fetch(`/api/surveys/${surveyId}`)
@@ -165,7 +166,13 @@ export default function EditSurvey() {
 
     if (response.ok) {
       alert("Survey updated successfully!");
-      router.push("/surveyor");
+      if (user.user_role === "surveyor") {
+        router.push("/surveyor");
+      } else if (user.user_role === "client") {
+        router.push("/client/surveys");
+      } else {
+        router.push("/surveyor");
+      }
     } else {
       alert("Something went wrong while updating.");
     }
@@ -251,7 +258,117 @@ export default function EditSurvey() {
       return updated;
     });
   };
+  useEffect(() => {
+    console.log("bill", billboards);
+  }, [billboards]);
+  const handleDesignUpload = (index: number, newFiles: File[]) => {
+    setBillboards((prev: any[]) => {
+      const updated = [...prev];
 
+      // Ensure board exists
+      if (!updated[index]) updated[index] = {};
+
+      updated[index] = {
+        ...updated[index],
+        board_designs: newFiles, // Add the new key here
+      };
+
+      return updated;
+    });
+  };
+  const handleDesignUpdate = async (board: SurveyBillboard) => {
+    const uploadedUrls = await uploadImages(board.board_designs || []);
+
+    const updatedBoard = {
+      ...board,
+      board_designs: uploadedUrls,
+    };
+
+    try {
+      const res = await fetch(`/api/billboards/${board.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          billboards: [updatedBoard], // Send as an array
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log("Design updated successfully", data);
+        // Show toast or refresh state if needed
+      } else {
+        console.error("Update failed", data);
+      }
+    } catch (err) {
+      console.error("Error during update:", err);
+    }
+  };
+  const handleUpload = (
+    index: number,
+    newFiles: File[],
+    mode: "design" | "installation"
+  ) => {
+    setBillboards((prev: any[]) => {
+      const updated = [...prev];
+      if (!updated[index]) updated[index] = {};
+
+      updated[index] = {
+        ...updated[index],
+        [mode === "design" ? "board_designs" : "installation_images"]: newFiles,
+      };
+
+      return updated;
+    });
+  };
+
+  const handleUpdates = async (
+    board: SurveyBillboard,
+    mode: "design" | "installation"
+  ) => {
+    const key = mode === "design" ? "board_designs" : "installation_images";
+
+    const files = board[key] || [];
+
+    const existingUrls = files.filter((f) => typeof f === "string");
+    const newFiles = files.filter((f) => f instanceof File) as File[];
+
+    if (newFiles.length === 0) return; // Skip if nothing to upload
+
+    const uploadedUrls = await uploadImages(newFiles);
+
+    const updatedBoard = {
+      ...board,
+      [key]: [...existingUrls, ...uploadedUrls], // merge old + new
+    };
+
+    try {
+      const res = await fetch(`/api/billboards/${board.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ billboards: [updatedBoard] }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log(`${key} updated successfully`, data);
+        alert(`${mode} Images updated successfully`);
+      } else {
+        console.error("Update failed", data);
+      }
+    } catch (err) {
+      console.error("Error during update:", err);
+    }
+  };
+  useEffect(() => {
+    console.log(formData);
+  }, [formData]);
   return (
     <div className="py-16 px-6 max-w-7xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold text-red-700 mb-6">Update Survey</h1>
@@ -278,9 +395,9 @@ export default function EditSurvey() {
             >
               {/* Billboard Name */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label className="mb-2 font-semibold text-gray-700">
                   Billboard Name
-                </label>
+                </Label>
                 <select
                   value={board.billboard_name_id}
                   onChange={(e) =>
@@ -303,9 +420,9 @@ export default function EditSurvey() {
 
               {/* Billboard Type */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label className="mb-2 font-semibold text-gray-700">
                   Billboard Type
-                </label>
+                </Label>
                 <select
                   value={board.billboard_type_id}
                   onChange={(e) =>
@@ -328,9 +445,9 @@ export default function EditSurvey() {
 
               {/* Width */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label className="mb-2 font-semibold text-gray-700">
                   Width
-                </label>
+                </Label>
                 <Input
                   type="number"
                   value={board.width}
@@ -342,9 +459,9 @@ export default function EditSurvey() {
 
               {/* Height */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label className="mb-2 font-semibold text-gray-700">
                   Height
-                </label>
+                </Label>
                 <Input
                   type="number"
                   value={board.height}
@@ -356,9 +473,9 @@ export default function EditSurvey() {
 
               {/* Quantity */}
               <div className="w-full">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label className="mb-2 font-semibold text-gray-700">
                   Quantity
-                </label>
+                </Label>
                 <Input
                   type="number"
                   value={board.quantity}
@@ -367,11 +484,12 @@ export default function EditSurvey() {
                   }
                 />
               </div>
+              {/* Board Images */}
               <div>
                 <div>
-                  <label className="block font-semibold mb-1 text-gray-700 dark:text-gray-300">
+                  <Label className="mb-2 font-semibold text-gray-700">
                     Upload Board Images
-                  </label>
+                  </Label>
                   <input
                     type="file"
                     multiple
@@ -412,24 +530,120 @@ export default function EditSurvey() {
                   </Button>
                 </div>
               </div>
+              {/* Designs */}
+              {/* <div>
+                {billboards.map((board, index) => {
+                  const hasValidUrls =
+                    board.board_designs &&
+                    board.board_designs.length > 0 &&
+                    board.board_designs.every((d) => typeof d === "string");
+
+                  return (
+                    <div key={index} className="mt-4">
+                      {formData.surveyStatus === "client_approved" ? (
+                        hasValidUrls ? (
+                          <>
+                            <Label className="mb-2 font-semibold text-gray-700 block">
+                              Uploaded Designs
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                              {board?.board_designs &&
+                                board.board_designs.map((designUrl, i) => (
+                                  <img
+                                    key={i}
+                                    src={designUrl}
+                                    alt={`design-${i}`}
+                                    className="w-20 h-20 object-cover rounded-md border"
+                                  />
+                                ))}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <Label className="mb-2 font-semibold text-gray-700">
+                              Upload Designs
+                            </Label>
+                            <ImageUploader
+                              multiple
+                              files={board.board_designs || []}
+                              onFilesChange={(newFiles) =>
+                                handleDesignUpload(index, newFiles)
+                              }
+                            />
+                            <Button
+                              onClick={() => handleDesignUpdate(board)}
+                              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Update Design
+                            </Button>
+                          </>
+                        )
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div> */}
+              {(formData.surveyStatus === "client_approved" ||
+                formData.surveyStatus === "installation_completed" ||
+                formData.surveyStatus === "completed") && (
+                <div>
+                  {billboards.map((board, index) => (
+                    <div key={index} className="mb-8">
+                      <BoardDesignManager
+                        board={board}
+                        index={index}
+                        surveyStatus={formData.surveyStatus}
+                        mode="design"
+                        handleUpload={handleUpload}
+                        handleUpdates={handleUpdates}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(formData.surveyStatus === "installation_completed" ||
+                formData.surveyStatus === "completed") && (
+                <div>
+                  {billboards.map((board, index) => (
+                    <div key={index} className="mb-8">
+                      <BoardDesignManager
+                        board={board}
+                        index={index}
+                        surveyStatus={formData.surveyStatus}
+                        mode="installation"
+                        handleUpload={handleUpload}
+                        handleUpdates={handleUpdates}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
       <div className="w-full flex justify-start gap-4 items-center">
-        <Button
-          onClick={addBillboard}
-          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
-        >
-          Add Shopboard
-        </Button>
-        <Button
-          onClick={handleUpdate}
-          className="mt-4 bg-red-600 hover:bg-red-700 text-white"
-        >
-          Update Survey
-        </Button>
+        {user?.user_role === "admin" &&
+          formData?.surveyStatus === "pending_admin_review" && (
+            <Button
+              onClick={addBillboard}
+              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+            >
+              Add Shopboard
+            </Button>
+          )}
+
+        {(user?.user_role === "admin" || user?.user_role === "client") &&
+          (formData?.surveyStatus === "pending_admin_review" ||
+            formData?.surveyStatus === "client_review") && (
+            <Button
+              onClick={handleUpdate}
+              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+            >
+              Update Survey
+            </Button>
+          )}
       </div>
     </div>
   );

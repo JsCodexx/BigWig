@@ -15,7 +15,7 @@ export default function LoginPage() {
 
         <Link href="/auth/login/user">
           <button className="px-6 py-3 text-white bg-gray-500 rounded-lg hover:bg-blue-600 transition">
-            Login as User/Client
+            Login as User
           </button>
         </Link>
       </div>

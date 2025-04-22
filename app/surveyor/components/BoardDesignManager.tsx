@@ -4,6 +4,7 @@ import ImageUploader from "@/components/ImageUploader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { SurveyBillboard } from "@/types/survey";
+import Image from "next/image";
 import { useState } from "react";
 
 interface Props {
@@ -50,15 +51,26 @@ const BoardDesignManager: React.FC<Props> = ({
               : "Uploaded Installation Images"}
           </Label>
           <div className="flex flex-wrap gap-2">
-            {images.map((imgUrl, i) => (
-              <img
-                key={i}
-                src={imgUrl as string}
-                alt={`${mode}-${i}`}
-                className="w-20 h-20 object-cover rounded-md border"
-                onClick={() => setSelectedImage(imgUrl)}
-              />
-            ))}
+            {images.map((img, i) => {
+              const src =
+                typeof img === "string" ? img : URL.createObjectURL(img);
+
+              return (
+                <div
+                  key={i}
+                  className="relative w-20 h-20 cursor-pointer"
+                  onClick={() => setSelectedImage(src)}
+                >
+                  <Image
+                    src={src}
+                    alt={`${mode}-${i}`}
+                    fill
+                    className="object-cover rounded-md border"
+                    sizes="80px"
+                  />
+                </div>
+              );
+            })}
           </div>
         </>
       ) : (
@@ -81,12 +93,17 @@ const BoardDesignManager: React.FC<Props> = ({
       )}
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-          <div className="relative bg-white p-4 rounded shadow-lg max-w-[90%] max-h-[90%]">
-            <img
-              src={selectedImage}
-              alt="Large preview"
-              className="max-w-full max-h-[80vh] rounded"
-            />
+          <div className="relative bg-white p-4 rounded shadow-lg max-w-[90%] max-h-[90%] w-full">
+            <div className="relative w-full aspect-video max-h-[80vh]">
+              <Image
+                src={selectedImage!}
+                alt="Large preview"
+                fill
+                className="object-contain rounded"
+                sizes="(max-width: 768px) 100vw, 80vw"
+              />
+            </div>
+
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-sm rounded"

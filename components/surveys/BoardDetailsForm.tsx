@@ -106,9 +106,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
       setBoardImagePreviews([]);
     }
   }, [resetPreview]);
-  useEffect(() => {
-    console.log(newBoard);
-  }, [newBoard]);
+
   return (
     <div className="mt-4 p-4 space-y-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900">
       {/* Select Board Type & Board Detail */}
@@ -238,7 +236,16 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
         {errors.quantity && (
           <p className="text-red-500 text-sm">{errors.quantity}</p>
         )}
+
+        {/* Price Display */}
+        <div className="mt-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+          Price:{" "}
+          {newBoard.quantity && newBoard.height && newBoard.width
+            ? newBoard.quantity * newBoard.height * newBoard.width
+            : 0}
+        </div>
       </div>
+
       <div>
         <Label className="mb-2 font-semibold text-gray-700">
           Upload Board Images

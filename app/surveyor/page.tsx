@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase/Clientsupabase";
@@ -15,21 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FilesIcon, Plus } from "lucide-react";
+import { allStatuses, getAllowedStatusOptions } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
-
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [clients, setClients] = useState<{ id: string; full_name: string }[]>(
-    []
-  );
-  const [selectedSurvey, setSelectedSurvey] = useState<string | null>(null);
-  const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const { user } = useUser();
   const router = useRouter();
@@ -58,70 +54,62 @@ const SurveyorDashboard = () => {
       if (data) setSurveys(data);
     };
 
-    const fetchClients = async () => {
-      if (user?.user_role === "admin") {
-        const { data, error } = await supabase
-          .from("users")
-          .select("id, full_name")
-          .eq("user_role", "client");
-
-        if (error) {
-          console.error("Error fetching clients:", error);
-          return;
-        }
-
-        if (data) setClients(data);
-      }
-    };
-
     fetchSurveys();
-    fetchClients();
   }, [user]);
 
   // Function to update survey status
   const updateStatus = async (surveyId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from("surveys")
-      .update({ survey_status: newStatus })
-      .eq("id", surveyId);
+    try {
+      // Check for installation status before proceeding
+      if (newStatus === "installation_completed") {
+        const { data, error: fetchError } = await supabase
+          .from("surveys")
+          .select("payment_installation")
+          .eq("id", surveyId)
+          .maybeSingle();
 
-    if (error) {
-      console.error("Error updating status:", error);
-      return;
+        if (fetchError) {
+          console.error("Error fetching payment data:", fetchError);
+          alert("Something went wrong while checking installation charges.");
+          return;
+        }
+
+        if (
+          !data ||
+          !data.payment_installation ||
+          data.payment_installation === 0
+        ) {
+          alert(
+            "Please update the installation charges before completing installation."
+          );
+          return;
+        }
+      }
+
+      // Proceed to update status
+      const { error: updateError } = await supabase
+        .from("surveys")
+        .update({ survey_status: newStatus })
+        .eq("id", surveyId);
+
+      if (updateError) {
+        console.error("Error updating status:", updateError);
+        alert("Failed to update survey status.");
+        return;
+      }
+
+      // Update local state
+      setSurveys((prevSurveys) =>
+        prevSurveys.map((survey) =>
+          survey.id === surveyId
+            ? { ...survey, survey_status: newStatus }
+            : survey
+        )
+      );
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      alert("Unexpected error occurred. Please try again.");
     }
-
-    setSurveys((prevSurveys) =>
-      prevSurveys.map((survey) =>
-        survey.id === surveyId
-          ? { ...survey, survey_status: newStatus }
-          : survey
-      )
-    );
-  };
-
-  // Function to assign a client to a survey
-  const assignClient = async () => {
-    if (!selectedSurvey || !selectedClient) return;
-
-    const { error } = await supabase
-      .from("surveys")
-      .update({ client_id: selectedClient })
-      .eq("id", selectedSurvey);
-
-    if (error) {
-      console.error("Error assigning client:", error);
-      return;
-    }
-
-    setSurveys((prevSurveys) =>
-      prevSurveys.map((survey) =>
-        survey.id === selectedSurvey
-          ? { ...survey, client_id: selectedClient }
-          : survey
-      )
-    );
-
-    setSelectedSurvey(null); // Close the dialog
   };
 
   // Group surveys by status
@@ -138,32 +126,60 @@ const SurveyorDashboard = () => {
       setActiveTab(statuses[0]);
     }
   }, [statuses, activeTab]);
-
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl mb-4 font-bold text-red-500">Surveys</h1>
-        <Button
-          className="bg-red-600 hover:bg-red-700"
-          onClick={() => router.push("/surveyor/add-survey")}
-        >
-          <Plus />
-          Add Survey
-        </Button>
+    <div className="py-16  max-w-7xl mx-auto">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Surveys</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div className="flex justify-between items-center space-y-8">
+        <div className="w-auto">
+          <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+            <FilesIcon className="text-red-600" /> Surveys
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            View, filter, and manage all surveys in the system.
+          </p>
+        </div>
+        <div>
+          <Button
+            className="bg-red-600 hover:bg-red-700"
+            onClick={() => router.push("/surveyor/add-survey")}
+          >
+            <Plus />
+            Add Survey
+          </Button>
+        </div>
       </div>
       {/* Tabs Navigation */}
       <Tabs
         value={activeTab || ""}
         onValueChange={setActiveTab}
-        className="mb-6"
+        className="mb-6 mt-6"
       >
-        <TabsList className="flex space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-          {statuses.map((status) => (
-            <TabsTrigger key={status} value={status} className="capitalize">
-              {status.replace(/_/g, " ")}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex min-w-max gap-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+            {allStatuses.map((status: string) => (
+              <TabsTrigger
+                key={status}
+                value={status}
+                className="capitalize flex items-center space-x-2"
+              >
+                <span>{status.replace(/_/g, " ")}</span>
+                <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                  {groupedSurveys[status]?.length || 0}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {statuses.map((status) => (
           <TabsContent key={status} value={status}>
@@ -209,48 +225,77 @@ const SurveyorDashboard = () => {
                       </p>
                     </div>
 
-                    {/* Assign Client Button (Admin Only) */}
-                    {user?.user_role === "admin" && !survey.client_id && (
-                      <Button
-                        className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                        onClick={() => setSelectedSurvey(survey.id)}
-                      >
-                        Assign Client
-                      </Button>
-                    )}
                     {/* Update surveys */}
 
-                    {user.user_role === "admin" && (
-                      <Button
-                        className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                        onClick={() => router.push(`surveyor/${survey.id}`)}
-                      >
-                        Update Survey
-                      </Button>
-                    )}
+                    {(() => {
+                      const role = user?.user_role?.toLowerCase();
+                      const status = survey?.survey_status?.trim();
+
+                      if (
+                        (role === "admin" &&
+                          status === "pending_admin_review") ||
+                        (role === "client" && status === "client_review")
+                      ) {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Update Survey
+                          </Button>
+                        );
+                      }
+
+                      if (
+                        role === "admin" &&
+                        (status === "client_approved" ||
+                          status === "installation_completed")
+                      ) {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Update Design
+                          </Button>
+                        );
+                      }
+
+                      if (
+                        role === "surveyor" &&
+                        status === "installation_completed"
+                      ) {
+                        return (
+                          <Button
+                            className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
+                            onClick={() => router.push(`surveyor/${survey.id}`)}
+                          >
+                            Upload Installation Images
+                          </Button>
+                        );
+                      }
+
+                      return null;
+                    })()}
+
                     {/* Status Dropdown */}
                     <Select
                       value={survey.survey_status}
                       onValueChange={(newStatus) =>
                         updateStatus(survey.id, newStatus)
                       }
-                      disabled={user.user_role !== "admin"}
                     >
                       <SelectTrigger className="mt-4 w-full bg-gray-100 dark:bg-gray-700">
                         <SelectValue>
                           {survey.survey_status &&
-                            survey?.survey_status.replace(/_/g, " ")}
+                            survey.survey_status.replace(/_/g, " ")}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {[
-                          "pending_admin_review",
-                          "admin_approved",
-                          "client_review",
-                          "client_approved",
-                          "in_progress",
-                          "completed",
-                        ].map((status) => (
+                        {getAllowedStatusOptions(
+                          user.user_role ? user?.user_role : "",
+                          survey.survey_status
+                        ).map((status) => (
                           <SelectItem
                             key={status}
                             value={status}
@@ -268,40 +313,6 @@ const SurveyorDashboard = () => {
           </TabsContent>
         ))}
       </Tabs>
-
-      {/* Assign Client Modal */}
-      <Dialog
-        open={!!selectedSurvey}
-        onOpenChange={() => setSelectedSurvey(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Select a Client</DialogTitle>
-          </DialogHeader>
-          <Select
-            value={selectedClient || ""}
-            onValueChange={setSelectedClient}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a client">
-                {clients.find((client) => client.id === selectedClient)
-                  ?.full_name || "Select a client"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {clients.map((client) => (
-                <SelectItem key={client.id} value={client.id}>
-                  {client.full_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button onClick={assignClient} disabled={!selectedClient}>
-            Assign
-          </Button>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

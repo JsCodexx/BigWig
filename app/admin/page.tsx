@@ -1,146 +1,180 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
-import { User } from "@/types/user";
+import {
+  DollarSign,
+  Hourglass,
+  BarChart3,
+  LucideLayoutDashboard,
+} from "lucide-react";
 
-const AdminDashboard = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const supabase = createClientComponentClient();
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
-
-      if (error) {
-        console.error("Error fetching users:", error);
-      } else {
-        setUsers(data);
-      }
-      setLoading(false);
-    };
-
-    fetchUsers();
-  }, []);
-  // Apply filters
-  const filteredUsers = users.filter((user) => {
-    return (
-      (roleFilter ? user.user_role === roleFilter : true) &&
-      (statusFilter ? user.status === statusFilter : true)
-    );
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    // totalReceived: 0,
+    pendingPayments: 0,
+    surveyStatusCounts: {} as Record<string, number>,
+    pendingQuotes: 0,
+    totalSurveys: 0,
+    totalReviews: 0,
   });
 
-  if (loading) return <p className="text-center mt-4">Loading users...</p>;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const surveys = await fetch("/api/surveys?all=true");
+        if (!surveys.ok) throw new Error("Failed to fetch surveys");
+        const data = await surveys.json();
 
+        const statusCounts: Record<string, number> = {};
+        let totalRevenue = 0;
+        let totalReceived = 0;
+        let pendingPayments = 0;
+
+        data.forEach((survey: any) => {
+          statusCounts[survey.survey_status] =
+            (statusCounts[survey.survey_status] || 0) + 1;
+          totalRevenue += survey.payment_total;
+          // totalReceived += survey.payment_advance;
+          pendingPayments += survey.payment_pending;
+        });
+
+        // data of quotes
+        const res = await fetch("/api/quotes?all=true");
+        const quoteData = await res.json();
+        const pendingQuotes = quoteData.filter(
+          (q: any) => q.status === "pending"
+        );
+        const pendingQuotesCount = pendingQuotes.length;
+
+        // satisfactory forms
+        const forms = await fetch("/api/satisfactory-form?all=true");
+        const formData = await forms.json();
+        setStats({
+          totalRevenue,
+          // totalReceived,
+          pendingPayments,
+          surveyStatusCounts: statusCounts,
+          pendingQuotes: pendingQuotesCount,
+          totalSurveys: data.length,
+          totalReviews: formData.length,
+        });
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
-    <div className="py-16 px-6 max-w-5xl mx-auto">
-      <h1 className="text-4xl font-bold text-red-500">Admin Dashboard</h1>
+    <div className="min-h-[90vh] flex items-center justify-center bg-white dark:from-gray-900 dark:to-black p-6">
+      <div className="w-full max-w-7xl bg-white/80 dark:bg-black/40 backdrop-blur-xl rounded-3xl shadow-2xl p-10 space-y-10 border border-gray-200 dark:border-gray-800 transition-all">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-4xl font-bold text-red-700 dark:text-red-400 flex items-center gap-3">
+            <LucideLayoutDashboard className="w-8 h-8" />
+            Dashboard
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            All breakdowns in one place
+          </p>
+        </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 my-4">
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="p-2 border rounded bg-background text-foreground"
-        >
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="surveyor">Surveyor</option>
-          <option value="client">Client</option>
-        </select>
+        {/* Financial Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StatCard
+            title="Total Revenue"
+            value={stats.totalRevenue}
+            icon={<DollarSign className="text-red-600" />}
+            color="red"
+          />
+          <StatCard
+            title="Pending Payments"
+            value={stats.pendingPayments}
+            icon={<Hourglass className="text-yellow-500" />}
+            color="yellow"
+          />
+        </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="p-2 border rounded bg-background text-foreground"
-        >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
+        {/* Survey Status Breakdown */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">
+            Survey Status Breakdown
+          </h2>
 
-      {/* Users Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-          <thead className="bg-red-500 dark:bg-gray-950 text-white">
-            <tr>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Full Name
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Email
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Role
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Phone
-              </th>
-              <th className="border border-gray-300 dark:border-gray-700 p-2">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.user_id}
-                  className="hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <td className="border border-gray-300 p-2">
-                    {user.full_name}
-                  </td>
-                  <td className="border border-gray-300 p-2">{user.email}</td>
-                  <td className="border border-gray-300 p-2 capitalize">
-                    {user.user_role}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {user.phone_number}
-                  </td>
-                  <td
-                    className={`border border-gray-300 p-2 font-bold ${
-                      user.status === "active"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {user.status}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="min-h-[50vh] col-span-4 w-full flex justify-center items-center">
-                <h1 className="dark:text-gray-500 text-black w-full">
-                  No User Found
-                </h1>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Manage Users Button */}
-      <div className="mt-6">
-        <button
-          onClick={() => router.push("/admin/user-signup")}
-          className="bg-red-600 text-white flex justify-center items-center gap-2 px-4 py-2 rounded min-w-[50px] hover:bg-red-700 transition"
-        >
-          <span>
-            <Plus />
-          </span>
-          Add User
-        </button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {Object.entries(stats.surveyStatusCounts).map(([status, count]) => (
+              <StatusCard key={status} status={status} count={count} />
+            ))}
+            <StatusCard status="Pending Quotes" count={stats.pendingQuotes} />
+            <StatusCard status="Total Surveys" count={stats.totalSurveys} />
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: JSX.Element;
+  color: "red" | "green" | "yellow";
+}) {
+  const colorMap = {
+    red: {
+      border: "border-red-500",
+      bg: "bg-red-100 dark:bg-red-900/40",
+      text: "text-red-700 dark:text-red-300",
+    },
+    green: {
+      border: "border-green-500",
+      bg: "bg-green-100 dark:bg-green-900/40",
+      text: "text-green-700 dark:text-green-300",
+    },
+    yellow: {
+      border: "border-yellow-400",
+      bg: "bg-yellow-100 dark:bg-yellow-900/40",
+      text: "text-yellow-700 dark:text-yellow-300",
+    },
+  };
+
+  const styles = colorMap[color];
+
+  return (
+    <div
+      className={`flex items-center gap-5 p-6 rounded-2xl shadow-xl border-l-8 ${styles.border} bg-white dark:bg-gray-900/50 hover:scale-[1.02] transition-transform duration-300`}
+    >
+      <div className={`p-4 rounded-full ${styles.bg}`}>{icon}</div>
+      <div>
+        <h2 className="text-md font-semibold text-gray-700 dark:text-gray-300">
+          {title}
+        </h2>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+          ${value.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusCard({ status, count }: { status: string; count: number }) {
+  return (
+    <div className="p-6 rounded-2xl bg-white dark:bg-gray-900/50 shadow-md border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center hover:shadow-xl transition duration-300">
+      <BarChart3 className="text-red-600 dark:text-red-400 mb-3 w-10 h-10" />
+      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center break-words capitalize">
+        {status.replace(/_/g, " ")}
+      </h3>
+      <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+        {count}
+      </p>
+    </div>
+  );
+}
+
+export default Dashboard;

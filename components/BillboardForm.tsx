@@ -15,10 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Image as ImageIcon, Trash } from "lucide-react";
+import { Upload, Image as ImageIcon, Trash, Edit } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 const formSchema = z.object({
   length: z.string().min(1, "Required"),
   width: z.string().min(1, "Required"),
@@ -120,10 +127,26 @@ export function BillboardForm() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-center text-red-700 dark:text-red-500">
-        Billboard Form
-      </h1>
+    <div className="w-full bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Add Board</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <Edit className="text-red-600" /> Add Board
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Add and edit your boards
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
         {/* Length & Width */}

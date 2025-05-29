@@ -9,6 +9,7 @@ import "swiper/css/pagination";
 import { formatDistanceToNow } from "date-fns";
 import { Calendar, ChevronRight, Heart, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 export function BillboardCard({ board }: { board: Billboard }) {
   const router = useRouter();
   return (
@@ -123,15 +124,15 @@ export function BillboardCard({ board }: { board: Billboard }) {
         <div className="w-[85%] h-[1px] bg-gray-200"></div>
       </div>
       <div className="w-full h-6 md:h-10 flex justify-center items-center p-1 sm:py-2">
-        <button
-          onClick={() => router.push(`/products/${board?.id}`)}
+        <Link
+          href={`/products/${board?.id}`}
           className="mt-1 text-[14px] font-semibold text-[#37474F] flex justify-center items-center"
         >
           {`View Details`}
           <span>
             <ChevronRight />
           </span>
-        </button>
+        </Link>
       </div>
     </div>
   );

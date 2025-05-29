@@ -34,19 +34,18 @@ const SurveyorSurveysPage = () => {
   }, [user]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 text-red-600">My Quotes</h2>
-
+    <div className="py-16 px-6 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-red-600">My quotes</h2>
       {loading ? (
         <p className="text-gray-500">Loading your quotes...</p>
       ) : surveys.length === 0 ? (
         <p className="text-gray-500">You do not have any active quotes.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto w-full">
           <table className="min-w-full bg-white border rounded-lg">
             <thead>
               <tr className="bg-red-700 text-white">
-                <th className="p-3 text-left">Client</th>
+                <th className="p-3 text-left">Name</th>
                 <th className="p-3 text-left">Email</th>
                 <th className="p-3 text-left">Phone</th>
                 <th className="p-3 text-left">Status</th>
@@ -55,10 +54,10 @@ const SurveyorSurveysPage = () => {
             <tbody>
               {surveys.map((survey) => (
                 <tr key={survey.id} className="border-t">
-                  <td className="p-3">{survey.name}</td>
+                  <td className="p-3">{survey.full_name}</td>
                   <td className="p-3">{survey.email}</td>
                   <td className="p-3">{survey.phone_number}</td>
-                  <td className="p-3">{survey.status || "Pending"}</td>
+                  <td className="p-3">{survey.status}</td>
                 </tr>
               ))}
             </tbody>

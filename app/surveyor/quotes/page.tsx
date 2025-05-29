@@ -4,21 +4,27 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
+import { User } from "@/types/user";
+import { useUi } from "@/context/UiContext";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const SurveyorSurveysPage = () => {
-  const [surveys, setSurveys] = useState<any[]>([]);
+const SurveyorQuotesPage = () => {
+  const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
   const { user } = useUser();
-  // Fetch logged-in surveyor ID
+  const { setSelectedClient, setSelectedQuote } = useUi();
 
-  // Fetch assigned surveys
-  const fetchSurveys = async () => {
+  const fetchquotes = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("quotes")
@@ -28,81 +34,136 @@ const SurveyorSurveysPage = () => {
     if (error) {
       console.error(error);
     } else {
-      setSurveys(data);
+      setQuotes(data);
     }
     setLoading(false);
   };
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from("users").select("*");
+    if (error) {
+      console.error(error);
+    } else {
+      setUsers(data);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!user?.id) return;
-
-    fetchSurveys();
+    fetchUsers();
+    fetchquotes();
   }, [user]);
+
   const markCompleted = async (id: string) => {
     try {
       const { data, error } = await supabase
-        .from("quotes") // Update the quotes table
-        .update({ status: "conducted" }) // Set status to conducted
-        .eq("id", id); // Find the specific survey by ID
+        .from("quotes")
+        .update({ status: "conducted" })
+        .eq("id", id);
 
       if (error) {
         console.error("Error updating status:", error.message);
         return;
       }
-      fetchSurveys();
+      fetchquotes();
     } catch (err) {
       console.error("Unexpected error:", err);
     }
   };
 
+  const conductSurvey = (phone_number: string, quotesId: string) => {
+    const foundUser = users.find((user) => user.phone_number === phone_number);
+    if (quotesId) {
+      setSelectedQuote(quotesId);
+    }
+    if (foundUser?.id) {
+      setSelectedClient(foundUser.id);
+    }
+    router.push("/surveyor/add-survey");
+  };
+
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 text-red-600">
-        My Surveys
-      </h2>
+    <div className="py-16 px-6 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          Quotes
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          View all quotes for you.
+        </p>
+      </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading surveys...</p>
-      ) : surveys.length === 0 ? (
-        <p className="text-gray-500">No assigned surveys.</p>
+        <div className="text-gray-500 flex items-center gap-2">
+          <Loader2 className="animate-spin h-5 w-5" />
+          Loading quotes...
+        </div>
+      ) : quotes?.length === 0 ? (
+        <p className="text-gray-500">No assigned quotes.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
+        <div className="overflow-x-auto rounded-xl shadow-xl bg-white">
+          <table className="min-w-full border-separate border-spacing-y-4">
             <thead>
               <tr className="bg-red-700 text-white">
-                <th className="p-3 text-left">Client</th>
-                <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-left">Phone</th>
-                <th className="p-3 text-left">Status</th>
-                <th className="p-3 text-left">Action</th>
+                <th className="py-4 px-6 text-left rounded-l-lg">Client</th>
+                <th className="py-4 px-6 text-left">Email</th>
+                <th className="py-4 px-6 text-left">Phone</th>
+                <th className="py-4 px-6 text-left">Status</th>
+                <th className="py-4 px-6 text-left rounded-r-lg">Action</th>
               </tr>
             </thead>
             <tbody>
-              {surveys.map((survey) => (
-                <tr key={survey.id} className="border-t">
-                  <td className="p-3">{survey.name}</td>
-                  <td className="p-3">{survey.email}</td>
-                  <td className="p-3">{survey.phone_number}</td>
-                  <td className="p-3">{survey.status || "Pending"}</td>
-                  <td className="p-3 cursor-pointer flex gap-2">
-                    {survey.status === "pending" && (
-                      <button
-                        className="p-1 text-red-500 border rounded bg-red-200"
-                        onClick={() => router.push("/surveyor/add-survey")}
-                      >
-                        Conduct
-                      </button>
-                    )}
-                    <button
-                      className="p-1  text-green-500 border rounded bg-green-200"
-                      onClick={() => markCompleted(survey.id)}
-                      disabled={survey.status === "conducted"}
-                    >
-                      {survey.status === "pending"
-                        ? "Mark as completed"
-                        : "Completed"}
-                    </button>
+              {quotes.map((quote) => (
+                <motion.tr
+                  key={quote.id}
+                  className="bg-gray-50 hover:bg-gray-100 transition duration-200 shadow-sm rounded-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <td className="py-4 px-6 font-medium text-gray-800">
+                    {quote.full_name}
                   </td>
-                </tr>
+                  <td className="py-4 px-6">{quote.email}</td>
+                  <td className="py-4 px-6">{quote.phone_number}</td>
+                  <td className="py-4 px-6">
+                    <Badge
+                      className={
+                        quote.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : quote.status === "conducted"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-200 text-gray-700"
+                      }
+                    >
+                      {quote.status || "Pending"}
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex gap-1">
+                      {quote.status === "pending" && (
+                        <button
+                          className="px-2 py-1 text-xs text-red-700 border border-red-300 bg-red-100 rounded-md hover:bg-red-200"
+                          onClick={() =>
+                            conductSurvey(quote.phone_number, quote.id)
+                          }
+                        >
+                          Conduct
+                        </button>
+                      )}
+
+                      {quote.status === "conducted" && (
+                        <button
+                          className="px-2 py-1 text-xs text-gray-500 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
+                          disabled
+                        >
+                          Completed
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </motion.tr>
               ))}
             </tbody>
           </table>
@@ -112,4 +173,4 @@ const SurveyorSurveysPage = () => {
   );
 };
 
-export default SurveyorSurveysPage;
+export default SurveyorQuotesPage;

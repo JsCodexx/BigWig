@@ -35,7 +35,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-    console.log("first");
+
     try {
       if (role === "admin") {
         const { data: authData, error: authError } =
@@ -63,7 +63,11 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
 
         const result = await response.json();
         setUser(result);
-        router.push("/");
+        if (result.user.user_role === "client") {
+          router.push("/client");
+        } else {
+          router.push("/surveyor/dashboard");
+        }
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -79,7 +83,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
     >
       <div>
         <Label className="text-gray-700">
-          {role === "admin" ? "Email" : "Username or Phone"}
+          {role === "admin" ? "Email" : "Phone"}
         </Label>
         <Input {...register("identifier")} disabled={isLoading} />
         {errors.identifier && (

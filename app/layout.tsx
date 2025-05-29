@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { UiProvider } from "@/context/UiContext";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
@@ -27,7 +28,7 @@ export default function RootLayout({
 function AppContent({ children }: { children: React.ReactNode }) {
   const { loading, role } = useUser();
   const pathname = usePathname();
-  const hiddenRoutes = ["/auth/login", "/auth/login/user"];
+  const hiddenRoutes = ["/auth/login", "/auth/login/admin"];
   const hideNavAndFooter = hiddenRoutes.includes(pathname);
 
   if (loading) return <div>Loading...</div>;
@@ -38,13 +39,16 @@ function AppContent({ children }: { children: React.ReactNode }) {
       {!hideNavAndFooter && <Navbar />}
 
       {/* Main Content Wrapper */}
-      <main className="flex-grow w-full bg-gray-50 dark:bg-gray-800 pt-16">
-        {/* `pt-16` ensures content starts below the navbar (16 = 64px, same as navbar height) */}
+      <main
+        className={`flex-grow w-full bg-white dark:bg-gray-800 ${
+          !hideNavAndFooter ? "pt-16" : ""
+        }`}
+      >
         {children}
       </main>
-
-      {/* Footer always at the bottom */}
-      {!hideNavAndFooter && role !== "admin" && <Footer />}
+      <Toaster />
+      {/* Footer always at the bottom unless hidden */}
+      {!hideNavAndFooter && role === "client" && <Footer />}
     </div>
   );
 }

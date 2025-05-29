@@ -238,7 +238,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
         )}
 
         {/* Price Display */}
-        <div className="mt-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+        <div className="mt-2 text-lg font-bold text-gray-600 dark:text-gray-200">
           Price:{" "}
           {newBoard.quantity && newBoard.height && newBoard.width
             ? newBoard.quantity * newBoard.height * newBoard.width

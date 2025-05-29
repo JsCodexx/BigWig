@@ -28,6 +28,15 @@ export const getAllowedStatusOptions = (
 
   return statusOptions[userRole]?.[currentStatus] || [currentStatus];
 };
+export const allStatuses = [
+  "pending_admin_review",
+  "client_review",
+  "client_approved",
+  "installation_pending",
+  "installation_in_progress",
+  "installation_completed",
+  "completed",
+];
 
 export const generalSurveySchema = z.object({
   shopName: z.string().min(1, "Shop name is required."),

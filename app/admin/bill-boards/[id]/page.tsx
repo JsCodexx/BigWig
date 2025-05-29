@@ -7,12 +7,19 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Billboard } from "@/types/product";
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 export default function BillboardDetail() {
   const { id } = useParams();
   const router = useRouter();
@@ -55,11 +62,32 @@ export default function BillboardDetail() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto p-6"
     >
-      <h1 className="text-2xl font-bold text-red-700 dark:text-red-500 mb-4">
-        Billboard Details
-      </h1>
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/admin/bill-boards">
+              Billboards
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Details</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <Info className="text-red-600" /> Board Details
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Full details of the boards
+        </p>
+      </div>
 
       {/* Image Slider */}
       <div className="relative w-full max-h-[400px] bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">

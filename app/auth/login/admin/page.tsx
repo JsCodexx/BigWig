@@ -6,7 +6,7 @@ export default function AdminLoginPage() {
   return (
     <div className="flex h-[83vh] w-full items-center justify-center px-2">
       <div className="flex h-full w-[80%] items-center justify-center px-2">
-        <div className="flex w-full max-w-5xl overflow-hidden rounded-2xl shadow-lg bg-white">
+        <div className="flex w-full max-w-7xl overflow-hidden rounded-2xl shadow-lg bg-white">
           {/* Left - Stacked Images */}
           <div className="hidden lg:flex w-1/2 items-center justify-center bg-gray-200 p-2 relative">
             <div className="relative w-60 h-80">

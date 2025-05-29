@@ -10,6 +10,8 @@ interface UiContext {
   setSelectedClient: (id: string | null) => void;
   selectedQuote: string | null; // null means none is selected yet
   setSelectedQuote: (id: string | null) => void;
+  setSelectedLocation: (id: string | null) => void;
+  selectedLocation?: string | null;
 }
 
 // ✅ Create UserContext
@@ -18,6 +20,7 @@ export const UserContext = createContext<UiContext | undefined>(undefined);
 export const UiProvider = ({ children }: { children: ReactNode }) => {
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
     <SidebarProvider>
@@ -28,6 +31,8 @@ export const UiProvider = ({ children }: { children: ReactNode }) => {
           selectedClient,
           selectedQuote,
           setSelectedQuote,
+          setSelectedLocation,
+          selectedLocation,
         }}
       >
         {children}

@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { FormInputIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type SatisfactionForm = {
@@ -46,7 +47,7 @@ export default function ClietnComments() {
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto bg-white dark:bg-gray-900 min-h-screen">
-      <Breadcrumb>
+      <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
@@ -57,10 +58,14 @@ export default function ClietnComments() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h2 className="text-2xl font-bold text-red-700 mb-6">
-        Customer Satisfaction Forms
-      </h2>
-
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <FormInputIcon className="text-red-600" /> User Management
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          What people think about you.
+        </p>
+      </div>
       {loading ? (
         <div className="text-center text-red-500 font-semibold">Loading...</div>
       ) : forms.length === 0 ? (

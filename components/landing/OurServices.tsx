@@ -1,60 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/app/lib/supabase/Clientsupabase";
 
-const services = [
-  {
-    title: "Advertisement",
-    types: [
-      { name: "Billboard SMDS Steamer", image: "/images/slide1.webp" },
-      { name: "Corporate Shop Branding", image: "/images/slide2.webp" },
-      { name: "Advertising Taxation Vendor", image: "/images/slide3.webp" },
-      { name: "Graphic Designing", image: "/images/slide4.webp" },
-      { name: "Panaflex Printing", image: "/images/slide5.webp" },
-      { name: "Workshop Facility", image: "/images/slide1.webp" },
-    ],
-  },
-  {
-    title: "3D Visulization",
-    types: [
-      { name: "3D Architectural Walkthrough", image: "/images/slide1.webp" },
-      { name: "3D Floor plan Rendoring", image: "/images/slide1.webp" },
-      { name: "3D Interior Exterior Rendoring", image: "/images/slide1.webp" },
-      { name: "3D Animation ", image: "/images/slide1.webp" },
-      { name: "Arcetectural Visualization", image: "/images/slide1.webp" },
-      { name: "Ecommerce Product Visulization", image: "/images/slide1.webp" },
-    ],
-  },
-  {
-    title: "Import Export",
-    types: [
-      { name: "Event Branding", image: "/images/slide1.webp" },
-      { name: "Vehicle Wraps", image: "/images/slide1.webp" },
-      { name: "Mall Advertising", image: "/images/slide1.webp" },
-      { name: "Airport Advertising", image: "/images/slide1.webp" },
-      { name: "Train Station Ads", image: "/images/slide1.webp" },
-      { name: "Cinema Ads", image: "/images/slide1.webp" },
-    ],
-  },
-  {
-    title: "Specialty Advertising",
-    types: [
-      { name: "Augmented Reality Ads", image: "/images/slide1.webp" },
-      { name: "Drone Advertising", image: "/images/slide1.webp" },
-      { name: "Holographic Displays", image: "/images/slide1.webp" },
-      { name: "Projection Mapping", image: "/images/slide1.webp" },
-      { name: "Eco-Friendly Billboards", image: "/images/slide1.webp" },
-      { name: "Skywriting Ads", image: "/images/slide1.webp" },
-    ],
-  },
-];
+interface Service {
+  id: string;
+  title: string;
+  image_url: string;
+}
+
+interface ServiceType {
+  id: string;
+  name: string;
+  services: Service[];
+}
 
 const OurServices = () => {
-  const { theme } = useTheme();
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+        const { data, error } = await supabase.from("service_types").select(`
+            id,
+            name,
+            services (
+              id,
+              title,
+              image_url
+            )
+          `);
+      console.log(data);
+      if (error) {
+        console.error("Error fetching service types:", error.message);
+        return;
+      }
+
+      if (data) {
+        setServiceTypes(data as ServiceType[]);
+      }
+    };
+
+    fetchData();
+  }, []);
+  useEffect(() => {
+    console.log(serviceTypes), [serviceTypes];
+  });
+  if (!serviceTypes.length)
+    return <p className="text-center py-10">Loading...</p>;
 
   return (
     <section className="py-16 px-6 bg-gray-100 dark:bg-gray-900 text-center">
@@ -67,6 +62,7 @@ const OurServices = () => {
         >
           Our Services
         </motion.h2>
+
         <motion.p
           className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
           initial={{ opacity: 0 }}
@@ -79,20 +75,19 @@ const OurServices = () => {
 
         {/* Tabs */}
         <div className="mt-10 border-b border-gray-300 dark:border-gray-700">
-          <div className="flex justify-center overflow-x-auto scrollbar-hide gap-4 sm:gap-6">
-            {services.map((service, index) => (
+          <div className="flex justify-center overflow-x-auto gap-6">
+            {serviceTypes.map((type, index) => (
               <button
-                key={index}
+                key={type.id}
                 onClick={() => setActiveTab(index)}
                 className={`relative px-6 py-3 text-lg font-semibold transition-all duration-300 whitespace-nowrap 
-              ${
-                activeTab === index
-                  ? "text-red-500"
-                  : "text-gray-600 dark:text-gray-400"
-              }
-            `}
+                  ${
+                    activeTab === index
+                      ? "text-red-500"
+                      : "text-gray-600 dark:text-gray-400"
+                  }`}
               >
-                {service.title}
+                {type.name}
                 {activeTab === index && (
                   <motion.div
                     layoutId="underline"
@@ -104,7 +99,7 @@ const OurServices = () => {
           </div>
         </div>
 
-        {/* Selected Service Types with Animation */}
+        {/* Services */}
         <div className="mt-12">
           <AnimatePresence mode="wait">
             <motion.div
@@ -113,30 +108,28 @@ const OurServices = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
             >
-              {services[activeTab].types.map((type, idx) => (
+              {serviceTypes[activeTab]?.services?.map((service, idx) => (
                 <motion.div
-                  key={idx}
+                  key={service.id}
                   className="relative h-48 rounded-lg overflow-hidden shadow-lg group"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                 >
-                  {/* Background Image */}
-                  <Image
-                    src={type.image}
-                    alt={type.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="group-hover:scale-110 transition-transform duration-500"
-                  />
-
-                  {/* Glass Effect on Hover */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                    <span className="text-white text-xl font-semibold">
-                      {type.name}
-                    </span>
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={service.image_url}
+                      alt={service.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                      <span className="text-white text-xl font-semibold">
+                        {service.title}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               ))}

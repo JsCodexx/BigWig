@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Button } from "@/components/ui/button";
-import { Menu, MoreVertical, Trash } from "lucide-react";
+import { Menu, MoreVertical, Table, Trash } from "lucide-react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { Billboard } from "@/types/product";
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 export default function BillboardList() {
   const supabase = createClientComponentClient();
   const [billboards, setBillboards] = useState<Billboard[]>([]);
@@ -49,9 +56,23 @@ export default function BillboardList() {
 
   return (
     <div className="w-full">
-      <h1 className="text-2xl font-bold text-red-700 dark:text-red-500 mb-6">
-        All Billboards
-      </h1>
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Billboards</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <Table className="text-red-600" /> Boards
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">All boards</p>
+      </div>
 
       <div className="space-y-4">
         {billboards.length === 0 ? (

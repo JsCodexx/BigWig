@@ -25,7 +25,6 @@ export default function PaymentsPage() {
         .from("surveys")
         .select("*")
         .eq("surveyor_id", user.id)
-        .eq("survey_status", "installation_in_progress")
         .order("created_at", { ascending: false });
 
       if (error) console.error("Error fetching surveys:", error);
@@ -87,33 +86,50 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-red-700 mb-6">
-        Payment Management
-      </h1>
+    <div className="py-16 px-6 max-w-7xl mx-auto  flex flex-col space-y-4">
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          Payments
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Manage payments for your projects
+        </p>
+      </div>
 
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table className="w-full border-collapse border border-gray-300">
+        <table className="w-full border-separate border-spacing-y-2">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Client</th>
-              <th className="border p-2">Installation Charges</th>
-              <th className="border p-2">Installation Details</th>
-              <th className="border p-2">Actions</th>
+            <tr className="bg-red-700 text-white">
+              <th className="p-3 text-left rounded-tl-md">Client</th>
+              <th className="p-3 text-left">Installation Charges</th>
+              <th className="p-3 text-left">Installation Details</th>
+              <th className="p-3 text-left rounded-tr-md">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {surveys.map((survey) => (
-              <tr key={survey.id} className="border">
-                <td className="border p-2">{survey.client_name}</td>
-                <td className="border p-2">Rs{survey.payment_installation}</td>
-                <td className="border p-2">{survey.installation_comments}</td>
-                <td className="border p-2">
-                  <Button onClick={() => handleSelectSurvey(survey)}>
+            {surveys.map((survey, idx) => (
+              <tr
+                key={survey.id}
+                className="bg-white shadow-sm rounded-lg hover:shadow-md transition duration-200"
+              >
+                <td className="p-3 text-gray-700 rounded-l-md border-l-4 border-red-500 font-medium">
+                  {survey.client_name}
+                </td>
+                <td className="p-3 text-gray-700">
+                  Rs {survey.payment_installation}
+                </td>
+                <td className="p-3 text-gray-600 italic">
+                  {survey.installation_comments}
+                </td>
+                <td className="p-3 rounded-r-md">
+                  <button
+                    onClick={() => handleSelectSurvey(survey)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm shadow"
+                  >
                     Update Installation
-                  </Button>
+                  </button>
                 </td>
               </tr>
             ))}

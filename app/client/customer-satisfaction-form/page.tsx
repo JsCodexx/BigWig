@@ -7,6 +7,16 @@ import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import React, { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { File } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+interface FormValues {
+  client_id: string;
+  shop_name: string;
+  shop_address: string;
+  shopkeeper_name: string;
+  cell_number: string;
+  client_comments?: string;
+}
 
 const formSchema = z.object({
   client_id: z.string().uuid(),
@@ -26,6 +36,7 @@ const CustomerSatisfactionForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const surveyId = searchParams.get("survey_id");
   const {
     register,
@@ -42,63 +53,87 @@ const CustomerSatisfactionForm = () => {
 
   async function onSubmit(data: FormData) {
     if (!user) {
-      console.log("❌ User not found");
-      alert("You must be logged in to submit the form.");
+      toast({
+        title: "User not found",
+        description: "You must be logged in to submit the form.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!user.id) {
-      console.log("❌ User ID is missing");
-      alert("User ID is required.");
+      toast({
+        title: "User ID missing",
+        description: "User ID is required to submit the form.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!surveyId) {
-      console.log("❌ Survey ID is missing");
-      alert("Survey ID is required.");
+      toast({
+        title: "Survey ID missing",
+        description: "Survey ID is required to submit the form.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsLoading(true);
 
-    // 🔍 Step 1: Check if the user has already submitted the form for this survey
+    // 🔍 Step 1: Check if the user has already submitted the form
     const { data: existingForms, error: checkError } = await supabase
       .from("customer_satisfaction_forms")
       .select("id")
       .eq("survey_id", surveyId)
       .eq("client_id", user.id)
-      .maybeSingle(); // Expecting either one result or null
+      .maybeSingle();
 
     if (checkError) {
       console.error("❌ Error checking existing form:", checkError.message);
-      alert("Error checking existing form: " + checkError.message);
+      toast({
+        title: "Error checking form",
+        description: checkError.message,
+        variant: "destructive",
+      });
       setIsLoading(false);
       return;
     }
 
     if (existingForms) {
-      console.warn("⚠️ User already submitted form for this survey");
-      alert("You have already submitted a satisfaction form for this survey.");
+      toast({
+        title: "Form already submitted",
+        description:
+          "You’ve already submitted a satisfaction form for this survey.",
+        variant: "default",
+      });
       setIsLoading(false);
       router.push("/client");
       return;
     }
 
-    // 📝 Step 2: Proceed with form submission if no previous record exists
+    // 📝 Step 2: Submit form
     const formData = { ...data, client_id: user.id, survey_id: surveyId };
 
     const { error } = await supabase
       .from("customer_satisfaction_forms")
       .insert([formData]);
+
     setIsLoading(false);
 
     if (error) {
       console.error("❌ Error submitting form:", error.message);
-      alert("Error submitting form: " + error.message);
+      toast({
+        title: "Submission failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
-      console.log("✅ Form submitted successfully!");
+      toast({
+        title: "Form submitted",
+        description: "Thanks for your feedback!",
+      });
       router.push("/client");
-      // alert("Form submitted successfully!");
     }
   }
 
@@ -111,97 +146,104 @@ const CustomerSatisfactionForm = () => {
       console.log("✅ Client ID set:", user.id);
     }
   }, [user, setValue]);
+  const fields: { label: string; name: keyof FormValues; type: string }[] = [
+    { label: "Shop Name", name: "shop_name", type: "text" },
+    { label: "Shop Address", name: "shop_address", type: "text" },
+    { label: "Shopkeeper Name", name: "shopkeeper_name", type: "text" },
+    { label: "Cell Number", name: "cell_number", type: "tel" },
+  ];
 
   return (
-    <div className="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Customer Satisfaction Form</h2>
-      <p className="mb-4">
-        Thank you so much for your cooperation. We appreciate the opportunity to
-        serve you with our fascia installation services. Bigwig Enterprises, as
-        a vendor of Pakistan Cables, has carried out its obligations
-        professionally. You confirm that the fascia was installed under your
-        supervision and you are completely satisfied with the installation. You
-        further confirm that maintaining the visibility of the board is your
-        responsibility and that this space will not be provided to any other
-        company.
-      </p>
-      <p className="mb-4 rtl">
-        لیے ہم آپ کے تعاون کا بہت شکریہ۔ آپ کی دکان پر بورڈ لگانے کی ہماری خدمات
-        کے ساتھ آپ کی خدمت کا موقع فراہم کرنے کے لیے ہم آپ کے شکر گزار ہیں۔
-        میسرز بگ وگ انٹرپرائزز، پاکستان کیبلز کے وینڈر کے طور پر، پیشہ ورانہ
-        معیار کے مطابق ذمہ داریاں نبھا رہا ہے۔ آپ اس بات کی تصدیق کرتے ہیں کہ
-        بورڈ آپ کی نگرانی میں نصب کیا گیا تھا اور آپ انسٹالیشن سے مکمل طور پر
-        مطمئن ہیں۔ آپ مزید تصدیق کرتے ہیں کہ بورڈ کی مرئیت کو برقرار رکھنا آپ کی
-        ذمہ داری ہوگی اور یہ جگہ کسی دوسری کمپنی کو فراہم نہیں کی جائے گی۔
-      </p>
+    <div className="py-16 px-6 max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-lg space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold text-red-700 flex items-center gap-2">
+          <File className="text-red-600" /> Satisfaction Form
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-sm">
+          Let us know how your experience was with BigWig.
+        </p>
+      </div>
+
+      {/* Description */}
+      <div className="space-y-4 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <p>
+          Thank you so much for your cooperation. We appreciate the opportunity
+          to serve you with our fascia installation services. Bigwig
+          Enterprises, as a vendor of Pakistan Cables, has carried out its
+          obligations professionally. You confirm that the fascia was installed
+          under your supervision and you are completely satisfied with the
+          installation. You further confirm that maintaining the visibility of
+          the board is your responsibility and that this space will not be
+          provided to any other company.
+        </p>
+        <p className="rtl text-right">
+          لیے ہم آپ کے تعاون کا بہت شکریہ۔ آپ کی دکان پر بورڈ لگانے کی ہماری
+          خدمات کے ساتھ آپ کی خدمت کا موقع فراہم کرنے کے لیے ہم آپ کے شکر گزار
+          ہیں۔ میسرز بگ وگ انٹرپرائزز، پاکستان کیبلز کے وینڈر کے طور پر، پیشہ
+          ورانہ معیار کے مطابق ذمہ داریاں نبھا رہا ہے۔ آپ اس بات کی تصدیق کرتے
+          ہیں کہ بورڈ آپ کی نگرانی میں نصب کیا گیا تھا اور آپ انسٹالیشن سے مکمل
+          طور پر مطمئن ہیں۔ آپ مزید تصدیق کرتے ہیں کہ بورڈ کی مرئیت کو برقرار
+          رکھنا آپ کی ذمہ داری ہوگی اور یہ جگہ کسی دوسری کمپنی کو فراہم نہیں کی
+          جائے گی۔
+        </p>
+      </div>
+
+      <hr className="border-t border-gray-300 dark:border-gray-600" />
+
+      {/* Form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log("Form submission triggered!"); // ✅ You already see this
-          handleSubmit((data) => {
-            console.log("Data received:", data); // 🔴 This should appear
-            onSubmit(data);
-          })(e);
+          handleSubmit((data) => onSubmit(data))(e);
         }}
         noValidate
+        className="space-y-6"
       >
-        <div className="mb-4">
-          <input type="hidden" {...register("client_id")} />
-          <label className="block">Shop Name:</label>
-          <input className="w-full p-2 border" {...register("shop_name")} />
-          {errors.shop_name && (
-            <p className="text-red-500">{errors.shop_name.message}</p>
-          )}
-        </div>
+        <input type="hidden" {...register("client_id")} />
 
-        <div className="mb-4">
-          <label className="block">Shop Address:</label>
-          <input className="w-full p-2 border" {...register("shop_address")} />
-          {errors.shop_address && (
-            <p className="text-red-500">{errors.shop_address.message}</p>
-          )}
-        </div>
+        {fields.map((field) => (
+          <div key={field.name}>
+            <label className="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+              {field.label}
+            </label>
+            <input
+              type={field.type}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
+              className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800"
+              {...register(field.name)}
+            />
+            {errors[field.name] && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors[field.name]?.message}
+              </p>
+            )}
+          </div>
+        ))}
 
-        <div className="mb-4">
-          <label className="block">Shopkeeper Name:</label>
-          <input
-            className="w-full p-2 border"
-            {...register("shopkeeper_name")}
-          />
-          {errors.shopkeeper_name && (
-            <p className="text-red-500">{errors.shopkeeper_name.message}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block">Cell Number:</label>
-          <input
-            className="w-full p-2 border"
-            type="tel"
-            {...register("cell_number")}
-          />
-          {errors.cell_number && (
-            <p className="text-red-500">{errors.cell_number.message}</p>
-          )}
-        </div>
-        <div className="mb-4">
-          <label className="block">Comments:</label>
+        <div>
+          <label className="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Comments
+          </label>
           <textarea
-            className="w-full p-2 border"
-
+            placeholder="Write your feedback here..."
+            rows={4}
+            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800"
             {...register("client_comments")}
           />
           {errors.client_comments && (
-            <p className="text-red-500">{errors.client_comments.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.client_comments.message}
+            </p>
           )}
         </div>
 
         <Button
-          className="w-full bg-red-600 dark:bg-red-500 text-white hover:bg-red-700"
-          disabled={isLoading}
           type="submit"
+          disabled={isLoading}
+          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-medium rounded-xl transition-all"
         >
-          {isLoading ? "Submitting..." : "Submit"}
+          {isLoading ? "Submitting..." : "Submit Form"}
         </Button>
       </form>
     </div>

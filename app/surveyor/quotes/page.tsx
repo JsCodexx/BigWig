@@ -6,6 +6,10 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/user";
 import { useUi } from "@/context/UiContext";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,9 +23,7 @@ const SurveyorQuotesPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const { setSelectedClient, setSelectedQuote } = useUi();
-  // Fetch logged-in surveyor ID
 
-  // Fetch assigned quotes
   const fetchquotes = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -36,6 +38,7 @@ const SurveyorQuotesPage = () => {
     }
     setLoading(false);
   };
+
   const fetchUsers = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("users").select("*");
@@ -46,87 +49,121 @@ const SurveyorQuotesPage = () => {
     }
     setLoading(false);
   };
+
   useEffect(() => {
     if (!user?.id) return;
     fetchUsers();
     fetchquotes();
   }, [user]);
+
   const markCompleted = async (id: string) => {
     try {
       const { data, error } = await supabase
-        .from("quotes") // Update the quotes table
-        .update({ status: "conducted" }) // Set status to conducted
-        .eq("id", id); // Find the specific quotes by ID
+        .from("quotes")
+        .update({ status: "conducted" })
+        .eq("id", id);
 
       if (error) {
         console.error("Error updating status:", error.message);
         return;
       }
       fetchquotes();
-      return;
     } catch (err) {
       console.error("Unexpected error:", err);
     }
   };
+
   const conductSurvey = (phone_number: string, quotesId: string) => {
     const foundUser = users.find((user) => user.phone_number === phone_number);
     if (quotesId) {
       setSelectedQuote(quotesId);
     }
-    if (foundUser && foundUser.id) {
-      setSelectedClient(foundUser?.id);
+    if (foundUser?.id) {
+      setSelectedClient(foundUser.id);
     }
     router.push("/surveyor/add-survey");
   };
+
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-red-600">My quotes</h2>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          Quotes
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          View all quotes for you.
+        </p>
+      </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading quotes...</p>
+        <div className="text-gray-500 flex items-center gap-2">
+          <Loader2 className="animate-spin h-5 w-5" />
+          Loading quotes...
+        </div>
       ) : quotes?.length === 0 ? (
         <p className="text-gray-500">No assigned quotes.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
+        <div className="overflow-x-auto rounded-xl shadow-xl bg-white">
+          <table className="min-w-full border-separate border-spacing-y-4">
             <thead>
               <tr className="bg-red-700 text-white">
-                <th className="p-3 text-left">Client</th>
-                <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-left">Phone</th>
-                <th className="p-3 text-left">Status</th>
-                <th className="p-3 text-left">Action</th>
+                <th className="py-4 px-6 text-left rounded-l-lg">Client</th>
+                <th className="py-4 px-6 text-left">Email</th>
+                <th className="py-4 px-6 text-left">Phone</th>
+                <th className="py-4 px-6 text-left">Status</th>
+                <th className="py-4 px-6 text-left rounded-r-lg">Action</th>
               </tr>
             </thead>
             <tbody>
-              {quotes?.map((quotes) => (
-                <tr key={quotes.id} className="border-t">
-                  <td className="p-3">{quotes.full_name}</td>
-                  <td className="p-3">{quotes.email}</td>
-                  <td className="p-3">{quotes.phone_number}</td>
-                  <td className="p-3">{quotes.status || "Pending"}</td>
-                  <td className="p-3 cursor-pointer flex gap-2">
-                    {quotes.status === "pending" && (
-                      <button
-                        className="p-1 text-red-500 border rounded bg-red-200"
-                        onClick={() =>
-                          conductSurvey(quotes.phone_number, quotes.id)
-                        }
-                      >
-                        Conduct
-                      </button>
-                    )}
-                    <button
-                      className="p-1  text-green-500 border rounded bg-green-200"
-                      onClick={() => markCompleted(quotes.id)}
-                      disabled={quotes.status === "conducted"}
-                    >
-                      {quotes.status === "pending"
-                        ? "Mark as completed"
-                        : "Completed"}
-                    </button>
+              {quotes.map((quote) => (
+                <motion.tr
+                  key={quote.id}
+                  className="bg-gray-50 hover:bg-gray-100 transition duration-200 shadow-sm rounded-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <td className="py-4 px-6 font-medium text-gray-800">
+                    {quote.full_name}
                   </td>
-                </tr>
+                  <td className="py-4 px-6">{quote.email}</td>
+                  <td className="py-4 px-6">{quote.phone_number}</td>
+                  <td className="py-4 px-6">
+                    <Badge
+                      className={
+                        quote.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : quote.status === "conducted"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-200 text-gray-700"
+                      }
+                    >
+                      {quote.status || "Pending"}
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex gap-1">
+                      {quote.status === "pending" && (
+                        <button
+                          className="px-2 py-1 text-xs text-red-700 border border-red-300 bg-red-100 rounded-md hover:bg-red-200"
+                          onClick={() =>
+                            conductSurvey(quote.phone_number, quote.id)
+                          }
+                        >
+                          Conduct
+                        </button>
+                      )}
+
+                      {quote.status === "conducted" && (
+                        <button
+                          className="px-2 py-1 text-xs text-gray-500 bg-gray-200 border border-gray-300 rounded-md cursor-not-allowed"
+                          disabled
+                        >
+                          Completed
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </motion.tr>
               ))}
             </tbody>
           </table>

@@ -23,7 +23,16 @@ import GeneralSurveyDetails from "@/components/surveys/GeneralSurveyDetails";
 import BoardDetailsForm from "@/components/surveys/BoardDetailsForm";
 import { generalSurveySchema } from "@/lib/utils";
 import { useUi } from "@/context/UiContext";
-
+import { File } from "lucide-react";
+import DialogWrapper from "./components/board-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 interface Errors {
   shopName?: string;
   shopAddress?: string;
@@ -66,6 +75,8 @@ export default function SubmitSurvey() {
     clientId: "",
     description: "",
   });
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
   // Handle input changes
   const handleChange = (
@@ -85,25 +96,6 @@ export default function SubmitSurvey() {
   }, []);
   const removeBillboard = (index: number) => {
     setBillboards((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Add shopboard to the array
-  const addBillboard = () => {
-    setBillboards([...billboards, newBoard]);
-    // Reset form fields for the next board
-    setNewBoard({
-      billboard_name_id: "",
-      width: "",
-      height: "",
-      billboard_type_id: "",
-      quantity: "",
-      board_images: [],
-    });
-    // ✅ Trigger reset signal for image preview in child
-    setResetPreview(true);
-
-    // Immediately turn it off so future changes can trigger again
-    setTimeout(() => setResetPreview(false), 100);
   };
 
   // on change add details in the board
@@ -316,16 +308,63 @@ export default function SubmitSurvey() {
   useEffect(() => {
     console.log(selectedQuote);
   }, [selectedQuote]);
+  const handleEditBoard = (index: number) => {
+    setNewBoard(billboards[index]);
+    setEditIndex(index);
+    setShowDialog(true);
+  };
+
+  const addOrUpdateBoard = () => {
+    if (editIndex !== null) {
+      const updated = [...billboards];
+      updated[editIndex] = newBoard!;
+      setBillboards(updated);
+      setEditIndex(null);
+    } else {
+      setBillboards([...billboards, newBoard!]);
+    }
+    setNewBoard({
+      billboard_name_id: "",
+      width: "",
+      height: "",
+      billboard_type_id: "",
+      quantity: "",
+      board_images: [],
+    });
+    // ✅ Trigger reset signal for image preview in child
+    setResetPreview(true);
+
+    // Immediately turn it off so future changes can trigger again
+    setTimeout(() => setResetPreview(false), 100);
+  };
   return (
     <div className="w-full flex flex-col justify-center items-center">
       {/* Left Side: Survey Form */}
-      <div className="py-16 px-6 max-w-7xl mx-auto ">
-        <h1 className="text-2xl font-bold text-red-700 mb-6">Submit Survey</h1>
+      <div className="py-16 px-6 max-w-7xl w-full mx-auto ">
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Create Survey</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div>
+          <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+            <File className="text-red-600" /> Create Survey
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Create,View and Edit your surveys at one place.
+          </p>
+        </div>
         {/* Left: Submit Survey + Board Form (60%) */}
 
-        <div className="flex flex-col lg:flex-row w-full gap-6">
-          <div className="w-full lg:w-[60%] bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
-            {/* General Survey Details */}
+        <div className="w-full space-y-6">
+          {/* General Survey Details */}
+          <div className="bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
             <GeneralSurveyDetails
               errors={errors}
               formData={formData}
@@ -335,9 +374,23 @@ export default function SubmitSurvey() {
               previewImage={previewImage}
               handleImageChange={handleImageChange}
             />
-
+            {/* Conditional: Boards Table (Full Width) */}
+            {billboards.length > 0 && (
+              <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                  Added Shopboard
+                </h2>
+                <BoardsTable
+                  billboards={billboards}
+                  onRemoveBoard={removeBillboard}
+                  billboardNames={billboardNames}
+                  billboardTypes={billboardTypes}
+                  onEditBoard={handleEditBoard}
+                />
+              </div>
+            )}
             {/* Billboard Details Form */}
-            <BoardDetailsForm
+            {/* <BoardDetailsForm
               billboardNames={billboardNames}
               billboardTypes={billboardTypes}
               newBoard={newBoard}
@@ -346,37 +399,29 @@ export default function SubmitSurvey() {
               openModal={openModal}
               resetPreview={resetPreview}
               setNewBoard={setNewBoard}
-            />
-            <div className="w-full flex justify-between items-center">
-              <Button
-                onClick={addBillboard}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Add Shopboard
-              </Button>
-              <div className="flex justify-between gap-4 items-center">
-                <Button
-                  onClick={handleSubmit}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  disabled={loading}
-                >
-                  {loading ? "Submitting.." : "Submit Survey"}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Boards Table */}
-          <div className="w-full lg:w-[40%] bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-              Added Shopboard
-            </h2>
-            <BoardsTable
-              billboards={billboards}
-              onRemoveBoard={removeBillboard}
+            /> */}
+            <DialogWrapper
               billboardNames={billboardNames}
               billboardTypes={billboardTypes}
+              newBoard={newBoard}
+              user={user}
+              updateNewBoard={updateNewBoard}
+              resetPreview={resetPreview}
+              setNewBoard={setNewBoard}
+              onAddBoard={addOrUpdateBoard}
+              open={showDialog}
+              setOpen={setShowDialog}
             />
+
+            <div className="flex justify-between gap-4 items-center">
+              <Button
+                onClick={handleSubmit}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                disabled={loading}
+              >
+                {loading ? "Submitting.." : "Submit Survey"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

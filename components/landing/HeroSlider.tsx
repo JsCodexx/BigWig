@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, EffectFade } from "swiper/modules";
+import { Pagination, EffectFade, Autoplay } from "swiper/modules";
 import { createClient } from "@supabase/supabase-js";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 import LocationSearch from "../ui/LocationSearch";
+import { useUi } from "@/context/UiContext";
+import { useRouter } from "next/navigation";
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -18,6 +19,8 @@ const supabase = createClient(
 const HeroSlider = () => {
   const [slides, setSlides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { setSelectedLocation } = useUi();
+  const router = useRouter();
 
   useEffect(() => {
     fetchSlides();
@@ -32,8 +35,13 @@ const HeroSlider = () => {
     if (error) {
       console.error("Error fetching slides:", error);
     } else {
-      setSlides(data);
+      // Put main slide first if exists
+      const mainSlide = data.find((s) => s.is_main);
+      const otherSlides = data.filter((s) => !s.is_main);
+      const sortedSlides = mainSlide ? [mainSlide, ...otherSlides] : data;
+      setSlides(sortedSlides);
     }
+
     setLoading(false);
   };
 
@@ -47,29 +55,33 @@ const HeroSlider = () => {
 
   return (
     <Swiper
-      modules={[Pagination, EffectFade]}
-      pagination={{ clickable: true }}
+      modules={[Pagination, EffectFade, Autoplay]}
       effect="fade"
+      pagination={{ clickable: true }}
+      autoplay={
+        slides.length > 1
+          ? { delay: 4000, disableOnInteraction: false }
+          : undefined // Important: use undefined not `false` here
+      }
+      loop={slides.length > 1} // Ensure continuous loop
       allowTouchMove={false}
       className="w-full h-[50vh] sm:h-[40vh] md:h-[70vh] lg:h-[85vh] xl:h-[90vh]"
     >
-      {slides.map((slide, index) => (
+      {slides.map((slide) => (
         <SwiperSlide key={slide.id} className="relative w-full h-full">
-          {/* Background Image (Full Width) */}
           <div
             className="absolute inset-0 w-screen h-full bg-no-repeat bg-center bg-cover"
             style={{ backgroundImage: `url(${slide.image_url})` }}
           ></div>
 
-          {/* Overlay Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 md:px-6">
             <div className="w-full flex flex-col gap-4 justify-around items-center">
-              {/* Filter Section (Show only on larger screens) */}
               <div className="lg:flex hidden w-[50%]">
                 <LocationSearch
-                  onSelectLocation={(location) =>
-                    console.log("Selected:", location)
-                  }
+                  onSelectLocation={(location) => {
+                    setSelectedLocation(location);
+                    router.push("/products");
+                  }}
                 />
               </div>
             </div>

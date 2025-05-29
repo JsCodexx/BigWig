@@ -15,10 +15,17 @@ import type {
 import GeneralSurveyDetails from "@/components/surveys/GeneralSurveyDetails";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { Label } from "@/components/ui/label";
-import ImageUploader from "@/components/ImageUploader";
 import { uploadImages } from "@/lib/utils";
 import BoardDesignManager from "../components/BoardDesignManager";
-
+import { File, Info } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 // Validation Schema
 const surveySchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
@@ -93,7 +100,9 @@ export default function EditSurvey() {
   const addBillboard = () => {
     setBillboards([...billboards, newBoard]);
   };
-
+  useEffect(() => {
+    console.log(billboards);
+  }, [billboards]);
   const handleUpdate = async () => {
     const updatedBillboards = await Promise.all(
       billboards.map(async (board) => {
@@ -103,30 +112,10 @@ export default function EditSurvey() {
           if (typeof img === "string") {
             // ✅ Already a URL, keep it
             uploadedUrls.push(img);
-          } else if (img?.file instanceof File) {
+          } else if (typeof img === "object" && img?.file instanceof File) {
             // ✅ New image that needs uploading
             const fileUpload = new FormData();
             fileUpload.append("file", img.file);
-
-            try {
-              const res = await fetch("/api/upload", {
-                method: "POST",
-                body: fileUpload,
-              });
-
-              const imgData = await res.json();
-              if (imgData.url) {
-                uploadedUrls.push(imgData.url);
-              } else {
-                console.warn("One board image failed to upload");
-              }
-            } catch (err) {
-              console.error("Upload error:", err);
-            }
-          } else if (img instanceof File) {
-            // Edge case: direct File (not wrapped in object)
-            const fileUpload = new FormData();
-            fileUpload.append("file", img);
 
             try {
               const res = await fetch("/api/upload", {
@@ -276,13 +265,21 @@ export default function EditSurvey() {
       return updated;
     });
   };
-  const handleDesignUpdate = async (board: SurveyBillboard) => {
-    const uploadedUrls = await uploadImages(board.board_designs || []);
-
-    const updatedBoard = {
-      ...board,
-      board_designs: uploadedUrls,
-    };
+  const handleDesignUpdate = async (board: SurveyBillboard, mode: any) => {
+    let updatedBoard;
+    if (mode === "installation") {
+      const uploadedUrls = await uploadImages(board.installation_images || []);
+      updatedBoard = {
+        ...board,
+        installation_images: uploadedUrls,
+      };
+    } else {
+      const uploadedUrls = await uploadImages(board.board_designs || []);
+      updatedBoard = {
+        ...board,
+        board_designs: uploadedUrls,
+      };
+    }
 
     try {
       const res = await fetch(`/api/billboards/${board.id}`, {
@@ -366,12 +363,47 @@ export default function EditSurvey() {
       console.error("Error during update:", err);
     }
   };
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
+
   return (
     <div className="py-16 px-6 max-w-7xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold text-red-700 mb-6">Update Survey</h1>
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/surveyor">Surveys</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Details</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <File className="text-red-600" /> Update Survey
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          View and update the survey.
+        </p>
+      </div>
+      {(formData.surveyStatus === "client_review" ||
+        formData.surveyStatus === "admin_approved") && (
+        <div className="mb-4 p-4 border-l-4 border-yellow-500 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 rounded-md shadow-sm">
+          <div className="flex items-start gap-2">
+            <Info className="w-5 h-5 mt-1 text-yellow-500" />
+            <div>
+              <p className="font-semibold">Notice:</p>
+              <p className="text-sm">
+                You cannot change the survey details. Only removal of boards is
+                allowed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* General Survey Details */}
       <GeneralSurveyDetails
         errors={errors}
@@ -388,6 +420,7 @@ export default function EditSurvey() {
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
             Existing Boards
           </h2>
+
           {billboards.map((board, index) => (
             <div
               key={index}
@@ -530,59 +563,6 @@ export default function EditSurvey() {
                   </Button>
                 </div>
               </div>
-              {/* Designs */}
-              {/* <div>
-                {billboards.map((board, index) => {
-                  const hasValidUrls =
-                    board.board_designs &&
-                    board.board_designs.length > 0 &&
-                    board.board_designs.every((d) => typeof d === "string");
-
-                  return (
-                    <div key={index} className="mt-4">
-                      {formData.surveyStatus === "client_approved" ? (
-                        hasValidUrls ? (
-                          <>
-                            <Label className="mb-2 font-semibold text-gray-700 block">
-                              Uploaded Designs
-                            </Label>
-                            <div className="flex flex-wrap gap-2">
-                              {board?.board_designs &&
-                                board.board_designs.map((designUrl, i) => (
-                                  <img
-                                    key={i}
-                                    src={designUrl}
-                                    alt={`design-${i}`}
-                                    className="w-20 h-20 object-cover rounded-md border"
-                                  />
-                                ))}
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <Label className="mb-2 font-semibold text-gray-700">
-                              Upload Designs
-                            </Label>
-                            <ImageUploader
-                              multiple
-                              files={board.board_designs || []}
-                              onFilesChange={(newFiles) =>
-                                handleDesignUpload(index, newFiles)
-                              }
-                            />
-                            <Button
-                              onClick={() => handleDesignUpdate(board)}
-                              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
-                            >
-                              Update Design
-                            </Button>
-                          </>
-                        )
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div> */}
               {(formData.surveyStatus === "client_approved" ||
                 formData.surveyStatus === "installation_completed" ||
                 formData.surveyStatus === "completed") && (
@@ -595,7 +575,7 @@ export default function EditSurvey() {
                         surveyStatus={formData.surveyStatus}
                         mode="design"
                         handleUpload={handleUpload}
-                        handleUpdates={handleUpdates}
+                        handleUpdates={handleDesignUpdate}
                       />
                     </div>
                   ))}
@@ -612,7 +592,7 @@ export default function EditSurvey() {
                         surveyStatus={formData.surveyStatus}
                         mode="installation"
                         handleUpload={handleUpload}
-                        handleUpdates={handleUpdates}
+                        handleUpdates={handleDesignUpdate}
                       />
                     </div>
                   ))}

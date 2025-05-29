@@ -6,10 +6,21 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// GET: Fetch quotes assigned to a specific surveyor
+// GET: Fetch all quotes or quotes by surveyor
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const surveyor_id = searchParams.get("surveyor_id");
+  const fetchAll = searchParams.get("all");
+
+  if (fetchAll === "true") {
+    const { data, error } = await supabase.from("quotes").select("*");
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 200 });
+  }
 
   if (!surveyor_id) {
     return NextResponse.json(
@@ -30,7 +41,7 @@ export async function GET(req: Request) {
   return NextResponse.json(data, { status: 200 });
 }
 
-// DELETE: Remove a survey by ID
+// DELETE: Remove a quote by ID
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -53,6 +64,8 @@ export async function DELETE(req: Request) {
     { status: 204 }
   );
 }
+
+// PATCH: Update quote status to 'conducted'
 export async function PATCH(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");

@@ -10,7 +10,7 @@ import { useState } from "react";
 interface Props {
   board: SurveyBillboard;
   index: number;
-  surveyStatus: string;
+  surveyStatus: string | null;
   mode: "design" | "installation"; // 👈 NEW
   handleUpload: (
     index: number,
@@ -26,7 +26,6 @@ interface Props {
 const BoardDesignManager: React.FC<Props> = ({
   board,
   index,
-  surveyStatus,
   mode,
   handleUpload,
   handleUpdates,

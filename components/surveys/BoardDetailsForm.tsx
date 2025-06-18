@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "../ui/button";
 import type { ImageType } from "@/types/survey";
 import ImageUploader from "../ImageUploader";
+import { useParams } from "next/navigation";
 
 // ✅ Define Zod validation schema
 const boardSchema = z.object({
@@ -71,6 +72,15 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
 
     updateNewBoard(field, value);
   };
+  useEffect(() => {
+    if (newBoard?.board_images?.length > 0) {
+      const previews = newBoard.board_images
+        .filter((img: any) => img.preview)
+        .map((img: any) => img.preview);
+
+      setBoardImagePreviews(previews);
+    }
+  }, [newBoard.board_images]);
 
   const handleBoardImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -279,6 +289,22 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             </span>
           </div>
         ))}
+
+        {newBoard.length && !boardImagePreviews && (
+          <div className="relative w-20 h-20">
+            <img
+              src={newBoard.board_images[0].preview}
+              alt={`preview-`}
+              className="w-full object-cover rounded-md border"
+            />
+            <span
+              onClick={() => removeImage(newBoard.board_images[0].preview)}
+              className="h-5 w-5 absolute right-0 top-0 flex justify-center items-center bg-red-300 rounded-full"
+            >
+              X
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -138,12 +138,8 @@ const CustomerSatisfactionForm = () => {
   }
 
   useEffect(() => {
-    console.log("Validation Errors:", errors);
-  }, [errors]);
-  useEffect(() => {
     if (user?.id) {
       setValue("client_id", user.id);
-      console.log("✅ Client ID set:", user.id);
     }
   }, [user, setValue]);
   const fields: { label: string; name: keyof FormValues; type: string }[] = [

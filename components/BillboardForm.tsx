@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Image as ImageIcon, Trash, Edit } from "lucide-react";
+import { Upload, Image as ImageIcon, Trash, Edit, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -41,6 +41,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export function BillboardForm() {
   const supabase = createClientComponentClient();
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+  const [isGalleryLoading, setIsGalleryLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const router = useRouter();
@@ -60,7 +62,6 @@ export function BillboardForm() {
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const { data, error } = await supabase.storage
       .from("files")
       .upload(`images/${Date.now()}_${file.name}`, file);
@@ -73,16 +74,19 @@ export function BillboardForm() {
     const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/files/${data.path}`;
 
     if (type === "avatar") {
+      setIsAvatarLoading(true);
       setAvatarPreview(imageUrl);
       setValue("avatar", imageUrl);
     } else {
+      setIsGalleryLoading(true);
       setGalleryPreviews((prev) => [...prev, imageUrl]);
       setValue("gallery", [...(watch("gallery") || []), imageUrl]);
     }
+    setIsAvatarLoading(false);
+    setIsGalleryLoading(false);
   };
 
   const onSubmit = async (data: FormData) => {
-    console.log("Form Data:", data);
     const { error } = await supabase.from("bill_boards").insert(data);
 
     if (error) {
@@ -148,55 +152,102 @@ export function BillboardForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-5 mt-4 bg-white dark:bg-neutral-900 p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm"
+      >
         {/* Length & Width */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="length">Length</Label>
-            <Input id="length" {...register("length")} className="mt-1" />
+            <Label
+              htmlFor="length"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Length
+            </Label>
+            <Input
+              id="length"
+              {...register("length")}
+              className="mt-1"
+              placeholder="Enter length"
+            />
             {errors.length && (
-              <p className="text-red-500 text-sm mt-1">
+              <p className="text-xs text-red-500 mt-1">
                 {errors.length.message}
               </p>
             )}
           </div>
-
           <div>
-            <Label htmlFor="width">Width</Label>
-            <Input id="width" {...register("width")} className="mt-1" />
+            <Label
+              htmlFor="width"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Width
+            </Label>
+            <Input
+              id="width"
+              {...register("width")}
+              className="mt-1"
+              placeholder="Enter width"
+            />
             {errors.width && (
-              <p className="text-red-500 text-sm mt-1">
+              <p className="text-xs text-red-500 mt-1">
                 {errors.width.message}
               </p>
             )}
           </div>
         </div>
 
-        {/* Location */}
-        <div>
-          <Label htmlFor="location">Location</Label>
-          <Input id="location" {...register("location")} className="mt-1" />
-          {errors.location && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.location.message}
-            </p>
-          )}
-        </div>
-
-        {/* Facing To */}
-        <div>
-          <Label htmlFor="facing_to">Facing To</Label>
-          <Input id="facing_to" {...register("facing_to")} className="mt-1" />
-          {errors.facing_to && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.facing_to.message}
-            </p>
-          )}
+        {/* Location & Facing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label
+              htmlFor="location"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Location
+            </Label>
+            <Input
+              id="location"
+              {...register("location")}
+              className="mt-1"
+              placeholder="Enter location"
+            />
+            {errors.location && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.location.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label
+              htmlFor="facing_to"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Facing To
+            </Label>
+            <Input
+              id="facing_to"
+              {...register("facing_to")}
+              className="mt-1"
+              placeholder="Enter direction"
+            />
+            {errors.facing_to && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.facing_to.message}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Status */}
         <div>
-          <Label htmlFor="status">Status</Label>
+          <Label
+            htmlFor="status"
+            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+          >
+            Status
+          </Label>
           <Select
             onValueChange={(value) =>
               setValue(
@@ -219,7 +270,12 @@ export function BillboardForm() {
         {/* Equipped Until */}
         {watch("status") === "equipped" && (
           <div>
-            <Label htmlFor="equipped_until">Equipped Until</Label>
+            <Label
+              htmlFor="equipped_until"
+              className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Equipped Until
+            </Label>
             <Input
               id="equipped_until"
               type="datetime-local"
@@ -231,70 +287,113 @@ export function BillboardForm() {
 
         {/* Avatar Upload */}
         <div>
-          <Label>Avatar (Main Image)</Label>
+          <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Avatar
+          </Label>
           <div className="flex items-center gap-4 mt-2">
             {avatarPreview ? (
-              <div className="relative">
+              <div className="relative w-[64px] h-[64px]">
                 <Image
                   src={avatarPreview}
-                  width={80}
-                  height={80}
-                  className="rounded-lg shadow-md"
+                  fill
+                  className="rounded-md object-cover shadow"
                   alt="Avatar Preview"
                 />
-                {/* Delete Button */}
                 <button
                   type="button"
-                  className="absolute top-0 right-0 bg-red-600 p-1 rounded-full text-white shadow-md"
+                  className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full text-white shadow"
                   onClick={() => handleDelete(avatarPreview)}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <ImageIcon className="w-20 h-20 text-gray-500" />
+              <ImageIcon className="w-12 h-12 text-gray-400" />
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e, "avatar")}
-            />
+
+            <label className="cursor-pointer inline-flex items-center bg-gray-200 hover:bg-gray-300 text-sm text-gray-700 px-3 py-1.5 rounded-md shadow transition disabled:opacity-50">
+              {isAvatarLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Loading...
+                </>
+              ) : avatarPreview ? (
+                "Change Image"
+              ) : (
+                "Upload Image"
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, "avatar")}
+                className="hidden"
+                disabled={isAvatarLoading}
+              />
+            </label>
           </div>
         </div>
 
         {/* Gallery Upload */}
         <div>
-          <Label>Gallery Images</Label>
-          <div className="flex gap-4 mt-2">
+          <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Gallery Images
+          </Label>
+          <div className="flex flex-wrap gap-3 mt-2">
             {galleryPreviews.map((src, index) => (
-              <div key={index} className="relative">
+              <div key={index} className="relative w-[56px] h-[56px]">
                 <Image
                   src={src}
-                  width={60}
-                  height={60}
-                  className="rounded-lg shadow-md"
+                  fill
+                  className="rounded-md object-cover shadow"
                   alt={`Gallery Image ${index + 1}`}
                 />
                 <button
                   type="button"
-                  className="absolute top-0 right-0 bg-red-600 p-1 rounded-full text-white shadow-md"
-                  onClick={() => handleDelete(src)}
+                  className="absolute -top-2 -right-2 bg-red-600 p-1 rounded-full text-white shadow"
+                  onClick={async () => {
+                    await handleDelete(src); // remove from storage
+                    setGalleryPreviews((prev) =>
+                      prev.filter((img) => img !== src)
+                    ); // update UI
+                    const updatedGallery = (watch("gallery") || []).filter(
+                      (img: string) => img !== src
+                    );
+                    setValue("gallery", updatedGallery);
+                  }}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
               </div>
             ))}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e, "gallery")}
-              multiple
-            />
+
+            <label className="cursor-pointer inline-flex items-center bg-gray-200 hover:bg-gray-300 text-sm text-gray-700 px-3 py-1.5 rounded-md shadow transition disabled:opacity-50">
+              {isGalleryLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : galleryPreviews.length > 0 ? (
+                "Add More"
+              ) : (
+                "Select Image"
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, "gallery")}
+                className="hidden"
+                disabled={isGalleryLoading}
+              />
+            </label>
           </div>
         </div>
 
-        <Button type="submit" className="w-full bg-red-700 text-white py-2">
-          Save Billboard
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          className="ml-auto px-4 py-1.5 text-sm bg-red-700 hover:bg-red-800 text-white rounded-md shadow"
+        >
+          Save
         </Button>
       </form>
     </div>

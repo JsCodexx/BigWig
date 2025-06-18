@@ -93,7 +93,6 @@ export async function PUT(
       .insert(formattedBillboards);
 
     if (billboardsError) {
-      console.log(billboardsError);
       return NextResponse.json(
         { error: billboardsError.message },
         { status: 500 }

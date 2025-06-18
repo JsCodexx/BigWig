@@ -115,6 +115,39 @@ export default function AdminCreateUserForm() {
             className="space-y-6"
             noValidate
           >
+            {/* User Role Select */}
+            <div className="space-y-2">
+              <Label className="text-gray-600" htmlFor="user_role">
+                User Role
+              </Label>
+              <Controller
+                name="user_role"
+                control={control}
+                defaultValue="client" // 👈 IMPORTANT!
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isLoading}
+                    aria-invalid={!!errors.user_role}
+                  >
+                    <SelectTrigger id="user_role" className="w-full">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="client">Client</SelectItem>
+                      <SelectItem value="surveyor">Surveyor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              {errors.user_role && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.user_role.message}
+                </p>
+              )}
+            </div>
             {/* Full Name */}
             <div className="space-y-2">
               <Label className="text-gray-600" htmlFor="fullName">
@@ -149,40 +182,6 @@ export default function AdminCreateUserForm() {
               {errors.phone_number && (
                 <p className="text-red-600 text-sm mt-1">
                   {errors.phone_number.message}
-                </p>
-              )}
-            </div>
-
-            {/* User Role Select */}
-            <div className="space-y-2">
-              <Label className="text-gray-600" htmlFor="user_role">
-                User Role
-              </Label>
-              <Controller
-                name="user_role"
-                control={control}
-                defaultValue="client" // 👈 IMPORTANT!
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isLoading}
-                    aria-invalid={!!errors.user_role}
-                  >
-                    <SelectTrigger id="user_role" className="w-full">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="client">Client</SelectItem>
-                      <SelectItem value="surveyor">Surveyor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-
-              {errors.user_role && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.user_role.message}
                 </p>
               )}
             </div>
@@ -227,16 +226,12 @@ export default function AdminCreateUserForm() {
               )}
             </div>
 
-            {/* Submit Button */}
             <Button
               type="button"
-              onClick={() => {
-                handleSubmit(onSubmit, (errors) => {
-                  console.log("Validation Errors:", errors);
-                })();
-              }}
+              onClick={handleSubmit(onSubmit)}
+              disabled={isLoading}
             >
-              Debug Submit
+              {isLoading ? "Creating..." : "Create User"}
             </Button>
           </form>
         </CardContent>

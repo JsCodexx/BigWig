@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useUser } from "@/context/UserContext"; // Assuming a user context exists
 import type {
   BillboardType,
@@ -289,7 +289,6 @@ export default function SubmitSurvey() {
         .from("users")
         .select("id, full_name")
         .eq("user_role", "client");
-      console.log("clients", data);
       if (error) console.error(error);
       else setClients(data);
     };
@@ -305,15 +304,11 @@ export default function SubmitSurvey() {
       setImage(file);
     }
   };
-  useEffect(() => {
-    console.log(selectedQuote);
-  }, [selectedQuote]);
   const handleEditBoard = (index: number) => {
     setNewBoard(billboards[index]);
     setEditIndex(index);
     setShowDialog(true);
   };
-
   const addOrUpdateBoard = () => {
     if (editIndex !== null) {
       const updated = [...billboards];

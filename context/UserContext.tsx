@@ -68,11 +68,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response);
+
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
-          console.log(userData.user_role);
+
           setRole(userData.user_role);
         } else {
           console.log("Invalid token, logging out...");

@@ -13,7 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { CardContent } from "@/components/ui/card";
+import { Pencil, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Edit } from "lucide-react";
 import {
@@ -24,6 +24,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import ServiceTypesManager from "@/components/service-types";
 interface ServiceType {
   id: number;
   name: string;
@@ -110,9 +111,6 @@ const ManageServices = () => {
     });
   };
 
-  const addNewServiceRow = () => {
-    setNewServices((prev) => [...prev, { title: "", image_url: "" }]);
-  };
   const handleSubmit = async () => {
     if (!categoryId) {
       return toast({
@@ -216,156 +214,182 @@ const ManageServices = () => {
             Edit your landing page
           </p>
         </div>
+        <ServiceTypesManager />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+          {/* Left: Create New Service */}
+          <div className="col-span-12 md:col-span-4">
+            <div className="p-6 rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-md">
+              <h2 className="text-2xl font-bold text-red-700 mb-6 text-center md:text-left">
+                Create New Service
+              </h2>
+              {/* Service Type */}
+              <div className="mb-6">
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                  Service Type
+                </Label>
+                <Select
+                  value={categoryId || ""}
+                  onValueChange={(value) => setCategoryId(value)}
+                >
+                  <SelectTrigger className="w-full dark:bg-neutral-800 dark:border-neutral-700 rounded-md">
+                    <SelectValue placeholder="Choose a service type" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-neutral-900">
+                    {serviceTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {/* Service Type Select */}
-        <div className="bg-white p-6 ">
-          <Label className=" font-semibold mb-2 text-muted text-gray-600 block">
-            Select Service Type
-          </Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose a service type..." />
-            </SelectTrigger>
-            <SelectContent className="!min-w-xl">
-              {serviceTypes.map((type) => (
-                <SelectItem key={type.id} value={String(type.id)}>
-                  {type.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              {/* Title Input */}
+              <div className="mb-6">
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                  Service Title
+                </Label>
+                <Input
+                  placeholder="Enter service title"
+                  value={newServices[0]?.title || ""}
+                  onChange={(e) => handleServiceChange(0, e.target.value)}
+                  className="w-full rounded-md border-gray-300 dark:border-neutral-700 dark:bg-neutral-800"
+                />
+              </div>
 
-        {/* Services Form Grid */}
-        <div className="grid gap-4">
-          {newServices.map((entry, idx) => (
-            <CardContent
-              className="space-y-4 p-6 bg-white dark:bg-neutral-900"
-              key={idx}
-            >
-              <Label className=" font-semibold mb-2 text-muted text-gray-600 block">
-                Service Title
-              </Label>
-              <Input
-                placeholder="Service title"
-                value={entry.title}
-                onChange={(e) => handleServiceChange(idx, e.target.value)}
-                className="text-lg"
-              />
-
-              {/* Upload Drop Area */}
-              <div className="relative border-2 border-dashed border-red-300 rounded-2xl p-8 flex flex-col items-center justify-center hover:bg-red-50 dark:hover:bg-neutral-800 transition-all">
+              {/* Image Upload */}
+              <div className="mb-6">
+                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                  Upload Image
+                </Label>
+                <div className="flex items-center gap-4">
+                  <label
+                    htmlFor="upload-button"
+                    className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm font-medium cursor-pointer transition"
+                  >
+                    📷 Select Image
+                  </label>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {newServices[0]?.image_url
+                      ? "Image selected"
+                      : "No image selected"}
+                  </span>
+                </div>
                 <input
+                  id="upload-button"
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files?.[0])
-                      handleFileUpload(e.target.files[0], idx);
+                      handleFileUpload(e.target.files[0], 0);
                   }}
-                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                  className="hidden"
                 />
-                <div className="flex flex-col items-center text-red-600 z-0">
-                  <span className="text-2xl">📁</span>
-                  <span className="mt-2 text-sm font-medium">
-                    Click or Drag to Upload Image
-                  </span>
-                </div>
               </div>
 
               {/* Preview */}
-              {entry.image_url && (
-                <div className="pt-4 flex justify-center">
-                  <img
-                    src={entry.image_url}
-                    alt="Preview"
-                    onClick={() => setSelectedImage(entry.image_url)}
-                    className="w-64 h-48 object-cover rounded-lg shadow-md border hover:scale-105 transition-transform cursor-pointer"
-                  />
+              {newServices[0]?.image_url && (
+                <div className="mb-6">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                    Image Preview
+                  </Label>
+                  <div className="flex justify-center">
+                    <img
+                      src={newServices[0].image_url}
+                      alt="Preview"
+                      onClick={() => setSelectedImage(newServices[0].image_url)}
+                      className="max-w-xs h-48 object-cover rounded-lg border shadow-sm hover:scale-105 transition cursor-pointer"
+                    />
+                  </div>
                 </div>
               )}
-            </CardContent>
-          ))}
-        </div>
 
-        {/* Buttons */}
-        <div className="flex flex-wrap gap-4 justify-center pt-4">
-          <Button
-            onClick={addNewServiceRow}
-            variant="outline"
-            className="border-red-500 text-red-700 hover:bg-red-100"
-          >
-            Add More
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-            className={cn(
-              "bg-red-700 hover:bg-red-800 text-white font-semibold shadow-lg px-6 py-2 rounded-md",
-              loading && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            {loading ? "Saving..." : "Submit Services"}
-          </Button>
-        </div>
-        <h2 className="text-2xl font-bold text-red-700 mt-12 mb-4 text-center">
-          Existing Services
-        </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Map through services here */}
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="rounded-xl bg-white/80 dark:bg-neutral-900 p-6 shadow-lg space-y-4"
-            >
-              <img
-                src={service.image_url}
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              {editingServiceId === service.id ? (
-                <>
-                  <Input
-                    value={editedTitle}
-                    onChange={(e) => setEditedTitle(e.target.value)}
-                    className="text-lg"
-                  />
-                  <div className="flex gap-3">
-                    <Button onClick={() => handleSaveEdit(service.id)}>
-                      Save
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setEditingServiceId(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-semibold text-red-700">
-                    {service.title}
-                  </h2>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditingServiceId(service.id);
-                        setEditedTitle(service.title);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </>
-              )}
+              {/* Submit */}
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className={cn(
+                    "bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-md transition-all",
+                    loading && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {loading ? "Saving..." : "Submit Service"}
+                </Button>
+              </div>
             </div>
-          ))}
+          </div>
+          {/* Right: Existing Services */}
+
+          <div className="col-span-12 md:col-span-8">
+            <h2 className="text-2xl font-bold text-red-700 mb-6 text-center md:text-left">
+              Existing Services
+            </h2>
+
+            <div className="grid sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {services.map((service) => (
+                <div
+                  key={service.id}
+                  className="rounded-lg bg-white dark:bg-neutral-900 p-3 shadow-sm hover:shadow-md transition-shadow duration-200"
+                >
+                  {/* Small image preview */}
+                  <img
+                    src={service.image_url}
+                    className="w-full h-24 object-cover rounded-md"
+                  />
+
+                  {editingServiceId === service.id ? (
+                    <>
+                      <Input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        className="text-sm mt-3"
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button
+                          onClick={() => handleSaveEdit(service.id)}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setEditingServiceId(null)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ✖
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-2 flex justify-between items-center">
+                        <h2 className="text-sm font-semibold text-red-700 truncate">
+                          {service.title}
+                        </h2>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingServiceId(service.id);
+                              setEditedTitle(service.title);
+                            }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteService(service.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       {selectedImage && (

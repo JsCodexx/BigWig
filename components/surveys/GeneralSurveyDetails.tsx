@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +12,7 @@ import Image from "next/image";
 import { Textarea } from "../ui/textarea";
 import { User } from "@/types/user";
 import { useUi } from "@/context/UiContext";
+import { useParams, useSearchParams } from "next/navigation";
 
 // Define types for props
 
@@ -46,14 +47,20 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
   handleImageChange,
 }) => {
   const { selectedClient, setSelectedClient } = useUi();
-  useEffect(() => {
-    console.log(selectedClient);
-  }, [selectedClient]);
+  const [readOnlyMode, setReadOnlyMode] = useState(false);
+  const params = useParams();
+  const id = params?.id; // this will be your UUID string
   useEffect(() => {
     if (selectedClient) {
       setFormData((prev: any) => ({ ...prev, clientId: selectedClient }));
     }
   }, [selectedClient]);
+
+  useEffect(() => {
+    if (id) {
+      setReadOnlyMode(true);
+    }
+  }, [id, params]);
   return (
     <div className="w-full flex flex-col justify-center items-center gap-4">
       {/* Shop Name & Shop Address */}
@@ -72,6 +79,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             value={formData.shopName}
             onChange={handleChange}
             className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            disabled={readOnlyMode}
           />
           {errors.shopName && (
             <p className="text-red-500 text-sm">{errors.shopName}</p>
@@ -92,6 +100,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             value={formData.shopAddress}
             onChange={handleChange}
             className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            disabled={readOnlyMode}
           />
           {errors.shopAddress && (
             <p className="text-red-500 text-sm">{errors.shopAddress}</p>
@@ -115,6 +124,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             value={formData.clientName}
             onChange={handleChange}
             className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            disabled={readOnlyMode}
           />
           {errors.clientName && (
             <p className="text-red-500 text-sm">{errors.clientName}</p>
@@ -135,6 +145,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             value={formData.phoneNumber}
             onChange={handleChange}
             className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            disabled={readOnlyMode}
           />
           {errors.phoneNumber && (
             <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
@@ -158,6 +169,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
             setFormData((prev: any) => ({ ...prev, clientId: value }))
           }
           name="clientId"
+          disabled={readOnlyMode}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Client Name" />
@@ -205,6 +217,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
           value={formData.description}
           onChange={handleChange}
           className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          disabled={readOnlyMode}
         />
         {errors.description && (
           <p className="text-red-500 text-sm">{errors.description}</p>
@@ -229,15 +242,18 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
         </div>
 
         {/* Upload Button */}
-        <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-all">
-          {!previewImage ? "Upload Image" : "Change image"}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </label>
+        {!readOnlyMode && (
+          <label className="cursor-pointer bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-all">
+            {!previewImage ? "Upload Image" : "Change image"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              // disabled={formData.surveryStatus &&formData.surveryStatus }
+            />
+          </label>
+        )}
       </div>
     </div>
   );

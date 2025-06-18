@@ -35,10 +35,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex w-full flex-col min-h-screen">
-      {/* Navbar (Fixed) */}
+      {/* Navbar */}
       {!hideNavAndFooter && <Navbar />}
 
-      {/* Main Content Wrapper */}
+      {/* Main Content */}
       <main
         className={`flex-grow w-full bg-white dark:bg-gray-800 ${
           !hideNavAndFooter ? "pt-16" : ""
@@ -46,9 +46,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
       >
         {children}
       </main>
+
       <Toaster />
-      {/* Footer always at the bottom unless hidden */}
-      {!hideNavAndFooter && role === "client" && <Footer />}
+
+      {/* Show Footer only on the homepage */}
+      {pathname === "/" && <Footer />}
     </div>
   );
 }

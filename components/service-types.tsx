@@ -6,14 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Save, Trash2, Edit, X } from "lucide-react";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 interface ServiceType {
   id: number;
   name: string;
@@ -131,27 +123,7 @@ const ServiceTypesManager: React.FC<Props> = ({ onTypesChange }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded shadow space-y-8">
-      <Breadcrumb className="mb-4">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Service Types</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div>
-        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
-          <Edit className="text-red-600" /> Service Types
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Add and update service types
-        </p>
-      </div>
-
+    <div className="w-full rounded shadow space-y-8">
       {/* Add new service type */}
       <div className="flex items-center space-x-2 mb-6">
         <Input
@@ -167,71 +139,83 @@ const ServiceTypesManager: React.FC<Props> = ({ onTypesChange }) => {
       </div>
 
       {/* List service types */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {serviceTypes.length === 0 && (
-          <p className="text-gray-500">No service types found.</p>
+          <p className="text-gray-500 italic text-center">
+            No service types found.
+          </p>
         )}
-        {serviceTypes.map((type) => (
-          <Card key={type.id} className="shadow-sm">
-            <CardContent className="flex items-center justify-between">
-              {/* Display mode or edit mode */}
-              {editingTypeId === type.id ? (
-                <div className="flex items-center space-x-2 flex-grow">
-                  <Input
-                    value={editingTypeName}
-                    onChange={(e) => setEditingTypeName(e.target.value)}
-                    disabled={loading}
-                    autoFocus
-                  />
-                </div>
-              ) : (
-                <p className="text-lg font-medium flex-grow">{type.name}</p>
-              )}
 
-              <div className="flex items-center space-x-2">
-                {editingTypeId === type.id ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={cancelEdit}
-                      disabled={loading}
-                      title="Cancel"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={saveEdit}
-                      disabled={loading}
-                      title="Save"
-                    >
-                      <Save className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => startEdit(type)}
-                      title="Edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteType(type.id)}
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
+        {serviceTypes.map((type) => (
+          <div
+            key={type.id}
+            className="flex items-center justify-between px-5 py-3 rounded-lg border-l-4 border-blue-600 bg-gradient-to-r from-white to-blue-50 shadow hover:shadow-md transition-shadow duration-300"
+          >
+            {/* Edit Mode */}
+            {editingTypeId === type.id ? (
+              <div className="flex-grow flex items-center space-x-3">
+                <Input
+                  value={editingTypeName}
+                  onChange={(e) => setEditingTypeName(e.target.value)}
+                  disabled={loading}
+                  autoFocus
+                  className="w-full border-blue-400 focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <p className="text-lg font-semibold text-gray-800 flex-grow">
+                {type.name}
+              </p>
+            )}
+
+            <div className="flex items-center space-x-2">
+              {editingTypeId === type.id ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={cancelEdit}
+                    disabled={loading}
+                    className="hover:bg-red-100 text-red-600"
+                    title="Cancel"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={saveEdit}
+                    disabled={loading}
+                    className="hover:bg-green-100 text-green-600"
+                    title="Save"
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => startEdit(type)}
+                    className="hover:bg-blue-100 text-blue-600"
+                    title="Edit"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteType(type.id)}
+                    className="hover:bg-red-100 text-red-600"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </div>

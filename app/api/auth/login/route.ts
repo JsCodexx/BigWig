@@ -12,7 +12,6 @@ const SECRET_KEY = process.env.JWT_SECRET!; // Store in .env.local
 
 export async function POST(req: Request) {
   try {
-    console.log("Login API hit...");
     const { identifier, password } = await req.json(); // Identifier = email, username, or phone
 
     if (!identifier || !password) {
@@ -42,7 +41,6 @@ export async function POST(req: Request) {
       });
     } else {
       // 🔹 Manually authenticate for username/phone users
-      console.log(identifier);
       const { data: user, error } = await supabase
         .from("users")
         .select("*")

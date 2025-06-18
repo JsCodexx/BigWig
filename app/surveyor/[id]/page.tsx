@@ -26,29 +26,19 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-// Validation Schema
-const surveySchema = z.object({
-  clientName: z.string().min(1, "Client name is required"),
-  shopName: z.string().min(1, "Shop name is required"),
-  shopAddress: z.string().min(1, "Shop address is required"),
-  description: z.string().min(1, "Survey description is required"),
-  phoneNumber: z
-    .string()
-    .regex(/^\d{10,15}$/, "Phone number must be 10-15 digits"),
-});
-
-// Interfaces
+import { useToast } from "@/hooks/use-toast";
 
 export default function EditSurvey() {
   const { user } = useUser();
   const router = useRouter();
   const { id: surveyId } = useParams();
-
+  const { toast } = useToast();
   const [billboardNames, setBillboardNames] = useState<Shopboard[]>([]);
   const [billboardTypes, setBillboardTypes] = useState<BillboardType[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [billboards, setBillboards] = useState<SurveyBillboard[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
   const [newBoard, setNewBoard] = useState<SurveyBillboard>({
     billboard_name_id: "",
     width: "",
@@ -67,7 +57,7 @@ export default function EditSurvey() {
     clientId: "",
     description: "",
     survey_billboards: [],
-    surveyStatus: "",
+    surveyStatus: null,
   });
   const mapSurveyToFormData = (data: any) => ({
     shopName: data.shop_name,
@@ -82,6 +72,15 @@ export default function EditSurvey() {
     board_designs: data.board_designs,
     installation_images: data.installation_images,
   });
+
+  const params = useParams();
+  const id = params?.id; // this will be your UUID string
+  const [readOnlyMode, setReadOnlyMode] = useState(false);
+  useEffect(() => {
+    if (id) {
+      setReadOnlyMode(true);
+    }
+  }, [id, params]);
   useEffect(() => {
     if (!surveyId) return;
     fetch(`/api/surveys/${surveyId}`)
@@ -100,9 +99,7 @@ export default function EditSurvey() {
   const addBillboard = () => {
     setBillboards([...billboards, newBoard]);
   };
-  useEffect(() => {
-    console.log(billboards);
-  }, [billboards]);
+
   const handleUpdate = async () => {
     const updatedBillboards = await Promise.all(
       billboards.map(async (board) => {
@@ -193,7 +190,7 @@ export default function EditSurvey() {
         .from("users")
         .select("id, full_name")
         .eq("user_role", "client");
-      console.log("clients", data);
+
       if (error) console.error(error);
       else setClients(data);
     };
@@ -216,11 +213,7 @@ export default function EditSurvey() {
       )
     );
   };
-  function fileToObjectURL(file: File) {
-    const blob = new Blob([file], { type: file.type });
-    const objectURL = URL.createObjectURL(blob);
-    return { blob, objectURL };
-  }
+
   const handleBoardImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     boardIndex: number
@@ -229,9 +222,7 @@ export default function EditSurvey() {
     if (!files) return;
 
     const newFiles = Array.from(files);
-    // const filePreview = newFiles.map((file) => fileToObjectURL(file));
 
-    // Update the state with the new files and their preview URLs
     setBillboards((prev) => {
       const updated = [...prev];
       updated[boardIndex] = {
@@ -247,38 +238,40 @@ export default function EditSurvey() {
       return updated;
     });
   };
-  useEffect(() => {
-    console.log("bill", billboards);
-  }, [billboards]);
-  const handleDesignUpload = (index: number, newFiles: File[]) => {
-    setBillboards((prev: any[]) => {
-      const updated = [...prev];
 
-      // Ensure board exists
-      if (!updated[index]) updated[index] = {};
-
-      updated[index] = {
-        ...updated[index],
-        board_designs: newFiles, // Add the new key here
-      };
-
-      return updated;
-    });
-  };
   const handleDesignUpdate = async (board: SurveyBillboard, mode: any) => {
     let updatedBoard;
+    setLoading(true);
     if (mode === "installation") {
       const uploadedUrls = await uploadImages(board.installation_images || []);
       updatedBoard = {
         ...board,
         installation_images: uploadedUrls,
       };
+      if (updatedBoard && updatedBoard?.installation_images.length === 0) {
+        setLoading(false);
+        toast({
+          title: "Select Images to upload",
+          description: "Failed to upload images.",
+          variant: "destructive",
+        });
+        return;
+      }
     } else {
       const uploadedUrls = await uploadImages(board.board_designs || []);
       updatedBoard = {
         ...board,
         board_designs: uploadedUrls,
       };
+      if (updatedBoard && updatedBoard?.board_designs.length === 0) {
+        setLoading(false);
+        toast({
+          title: "Select Images to upload",
+          description: "Failed to upload images.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -295,12 +288,22 @@ export default function EditSurvey() {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("Design updated successfully", data);
-        // Show toast or refresh state if needed
+        toast({
+          title: "Successfull",
+          description: " Images are uploaded successfully",
+          variant: "default",
+        });
       } else {
         console.error("Update failed", data);
+        toast({
+          title: "Uoload fail",
+          description: " Failed to upload imags check logs",
+          variant: "destructive",
+        });
       }
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       console.error("Error during update:", err);
     }
   };
@@ -321,49 +324,9 @@ export default function EditSurvey() {
       return updated;
     });
   };
-
-  const handleUpdates = async (
-    board: SurveyBillboard,
-    mode: "design" | "installation"
-  ) => {
-    const key = mode === "design" ? "board_designs" : "installation_images";
-
-    const files = board[key] || [];
-
-    const existingUrls = files.filter((f) => typeof f === "string");
-    const newFiles = files.filter((f) => f instanceof File) as File[];
-
-    if (newFiles.length === 0) return; // Skip if nothing to upload
-
-    const uploadedUrls = await uploadImages(newFiles);
-
-    const updatedBoard = {
-      ...board,
-      [key]: [...existingUrls, ...uploadedUrls], // merge old + new
-    };
-
-    try {
-      const res = await fetch(`/api/billboards/${board.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ billboards: [updatedBoard] }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        console.log(`${key} updated successfully`, data);
-        alert(`${mode} Images updated successfully`);
-      } else {
-        console.error("Update failed", data);
-      }
-    } catch (err) {
-      console.error("Error during update:", err);
-    }
-  };
-
+  useEffect(() => {
+    console.log(loading);
+  }, [loading]);
   return (
     <div className="py-16 px-6 max-w-7xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
       <Breadcrumb className="mb-4">
@@ -432,6 +395,7 @@ export default function EditSurvey() {
                   Billboard Name
                 </Label>
                 <select
+                  disabled={readOnlyMode}
                   value={board.billboard_name_id}
                   onChange={(e) =>
                     handleBoardChange(
@@ -457,6 +421,7 @@ export default function EditSurvey() {
                   Billboard Type
                 </Label>
                 <select
+                  disabled={readOnlyMode}
                   value={board.billboard_type_id}
                   onChange={(e) =>
                     handleBoardChange(
@@ -482,6 +447,7 @@ export default function EditSurvey() {
                   Width
                 </Label>
                 <Input
+                  disabled={readOnlyMode}
                   type="number"
                   value={board.width}
                   onChange={(e) =>
@@ -496,6 +462,7 @@ export default function EditSurvey() {
                   Height
                 </Label>
                 <Input
+                  disabled={readOnlyMode}
                   type="number"
                   value={board.height}
                   onChange={(e) =>
@@ -510,6 +477,7 @@ export default function EditSurvey() {
                   Quantity
                 </Label>
                 <Input
+                  disabled={readOnlyMode}
                   type="number"
                   value={board.quantity}
                   onChange={(e) =>
@@ -519,23 +487,31 @@ export default function EditSurvey() {
               </div>
               {/* Board Images */}
               <div>
-                <div>
-                  <Label className="mb-2 font-semibold text-gray-700">
-                    Upload Board Images
-                  </Label>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => handleBoardImageChange(e, index)}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                {!formData.surveyStatus ? (
+                  <div>
+                    <Label className="mb-2 font-semibold text-gray-700">
+                      Upload Board Images
+                    </Label>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleBoardImageChange(e, index)}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
     file:rounded-lg file:border-0
     file:text-sm file:font-semibold
     file:bg-red-50 file:text-red-700
     hover:file:bg-red-100
     dark:file:bg-gray-700 dark:file:text-white dark:hover:file:bg-gray-600"
-                  />
-                </div>
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <Label className="mb-2 font-semibold text-gray-700">
+                      Board Images
+                    </Label>
+                  </>
+                )}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {board.board_images.map((img: ImageType, idx: number) => {
                     const imageUrl =
@@ -553,49 +529,49 @@ export default function EditSurvey() {
                 </div>
 
                 {/* Remove Button */}
-                <div className="flex items-end justify-end">
-                  <Button
-                    variant="destructive"
-                    onClick={() => removeBillboard(index)}
-                    className="bg-red-500 hover:bg-red-700"
-                  >
-                    Remove
-                  </Button>
-                </div>
+                {!formData.surveyStatus && (
+                  <div className="flex items-end justify-end">
+                    <Button
+                      variant="destructive"
+                      onClick={() => removeBillboard(index)}
+                      className="bg-red-500 hover:bg-red-700"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
+              {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+
               {(formData.surveyStatus === "client_approved" ||
                 formData.surveyStatus === "installation_completed" ||
                 formData.surveyStatus === "completed") && (
                 <div>
-                  {billboards.map((board, index) => (
-                    <div key={index} className="mb-8">
-                      <BoardDesignManager
-                        board={board}
-                        index={index}
-                        surveyStatus={formData.surveyStatus}
-                        mode="design"
-                        handleUpload={handleUpload}
-                        handleUpdates={handleDesignUpdate}
-                      />
-                    </div>
-                  ))}
+                  <BoardDesignManager
+                    board={board}
+                    index={index}
+                    surveyStatus={formData.surveyStatus}
+                    mode="design"
+                    handleUpload={handleUpload}
+                    handleUpdates={handleDesignUpdate}
+                  />
                 </div>
               )}
               {(formData.surveyStatus === "installation_completed" ||
                 formData.surveyStatus === "completed") && (
                 <div>
-                  {billboards.map((board, index) => (
-                    <div key={index} className="mb-8">
-                      <BoardDesignManager
-                        board={board}
-                        index={index}
-                        surveyStatus={formData.surveyStatus}
-                        mode="installation"
-                        handleUpload={handleUpload}
-                        handleUpdates={handleDesignUpdate}
-                      />
-                    </div>
-                  ))}
+                  <BoardDesignManager
+                    board={board}
+                    index={index}
+                    surveyStatus={formData.surveyStatus}
+                    mode="installation"
+                    handleUpload={handleUpload}
+                    handleUpdates={handleDesignUpdate}
+                  />
                 </div>
               )}
             </div>

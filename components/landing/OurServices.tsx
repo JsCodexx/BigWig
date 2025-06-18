@@ -23,7 +23,7 @@ const OurServices = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-        const { data, error } = await supabase.from("service_types").select(`
+      const { data, error } = await supabase.from("service_types").select(`
             id,
             name,
             services (
@@ -32,7 +32,7 @@ const OurServices = () => {
               image_url
             )
           `);
-      console.log(data);
+
       if (error) {
         console.error("Error fetching service types:", error.message);
         return;
@@ -45,9 +45,7 @@ const OurServices = () => {
 
     fetchData();
   }, []);
-  useEffect(() => {
-    console.log(serviceTypes), [serviceTypes];
-  });
+
   if (!serviceTypes.length)
     return <p className="text-center py-10">Loading...</p>;
 

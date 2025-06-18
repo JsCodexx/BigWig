@@ -8,6 +8,7 @@ import {
   Calendar,
   Ruler,
   ShieldAlert,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,14 @@ export default function BillboardDetailsPage({
           </div>
         </div>
       </motion.div>
+      <a
+        href="https://wa.me/923329277000?text=Hello,%20I'm%20interested%20in%20your%20billboard"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </a>
     </div>
   );
 }

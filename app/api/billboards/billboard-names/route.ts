@@ -27,7 +27,6 @@ export async function POST(req: Request) {
     if (!value) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
-    console.log(value, "value"); // Debugging output
 
     const { data, error } = await supabase
       .from("billboard_names")

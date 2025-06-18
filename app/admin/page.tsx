@@ -18,7 +18,6 @@ const Dashboard = () => {
     totalSurveys: 0,
     totalReviews: 0,
   });
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,7 +45,6 @@ const Dashboard = () => {
           (q: any) => q.status === "pending"
         );
         const pendingQuotesCount = pendingQuotes.length;
-
         // satisfactory forms
         const forms = await fetch("/api/satisfactory-form?all=true");
         const formData = await forms.json();
@@ -103,9 +101,19 @@ const Dashboard = () => {
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-            {Object.entries(stats.surveyStatusCounts).map(([status, count]) => (
-              <StatusCard key={status} status={status} count={count} />
-            ))}
+            {Object.entries(stats.surveyStatusCounts)
+              .filter(([status]) =>
+                [
+                  "installation_completed",
+                  "completed",
+                  "client_review",
+                  "installation_pending",
+                ].includes(status)
+              )
+              .map(([status, count]) => (
+                <StatusCard key={status} status={status} count={count} />
+              ))}
+
             <StatusCard status="Pending Quotes" count={stats.pendingQuotes} />
             <StatusCard status="Total Surveys" count={stats.totalSurveys} />
           </div>
@@ -156,7 +164,8 @@ function StatCard({
           {title}
         </h2>
         <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-          ${value.toLocaleString()}
+          <span className="text-sm text-gray-500">Rs</span>{" "}
+          {value.toLocaleString()}
         </p>
       </div>
     </div>

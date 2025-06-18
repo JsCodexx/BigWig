@@ -89,9 +89,6 @@ export default function BillboardsPage() {
     setFilteredBillboards(filtered);
   }, [selectedStatus, location, billboards, selectedLocation]);
 
-  useEffect(() => {
-    console.log(filteredBillboards);
-  }, [filteredBillboards]);
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto">
       {/* Breadcrumbs */}

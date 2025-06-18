@@ -29,9 +29,6 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
   billboardTypes,
   onEditBoard,
 }) => {
-  useEffect(() => {
-    console.log(billboards);
-  }, [billboards]);
   return (
     <div className="w-full">
       <Card className="">
@@ -44,6 +41,12 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                 </TableHead>
                 <TableHead className="whitespace-nowrap px-4 py-2 text-left">
                   Height
+                </TableHead>
+                <TableHead className="whitespace-nowrap px-4 py-2 text-left">
+                  Quantity
+                </TableHead>
+                <TableHead className="whitespace-nowrap px-4 py-2 text-left">
+                  Price
                 </TableHead>
                 <TableHead className="whitespace-nowrap px-4 py-2 text-left">
                   Type
@@ -65,6 +68,15 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                   <TableRow key={index} className="border-t">
                     <TableCell className="px-4 py-2">{board.width}</TableCell>
                     <TableCell className="px-4 py-2">{board.height}</TableCell>
+                    <TableCell className="px-4 py-2">
+                      {board.quantity || 1}
+                    </TableCell>
+                    <TableCell className="px-4 py-2">
+                      {Number(board.width) *
+                        Number(board.height) *
+                        Number(board.quantity)}
+                    </TableCell>
+
                     <TableCell className="px-4 py-2">
                       {billboardTypes.find(
                         (type) => type.id === board.billboard_type_id

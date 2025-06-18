@@ -168,7 +168,7 @@ const Carousel = () => {
           <CardTitle>Add New Slide</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <Input
+          {/* <Input
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -177,7 +177,7 @@ const Carousel = () => {
             placeholder="Subtitle"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-          />
+          /> */}
           <Input
             type="file"
             accept="image/*"
@@ -197,7 +197,7 @@ const Carousel = () => {
           </div>
 
           <Button
-            disabled={!title || !subtitle || !image || uploading}
+            disabled={!image || uploading}
             onClick={handleUpload}
             className="w-fit"
           >

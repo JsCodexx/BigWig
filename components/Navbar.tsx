@@ -46,7 +46,7 @@ export function Navbar() {
           {/* Logo & Mobile Menu Toggle */}
           <div className="flex items-center space-x-4">
             {/* Show menu button for all users (below lg) */}
-            {user && (
+            {/* {user && (
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 text-gray-600 dark:text-white md:hidden"
@@ -54,7 +54,7 @@ export function Navbar() {
               >
                 <Menu size={26} />
               </button>
-            )}
+            )} */}
             <Link href="/">
               <Image
                 src="/logo.webp"
@@ -194,7 +194,7 @@ export function Navbar() {
       </div>
 
       {/* Mobile Menu for all users */}
-      {user && (
+      {/* {user && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={
@@ -247,7 +247,7 @@ export function Navbar() {
             )}
           </div>
         </motion.div>
-      )}
+      )} */}
     </nav>
   );
 }

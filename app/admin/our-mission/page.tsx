@@ -71,16 +71,6 @@ const AdminEditOurMission = () => {
     setContent({ ...content, paragraphs: newParagraphs });
   };
 
-  const addParagraph = () => {
-    setContent({ ...content, paragraphs: [...content.paragraphs, ""] });
-  };
-
-  const removeParagraph = (index: number) => {
-    if (content.paragraphs.length === 1) return;
-    const newParagraphs = content.paragraphs.filter((_, i) => i !== index);
-    setContent({ ...content, paragraphs: newParagraphs });
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -214,29 +204,14 @@ const AdminEditOurMission = () => {
             <div key={idx} className="flex items-center mb-2">
               <textarea
                 className="w-full border border-gray-300 rounded px-3 py-2"
-                rows={3}
-                maxLength={300}
+                rows={6}
+                maxLength={600}
                 value={para}
                 onChange={(e) => updateParagraph(idx, e.target.value)}
                 required
               />
-              <button
-                type="button"
-                onClick={() => removeParagraph(idx)}
-                className="ml-2 text-red-600 font-bold px-2 py-1 rounded hover:bg-red-100"
-                title="Remove paragraph"
-              >
-                &times;
-              </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addParagraph}
-            className="mt-1 text-sm text-blue-600 hover:underline"
-          >
-            + Add Paragraph
-          </button>
         </div>
 
         {/* Image Upload */}

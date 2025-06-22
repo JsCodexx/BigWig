@@ -17,10 +17,25 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 interface GalleryImage {
   id: string;
   image_url: string;
   title: string;
+}
+interface GallerySection {
+  id: string;
+  title: string;
+  subtitle: string;
+  images: GalleryImage[];
 }
 
 const GalleryAdmin = () => {
@@ -30,26 +45,83 @@ const GalleryAdmin = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [sectionTitle, setSectionTitle] = useState("");
+  const [sectionSubtitle, setSectionSubtitle] = useState("");
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
+    null
+  );
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchImages();
+    fetchSection();
   }, []);
 
-  const fetchImages = async () => {
+  const fetchSection = async () => {
     const { data, error } = await supabase
-      .from("gallery_images")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .from("gallery_sections")
+      .select("id, title, subtitle, gallery_images(*)")
+      .single();
 
-    if (error) {
+    if (error && error.code !== "PGRST116") {
       toast({
         title: "Fetch Failed",
-        description: "Failed to fetch images.",
+        description: "Failed to fetch gallery section.",
         variant: "destructive",
       });
+    } else if (data) {
+      setSectionTitle(data.title);
+      setSectionSubtitle(data.subtitle);
+      setSelectedSectionId(data.id);
+      setImages(data.gallery_images || []);
+    }
+  };
+
+  const createOrUpdateSection = async () => {
+    if (!sectionTitle.trim()) return;
+
+    if (!selectedSectionId) {
+      const { data, error } = await supabase
+        .from("gallery_sections")
+        .insert([{ title: sectionTitle, subtitle: sectionSubtitle }])
+        .select()
+        .single();
+
+      if (error) {
+        toast({
+          title: "Section Creation Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Section Created",
+        description: "Gallery section created!",
+      });
+
+      setSelectedSectionId(data.id);
+      fetchSection();
     } else {
-      setImages(data);
+      const { error } = await supabase
+        .from("gallery_sections")
+        .update({ title: sectionTitle, subtitle: sectionSubtitle })
+        .eq("id", selectedSectionId);
+
+      if (error) {
+        toast({
+          title: "Update Failed",
+          description: "Failed to update section.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Section Updated",
+          description: "Gallery section updated.",
+        });
+        fetchSection();
+      }
     }
   };
 
@@ -65,10 +137,10 @@ const GalleryAdmin = () => {
   };
 
   const uploadImage = async () => {
-    if (!file || !title.trim()) {
+    if (!file || !title.trim() || !selectedSectionId) {
       toast({
         title: "Missing Information",
-        description: "Please provide both title and image.",
+        description: "Please provide image title and make sure section exists.",
         variant: "destructive",
       });
       return;
@@ -100,7 +172,9 @@ const GalleryAdmin = () => {
 
       const { error: insertError } = await supabase
         .from("gallery_images")
-        .insert([{ image_url: result.url, title }]);
+        .insert([
+          { image_url: result.url, title, section_id: selectedSectionId },
+        ]);
 
       if (insertError) {
         toast({
@@ -117,10 +191,11 @@ const GalleryAdmin = () => {
         description: "Image uploaded!",
         variant: "default",
       });
+
       setFile(null);
       setPreview(null);
       setTitle("");
-      fetchImages();
+      fetchSection();
     } catch (error) {
       toast({
         title: "Upload Failed",
@@ -155,8 +230,31 @@ const GalleryAdmin = () => {
         description: "Image deleted.",
         variant: "default",
       });
-      fetchImages();
+      fetchSection();
     }
+  };
+  const handleConfirmedDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("gallery_images")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete image.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Deleted",
+        description: "Image deleted.",
+        variant: "default",
+      });
+      fetchSection();
+    }
+
+    setConfirmDeleteId(null); // close dialog
   };
 
   return (
@@ -173,6 +271,7 @@ const GalleryAdmin = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+
         <div>
           <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
             <Edit className="text-red-600" /> Edit Our Gallery Section
@@ -182,10 +281,40 @@ const GalleryAdmin = () => {
           </p>
         </div>
 
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-red-700">
+            Gallery Section Title & Subtitle
+          </h2>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Title
+          </Label>
+          <Input
+            placeholder="Section Title"
+            value={sectionTitle}
+            onChange={(e) => setSectionTitle(e.target.value)}
+            maxLength={20}
+          />
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Subtitle
+          </Label>
+          <Input
+            placeholder="Section Subtitle"
+            value={sectionSubtitle}
+            onChange={(e) => setSectionSubtitle(e.target.value)}
+            maxLength={120}
+          />
+          <Button
+            onClick={createOrUpdateSection}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {selectedSectionId ? "Update Section" : "Create Section"}
+          </Button>
+        </div>
+
         {/* Upload Form */}
         <div className="grid grid-cols-1 gap-6 mb-10">
           <div className="space-y-4">
-            <Label className=" font-semibold mb-2 text-muted text-gray-600 block">
+            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
               Image Title
             </Label>
             <Input
@@ -211,6 +340,7 @@ const GalleryAdmin = () => {
                 </span>
               </div>
             </div>
+
             {preview && (
               <div className="rounded border w-full max-w-xs overflow-hidden">
                 <Image
@@ -222,7 +352,6 @@ const GalleryAdmin = () => {
                 />
               </div>
             )}
-            {/* Preview */}
 
             <Button
               onClick={uploadImage}
@@ -254,10 +383,11 @@ const GalleryAdmin = () => {
                   <Button
                     size="icon"
                     variant="destructive"
-                    onClick={() => deleteImage(img.id)}
+                    onClick={() => setConfirmDeleteId(img.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
+
                   <Button
                     size="icon"
                     variant="secondary"
@@ -285,6 +415,36 @@ const GalleryAdmin = () => {
           </div>
         )}
       </div>
+      <Dialog
+        open={!!confirmDeleteId}
+        onOpenChange={() => setConfirmDeleteId(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Are you sure you want to delete this image?
+            </DialogTitle>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setConfirmDeleteId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (confirmDeleteId) {
+                  handleConfirmedDelete(confirmDeleteId);
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

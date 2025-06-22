@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
-import { getAllowedStatusOptions } from "@/lib/utils";
+import { formatReadableDate, getAllowedStatusOptions } from "@/lib/utils";
 
 const SurveyorDashboard = () => {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -131,7 +131,7 @@ const SurveyorDashboard = () => {
                         </div>
 
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(survey.created_at).toLocaleDateString()}
+                          {formatReadableDate(survey.created_at)}
                         </p>
                       </CardHeader>
                       <CardContent>
@@ -163,7 +163,9 @@ const SurveyorDashboard = () => {
                           survey.survey_status === "client_review") ? (
                           <Button
                             className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                            onClick={() => router.push(`/surveyor/${survey.id}`)}
+                            onClick={() =>
+                              router.push(`/surveyor/${survey.id}`)
+                            }
                           >
                             Update Survey
                           </Button>
@@ -171,7 +173,9 @@ const SurveyorDashboard = () => {
                           survey.survey_status === "client_approved" ? (
                           <Button
                             className="mt-4 bg-red-600 hover:bg-red-700 text-white w-full"
-                            onClick={() => router.push(`/surveyor/${survey.id}`)}
+                            onClick={() =>
+                              router.push(`/surveyor/${survey.id}`)
+                            }
                           >
                             Update Design
                           </Button>

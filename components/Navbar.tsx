@@ -19,7 +19,6 @@ type Role = "admin" | "surveyor";
 export function Navbar() {
   const { role, user } = useUser();
   const supabase = createClientComponentClient();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [landingDropdownOpen, setLandingDropdownOpen] = useState(false);
 

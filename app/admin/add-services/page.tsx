@@ -13,7 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Pencil, Trash } from "lucide-react";
+import { Check, Pencil, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Edit } from "lucide-react";
 import {
@@ -46,8 +46,6 @@ const ManageServices = () => {
     { title: string; image_url: string }[]
   >([{ title: "", image_url: "" }]);
   const [loading, setLoading] = useState(false);
-  const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
-  const [editedTitle, setEditedTitle] = useState<string>("");
 
   const { toast } = useToast();
 
@@ -64,6 +62,7 @@ const ManageServices = () => {
   const handleFileUpload = async (file: File, index: number) => {
     const formData = new FormData();
     formData.append("file", file);
+    setLoading(true);
     toast({
       title: "Uploading...",
       description: "Image is being uploaded",
@@ -82,12 +81,13 @@ const ManageServices = () => {
           updated[index].image_url = data.url;
           return updated;
         });
-
+        setLoading(false);
         toast({
           title: "Upload Successful",
           description: "Image uploaded successfully.",
         });
       } else {
+        setLoading(false);
         toast({
           title: "Upload Failed",
           description: "No URL received from upload.",
@@ -95,6 +95,7 @@ const ManageServices = () => {
         });
       }
     } catch (error) {
+      setLoading(false);
       toast({
         title: "Upload Error",
         description: "Something went wrong during image upload.",
@@ -171,27 +172,24 @@ const ManageServices = () => {
       setServices((prev) => prev.filter((s) => s.id !== id));
     }
   };
-  const handleSaveEdit = async (id: number) => {
-    const { error } = await supabase
-      .from("services")
-      .update({ title: editedTitle })
-      .eq("id", id);
 
-    if (error) {
-      toast({
-        title: "Update Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({ title: "Service Updated" });
-      setServices((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, title: editedTitle } : s))
-      );
-      setEditingServiceId(null);
+  // Fetch service types from Supabase
+  const fetchServiceTypes = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("service_types")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) throw error;
+      setServiceTypes(data || []);
+    } catch (error) {
+      console.error("Failed to fetch service types:", error);
+    } finally {
+      setLoading(false);
     }
   };
-
   return (
     <div className="">
       <div className="max-w-7xl mx-auto p-6rounded shadow space-y-8 px-6 py-12">
@@ -214,7 +212,7 @@ const ManageServices = () => {
             Edit your landing page
           </p>
         </div>
-        <ServiceTypesManager />
+        <ServiceTypesManager onTypesChange={fetchServiceTypes} />
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Left: Create New Service */}
           <div className="col-span-12 md:col-span-4">
@@ -267,7 +265,7 @@ const ManageServices = () => {
                     htmlFor="upload-button"
                     className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm font-medium cursor-pointer transition"
                   >
-                    📷 Select Image
+                    {newServices[0].image_url ? "Change File" : "Choose File"}
                   </label>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     {newServices[0]?.image_url
@@ -338,54 +336,21 @@ const ManageServices = () => {
                     className="w-full h-24 object-cover rounded-md"
                   />
 
-                  {editingServiceId === service.id ? (
-                    <>
-                      <Input
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
-                        className="text-sm mt-3"
-                      />
-                      <div className="flex justify-end gap-2 mt-2">
+                  <>
+                    <div className="mt-2 flex justify-between items-center">
+                      <h2 className="text-sm font-semibold text-red-700 truncate">
+                        {service.title}
+                      </h2>
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => handleSaveEdit(service.id)}
-                          className="text-green-600 hover:text-green-800"
+                          onClick={() => handleDeleteService(service.id)}
+                          className="text-red-600 hover:text-red-800"
                         >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setEditingServiceId(null)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          ✖
+                          <Trash className="w-4 h-4" />
                         </button>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="mt-2 flex justify-between items-center">
-                        <h2 className="text-sm font-semibold text-red-700 truncate">
-                          {service.title}
-                        </h2>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditingServiceId(service.id);
-                              setEditedTitle(service.title);
-                            }}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteService(service.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                    </div>
+                  </>
                 </div>
               ))}
             </div>

@@ -17,6 +17,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -28,11 +38,41 @@ const Carousel = () => {
   const [subtitle, setSubtitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [slideToDelete, setSlideToDelete] = useState<{
+    id: string;
+    imageUrl?: string;
+  } | null>(null);
+
   const [isMain, setIsMain] = useState(false);
   const { toast } = useToast();
-  useEffect(() => {
-    fetchSlides();
-  }, []);
+  const confirmDelete = async () => {
+    if (!slideToDelete) return;
+
+    const { id, imageUrl } = slideToDelete;
+
+    if (imageUrl) {
+      const filePath = imageUrl.split("/public/files/")[1];
+      if (filePath) {
+        await supabase.storage.from("files").remove([filePath]);
+      }
+    }
+
+    const { error: dbError } = await supabase
+      .from("slides")
+      .delete()
+      .match({ id });
+
+    if (dbError) {
+      toast({ title: "Error deleting slide", variant: "destructive" });
+    } else {
+      toast({ title: "Slide deleted" });
+      fetchSlides();
+    }
+
+    setSlideToDelete(null);
+    setShowDeleteDialog(false);
+  };
 
   const fetchSlides = async () => {
     const { data, error } = await supabase
@@ -51,7 +91,7 @@ const Carousel = () => {
   };
 
   const handleUpload = async () => {
-    if (!image || !title || !subtitle || uploading) return;
+    if (!image || uploading) return;
     setUploading(true);
 
     if (isMain) {
@@ -101,11 +141,7 @@ const Carousel = () => {
       toast({ title: "Failed to save slide data", variant: "destructive" });
     } else {
       toast({ title: "Slide uploaded successfully" });
-
-      // 🔄 Refresh the slide list
       await fetchSlides();
-
-      // ⛔ Reset form and file input manually
       setTitle("");
       setSubtitle("");
       setImage(null);
@@ -141,6 +177,36 @@ const Carousel = () => {
     }
   };
 
+  const handleSetMain = async (id: string) => {
+    const { error: clearError } = await supabase
+      .from("slides")
+      .update({ is_main: false })
+      .eq("is_main", true);
+
+    if (clearError) {
+      toast({
+        title: "Failed to clear existing main slide",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error: setError } = await supabase
+      .from("slides")
+      .update({ is_main: true })
+      .eq("id", id);
+
+    if (setError) {
+      toast({ title: "Failed to set as main", variant: "destructive" });
+    } else {
+      toast({ title: "Slide set as main ✅" });
+      fetchSlides();
+    }
+  };
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white rounded shadow space-y-8">
       <Breadcrumb className="mb-4">
@@ -150,41 +216,42 @@ const Carousel = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Service Types</BreadcrumbPage>
+            <BreadcrumbPage>Carousel</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
       <div>
         <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
           🎞 Carousel Manager
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Manage your carousel
-        </p>
+        <p className="text-gray-500 text-sm">Manage your homepage slides</p>
       </div>
 
-      <Card className="mb-10">
+      {/* Upload Slide Form */}
+      <Card id="upload-form">
         <CardHeader>
           <CardTitle>Add New Slide</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
-          {/* <Input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            placeholder="Subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-          /> */}
           <Input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
             disabled={uploading}
           />
-
+          {/* <Input
+            type="text"
+            placeholder="Slide Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Input
+            type="text"
+            placeholder="Slide Subtitle"
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+          /> */}
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={isMain}
@@ -212,49 +279,101 @@ const Carousel = () => {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {slides.length === 0 ? (
-          <p className="text-muted-foreground">No slides uploaded yet.</p>
-        ) : (
-          slides.map((slide) => (
-            <Card
-              key={slide.id}
-              className="shadow-md hover:shadow-lg transition-all"
-            >
-              <div className="relative w-full aspect-video">
-                <Image
-                  src={slide.image_url || "/placeholder.jpg"}
-                  alt={slide.title}
-                  fill
-                  className="object-cover rounded-t-md"
-                  onError={(e) =>
-                    ((e.target as HTMLImageElement).src = "/placeholder.jpg")
-                  }
-                />
-              </div>
-              <CardContent className="p-4 space-y-2">
-                <h2 className="text-lg font-semibold">{slide.title}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {slide.subtitle}
-                </p>
-                {slide.is_main && (
-                  <p className="text-xs text-green-600 font-semibold">
-                    🌟 Main Image
-                  </p>
-                )}
+      {/* Slides Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Add New Card */}
+        <Card
+          className="cursor-pointer border-dashed border-2 border-gray-300 hover:border-blue-400 flex items-center justify-center text-center min-h-[220px] transition-all"
+          onClick={() => {
+            const uploadSection = document.getElementById("upload-form");
+            if (uploadSection) {
+              uploadSection.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+        >
+          <CardContent className="flex flex-col items-center justify-center space-y-2">
+            <Upload className="w-8 h-8 text-blue-500" />
+            <p className="font-semibold text-blue-500">Add New Slide</p>
+          </CardContent>
+        </Card>
+
+        {/* Slides */}
+        {slides.map((slide) => (
+          <Card
+            key={slide.id}
+            className={`relative shadow-md hover:shadow-lg transition-all border ${
+              slide.is_main ? "ring-2 ring-yellow-400" : ""
+            }`}
+          >
+            <div className="relative w-full aspect-video rounded-t-md overflow-hidden">
+              <Image
+                src={slide.image_url || "/placeholder.jpg"}
+                alt={slide.title}
+                fill
+                className="object-cover"
+              />
+              {slide.is_main && (
+                <span className="absolute top-2 left-2 bg-yellow-400 text-black text-xs px-2 py-1 rounded">
+                  🌟 Main
+                </span>
+              )}
+            </div>
+            <CardContent className="p-4 space-y-2">
+              <h2 className="text-md font-semibold truncate">{slide.title}</h2>
+              <p className="text-sm text-muted-foreground truncate">
+                {slide.subtitle}
+              </p>
+              <div className="flex justify-between items-center">
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDelete(slide.id, slide.image_url)}
+                  onClick={() => {
+                    setSlideToDelete({
+                      id: slide.id,
+                      imageUrl: slide.image_url,
+                    });
+                    setShowDeleteDialog(true);
+                  }}
                 >
                   <Trash className="w-4 h-4 mr-1" />
                   Delete
                 </Button>
-              </CardContent>
-            </Card>
-          ))
-        )}
+                {!slide.is_main && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSetMain(slide.id)}
+                  >
+                    🌟 Set Main
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this slide? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

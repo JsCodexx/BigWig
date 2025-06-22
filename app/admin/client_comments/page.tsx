@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { formatReadableDate } from "@/lib/utils";
 import { FormInputIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -105,7 +106,7 @@ export default function ClietnComments() {
                 </div>
               )}
               <p className="text-xs text-gray-400 mt-2">
-                Submitted on: {new Date(form.created_at!).toLocaleString()}
+                Submitted {formatReadableDate(form.created_at)}
               </p>
             </div>
           ))}

@@ -26,6 +26,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  LineChart,
+  Line,
 } from "recharts";
 import html2pdf from "html2pdf.js";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
@@ -245,17 +247,29 @@ export default function PaymentsPage() {
             </CardHeader>
             <CardContent className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueChartData}>
+                <LineChart data={revenueChartData}>
                   <XAxis dataKey="label" stroke="#15803d" />
-                  <YAxis stroke="#15803d" />
+                  <YAxis
+                    stroke="#15803d"
+                    tickFormatter={(value) => {
+                      if (value >= 1000) return `${value / 1000}K`;
+                      return value;
+                    }}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#dcfce7",
                       borderRadius: 6,
                     }}
                   />
-                  <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#22c55e"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -271,7 +285,13 @@ export default function PaymentsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={pendingChartData}>
                   <XAxis dataKey="label" stroke="#b91c1c" />
-                  <YAxis stroke="#b91c1c" />
+                  <YAxis
+                    stroke="#b91c1c"
+                    tickFormatter={(value) => {
+                      if (value >= 1000) return `${value / 1000}K`;
+                      return value;
+                    }}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#fee2e2",
@@ -289,12 +309,13 @@ export default function PaymentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
           <Card className="shadow-lg rounded-lg border border-red-100 hover:shadow-xl transition">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-red-700">
+              <CardTitle className="text-xl font-bold text-green-600">
                 Total Revenue
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-extrabold text-green-600 tracking-wide">
-              ${totalRevenue.toFixed(2)}
+              <span className="text-xl">Rs</span>
+              {totalRevenue.toFixed(2)}
             </CardContent>
           </Card>
 
@@ -305,7 +326,8 @@ export default function PaymentsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-3xl font-extrabold text-red-600 tracking-wide">
-              ${totalPending.toFixed(2)}
+              <span className="text-xl">Rs</span>
+              {totalPending.toFixed(2)}
             </CardContent>
           </Card>
         </div>
@@ -317,8 +339,8 @@ export default function PaymentsPage() {
               <tr>
                 {[
                   "Client",
-                  "Installation",
                   "Boards",
+                  "Installation",
                   "Total",
                   "Advance",
                   "Remaining",
@@ -344,19 +366,19 @@ export default function PaymentsPage() {
                     {survey.client_name}
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    ${survey.payment_installation.toFixed(2)}
+                    Rs{survey.payment_billboard_total.toFixed(2)}
                   </td>
                   <td className="p-4 whitespace-nowrap">
-                    ${survey.payment_billboard_total.toFixed(2)}
+                    Rs{survey.payment_installation.toFixed(2)}
                   </td>
                   <td className="p-4 whitespace-nowrap font-bold text-red-700">
-                    ${survey.payment_total.toFixed(2)}
+                    Rs{survey.payment_total.toFixed(2)}
                   </td>
                   <td className="p-4 whitespace-nowrap text-green-600">
-                    ${survey.payment_advance.toFixed(2)}
+                    Rs{survey.payment_advance.toFixed(2)}
                   </td>
                   <td className="p-4 whitespace-nowrap text-red-600">
-                    ${survey.payment_pending.toFixed(2)}
+                    Rs{survey.payment_pending.toFixed(2)}
                   </td>
                   <td className="p-4 whitespace-nowrap text-red-600">
                     {survey.installation_comments?.length > 30 ? (

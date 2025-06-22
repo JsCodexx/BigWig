@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Save, Trash2, Edit, X } from "lucide-react";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
+import { Label } from "./ui/label";
 interface ServiceType {
   id: number;
   name: string;
@@ -123,19 +124,32 @@ const ServiceTypesManager: React.FC<Props> = ({ onTypesChange }) => {
   };
 
   return (
-    <div className="w-full rounded shadow space-y-8">
+    <div className="w-full shadow space-y-8">
       {/* Add new service type */}
-      <div className="flex items-center space-x-2 mb-6">
-        <Input
-          placeholder="New service type name"
-          value={newTypeName}
-          onChange={(e) => setNewTypeName(e.target.value)}
-          disabled={loading}
-        />
-        <Button onClick={handleAddType} disabled={loading}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add
-        </Button>
+      <div className="mb-6 space-y-2 w-full">
+        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Service Name
+        </Label>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full">
+          <Input
+            placeholder="New service type name"
+            value={newTypeName}
+            onChange={(e) => setNewTypeName(e.target.value)}
+            disabled={loading}
+            maxLength={20}
+            className="flex-1 max-w-md"
+          />
+          <Button
+            onClick={handleAddType}
+            disabled={loading}
+            variant="outline"
+            className="border-red-200 hover:bg-red-100 whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add
+          </Button>
+        </div>
       </div>
 
       {/* List service types */}
@@ -160,6 +174,7 @@ const ServiceTypesManager: React.FC<Props> = ({ onTypesChange }) => {
                   disabled={loading}
                   autoFocus
                   className="w-full border-blue-400 focus:ring-2 focus:ring-blue-500"
+                  maxLength={20}
                 />
               </div>
             ) : (

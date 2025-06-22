@@ -27,6 +27,7 @@ const formSchema = z
     fullName: z.string().min(2, "Full name is required"),
     phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
     address: z.string().min(5, "Address is required"),
+    email: z.string().optional(),
     user_role: z.enum(["client", "surveyor"], {
       required_error: "Please select a user role",
     }),
@@ -76,6 +77,7 @@ export default function AdminCreateUserForm() {
           user_role: data.user_role,
           cnic: data.user_role === "surveyor" ? data.cnic : null,
           password: hashedPassword,
+          email: data.email,
         },
       ]);
       if (error) throw error;
@@ -198,6 +200,7 @@ export default function AdminCreateUserForm() {
                   disabled={isLoading}
                   placeholder="1234512345671"
                   aria-invalid={errors.cnic ? "true" : "false"}
+                  maxLength={13}
                 />
                 {errors.cnic && (
                   <p className="text-red-600 text-sm mt-1">
@@ -222,6 +225,24 @@ export default function AdminCreateUserForm() {
               {errors.address && (
                 <p className="text-red-600 text-sm mt-1">
                   {errors.address.message}
+                </p>
+              )}
+            </div>
+            {/* Email */}
+            <div className="space-y-2">
+              <Label className="text-gray-600" htmlFor="email">
+                Email
+              </Label>
+              <Input
+                id="email"
+                {...register("email")}
+                disabled={isLoading}
+                placeholder="Enter your email"
+                aria-invalid={errors.email ? "true" : "false"}
+              />
+              {errors.email && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.email.message}
                 </p>
               )}
             </div>

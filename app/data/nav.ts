@@ -21,10 +21,7 @@ export const landingSubLinks = [
     name: "Carousel",
     href: "/admin/carousel",
   },
-  {
-    name: "Service Types",
-    href: "/admin/add-services-types",
-  },
+
   {
     name: "Our Mission",
     href: "/admin/our-mission",

@@ -100,3 +100,23 @@
     animation: scroll 10s linear infinite;
   }
 }
+/* Custom Scrollbar */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #ef4444; /* Tailwind red-500 */
+  border-radius: 9999px;
+  border: 2px solid #f1f1f1;
+}
+
+/* Firefox support */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #ef4444 #f1f1f1;
+}

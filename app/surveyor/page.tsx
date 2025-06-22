@@ -15,7 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FilesIcon, Plus } from "lucide-react";
-import { allStatuses, getAllowedStatusOptions } from "@/lib/utils";
+import {
+  allStatuses,
+  formatReadableDate,
+  getAllowedStatusOptions,
+} from "@/lib/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -202,7 +206,7 @@ const SurveyorDashboard = () => {
                       ></div>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(survey.created_at).toLocaleDateString()}
+                      {formatReadableDate(survey.created_at)}
                     </p>
                   </CardHeader>
                   <CardContent>

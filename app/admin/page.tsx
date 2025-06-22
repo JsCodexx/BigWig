@@ -103,12 +103,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {Object.entries(stats.surveyStatusCounts)
               .filter(([status]) =>
-                [
-                  "installation_completed",
-                  "completed",
-                  "client_review",
-                  "installation_pending",
-                ].includes(status)
+                ["completed", "installation_pending"].includes(status)
               )
               .map(([status, count]) => (
                 <StatusCard key={status} status={status} count={count} />

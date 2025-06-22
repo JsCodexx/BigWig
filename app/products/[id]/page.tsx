@@ -9,6 +9,8 @@ import {
   Ruler,
   ShieldAlert,
   MessageCircle,
+  Info,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,15 @@ import "swiper/css/navigation";
 import { Autoplay, Navigation } from "swiper/modules";
 import Image from "next/image";
 import { Billboard } from "@/types/product";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { formatReadableDate } from "@/lib/utils";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -70,19 +81,31 @@ export default function BillboardDetailsPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Link href="/products">
-        <Button variant="ghost" className="mb-6 flex items-center gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Billboards
-        </Button>
-      </Link>
-
+    <div className="max-w-7xl mx-auto p-6rounded shadow space-y-8 px-6 py-12">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/products">Billboards</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Details</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div>
+        <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+          <FileText className="text-red-600" /> Billboard Details
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          View more about your billboard
+        </p>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-10"
+        className="bg-white dark:bg-zinc-900 grid grid-cols-1 md:grid-cols-2 gap-10"
       >
         {/* Image Slider */}
         <div className="w-full">
@@ -115,10 +138,6 @@ export default function BillboardDetailsPage({
         {/* Billboard Info */}
         <div className="flex flex-col justify-between space-y-6">
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold text-red-700 dark:text-white">
-              Billboard Details
-            </h1>
-
             <div className="flex items-center text-lg gap-2 text-gray-700 dark:text-gray-300">
               <MapPin className="text-red-600" />
               <span>{billboard.location}</span>
@@ -133,7 +152,9 @@ export default function BillboardDetailsPage({
               <Calendar className="text-red-600" />
               <span>
                 {billboard.equipped_until
-                  ? `Equipped Until: ${billboard.equipped_until}`
+                  ? `Equipped Until: ${formatReadableDate(
+                      billboard.equipped_until
+                    )}`
                   : "Available Now"}
               </span>
             </div>
@@ -145,8 +166,9 @@ export default function BillboardDetailsPage({
               </span>
             </div>
 
-            <div className="flex items-center text-lg gap-2">
+            <div className="flex items-center text-lg gap-2 text-gray-700">
               <ShieldAlert className="text-red-600" />
+              Status:
               <span
                 className={`font-semibold ${
                   billboard.status === "out_of_order"
@@ -154,7 +176,7 @@ export default function BillboardDetailsPage({
                     : "text-green-600"
                 }`}
               >
-                Status: {billboard.status.replace("_", " ").toUpperCase()}
+                {billboard.status.replace("_", " ").toUpperCase()}
               </span>
             </div>
           </div>

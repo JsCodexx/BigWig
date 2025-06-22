@@ -1,7 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
-
+// utils/formatDate.ts
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import localizedFormat from "dayjs/plugin/localizedFormat";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -79,3 +82,28 @@ export const uploadImages = async (
   const results = await Promise.all(images.map(uploadImage));
   return results.filter((url): url is string => Boolean(url));
 };
+
+dayjs.extend(relativeTime);
+dayjs.extend(localizedFormat);
+
+/**
+ * Format date either as relative (e.g., "3 days ago") or absolute ("on Nov 12, 2025")
+ * @param inputDate - Date string (e.g., "2025-06-20 09:50:17.490775")
+ * @returns A formatted string like "3 hours ago" or "on Jun 21, 2025"
+ */
+export function formatReadableDate(inputDate: string): string {
+  const date = dayjs(inputDate);
+  const now = dayjs();
+
+  if (!date.isValid()) return "Invalid date";
+
+  const diffInHours = now.diff(date, "hour");
+
+  // If recent (within 48 hours), show relative
+  if (diffInHours < 48) {
+    return date.fromNow(); // e.g., "3 hours ago"
+  }
+
+  // Else show absolute
+  return `on ${date.format("MMM D, YYYY")}`; // e.g., "on Jun 21, 2025"
+}

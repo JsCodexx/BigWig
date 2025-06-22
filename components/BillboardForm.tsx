@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,6 +26,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useToast } from "@/hooks/use-toast";
 const formSchema = z.object({
   length: z.string().min(1, "Required"),
   width: z.string().min(1, "Required"),
@@ -45,6 +46,9 @@ export function BillboardForm() {
   const [isGalleryLoading, setIsGalleryLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [billboards, setBillboards] = useState<any[]>([]);
+  const [loadingBillboards, setLoadingBillboards] = useState(true);
+  const { toast } = useToast();
   const router = useRouter();
   const {
     register,
@@ -90,48 +94,102 @@ export function BillboardForm() {
     const { error } = await supabase.from("bill_boards").insert(data);
 
     if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save billboard.",
+        variant: "destructive",
+      });
       console.error("Error saving billboard:", error);
     } else {
-      alert("Billboard saved successfully!");
-      router.push("/products");
+      toast({
+        title: "Success",
+        description: "Billboard saved successfully.",
+      });
     }
   };
+
   const handleDelete = async (imageUrl: string) => {
     if (!imageUrl) {
-      console.error("No image URL provided, skipping storage deletion.");
+      toast({
+        title: "Invalid Action",
+        description: "No image URL provided.",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
-      // Extract correct file path from URL
       const filePath = imageUrl.split("/public/files/images/")[1];
-
       if (!filePath) {
-        console.error("Invalid image URL format:", imageUrl);
+        toast({
+          title: "Error",
+          description: "Invalid image URL format.",
+          variant: "destructive",
+        });
         return;
       }
 
-      console.log("Deleting image from storage:", `images/${filePath}`);
-
-      // Delete the image from Supabase Storage
       const { error: storageError } = await supabase.storage
-        .from("files") // Ensure this is the correct bucket name
-        .remove([`images/${filePath}`]); // Make sure to include "images/"
+        .from("files")
+        .remove([`images/${filePath}`]);
 
       if (storageError) {
-        console.error("Error deleting image from storage:", storageError);
+        toast({
+          title: "Storage Error",
+          description: "Failed to delete image from storage.",
+          variant: "destructive",
+        });
         return;
       }
 
-      console.log("Image deleted successfully:", filePath);
+      toast({
+        title: "Image Deleted",
+        description: "Image removed from storage.",
+      });
     } catch (err) {
-      console.error("Error extracting file path:", err);
-      return;
+      console.error("Error:", err);
+      toast({
+        title: "Unexpected Error",
+        description: "Something went wrong.",
+        variant: "destructive",
+      });
     }
   };
 
+  const deleteBillboard = async (id: number) => {
+    const { error } = await supabase.from("bill_boards").delete().eq("id", id);
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete billboard.",
+        variant: "destructive",
+      });
+      console.error("Error deleting billboard:", error);
+    } else {
+      setBillboards((prev) => prev.filter((bb) => bb.id !== id));
+      toast({
+        title: "Deleted",
+        description: "Billboard deleted successfully.",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const fetchBillboards = async () => {
+      const { data, error } = await supabase.from("bill_boards").select("*");
+      if (error) {
+        console.error("Error fetching billboards:", error);
+      } else {
+        setBillboards(data);
+      }
+      setLoadingBillboards(false);
+    };
+
+    fetchBillboards();
+  }, []);
+
   return (
-    <div className="w-full bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg">
+    <div className="w-full bg-white dark:bg-gray-900 p-8 ">
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -396,6 +454,45 @@ export function BillboardForm() {
           Save
         </Button>
       </form>
+      {loadingBillboards ? (
+        <p className="text-gray-500 mt-6">Loading billboards...</p>
+      ) : (
+        <div className="mt-10">
+          <div>
+            <h1 className="text-2xl font-bold text-red-700 flex items-center gap-2">
+              Existing Billboards
+            </h1>
+          </div>
+          {billboards.length === 0 ? (
+            <p className="text-gray-500">No billboards found.</p>
+          ) : (
+            <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-red-500 scrollbar-track-gray-200 pr-2 mt-4 space-y-4">
+              {billboards.map((bb) => (
+                <div
+                  key={bb.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-md p-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800"
+                >
+                  <div>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {bb.location} ({bb.length} x {bb.width})
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Facing: {bb.facing_to} | Status: {bb.status}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteBillboard(bb.id)}
+                  >
+                    <Trash className="w-4 h-4 mr-1" /> Delete
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

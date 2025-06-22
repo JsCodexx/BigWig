@@ -10,6 +10,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 interface SectionContent {
   title: string;
   subtitle: string;
@@ -32,7 +34,7 @@ const AdminEditWeOffer = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
+  const { toast } = useToast();
   useEffect(() => {
     setLoading(true);
     supabase
@@ -95,8 +97,18 @@ const AdminEditWeOffer = () => {
 
       setContent((prev) => ({ ...prev, image_url: data.url }));
       setSuccessMsg("Image uploaded successfully!");
+
+      toast({
+        title: "Upload Successful 🎉",
+        description: "Image uploaded successfully.",
+      });
     } catch (err: any) {
       setError("Image upload failed: " + err.message);
+      toast({
+        title: "Upload Failed",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
@@ -126,8 +138,17 @@ const AdminEditWeOffer = () => {
 
     if (error) {
       setError("Failed to save content: " + error.message);
+      toast({
+        title: "Save Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       setSuccessMsg("Content saved successfully!");
+      toast({
+        title: "Saved Successfully 🎉",
+        description: "Your changes have been saved.",
+      });
     }
 
     setSaving(false);
@@ -170,23 +191,30 @@ const AdminEditWeOffer = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
-        <div>
-          <label className="block mb-1 font-semibold">Title</label>
+        <div className="relative mb-4">
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Title
+          </Label>
           <input
             type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2"
+            className="w-full border border-gray-300 rounded px-3 py-2 pr-16"
             value={content.title}
             onChange={(e) => setContent({ ...content, title: e.target.value })}
             required
             maxLength={20}
           />
+          <div className="absolute bottom-[-20px] right-2 text-xs text-gray-500">
+            {content.title.length}/20
+          </div>
         </div>
 
         {/* Subtitle */}
-        <div>
-          <label className="block mb-1 font-semibold">Subtitle</label>
+        <div className="relative mb-4">
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Subtitle
+          </Label>
           <textarea
-            className="w-full border border-gray-300 rounded px-3 py-2"
+            className="w-full border border-gray-300 rounded px-3 py-2 pr-16"
             rows={2}
             value={content.subtitle}
             onChange={(e) =>
@@ -195,35 +223,59 @@ const AdminEditWeOffer = () => {
             required
             maxLength={120}
           />
+          <div className="absolute bottom-[-20px] right-2 text-xs text-gray-500">
+            {content.subtitle.length}/120
+          </div>
         </div>
 
         {/* Paragraphs */}
-        <div>
-          <label className="block mb-1 font-semibold">Paragraphs</label>
-          {content.paragraphs.map((para, idx) => (
-            <div key={idx} className="flex items-center mb-2">
-              <textarea
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                rows={6}
-                value={para}
-                onChange={(e) => updateParagraph(idx, e.target.value)}
-                required
-                maxLength={600}
-              />
+        {content.paragraphs.map((para, idx) => (
+          <div key={idx} className="relative mb-4">
+            {idx === 0 && (
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                Paragraph
+              </Label>
+            )}
+            <textarea
+              className="w-full border border-gray-300 rounded px-3 py-2 pr-16"
+              rows={6}
+              value={para}
+              onChange={(e) => updateParagraph(idx, e.target.value)}
+              required
+              maxLength={600}
+            />
+            <div className="absolute bottom-[-20px] right-2 text-xs text-gray-500">
+              {para.length}/600
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* Image Upload */}
-        <div>
-          <label className="block mb-1 font-semibold">Upload Image</label>
+
+        <div className="mb-6">
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Upload Image
+          </Label>
+          <div className="flex items-center gap-4">
+            <label
+              htmlFor="upload-button"
+              className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm font-medium cursor-pointer transition"
+            >
+              {content.image_url ? "Change File" : "Choose File"}
+            </label>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {content.image_url ? "Image selected" : "No image selected"}
+            </span>
+          </div>
           <input
+            id="upload-button"
             type="file"
             accept="image/*"
             onChange={handleFileChange}
             disabled={uploading}
-            className="mb-2"
+            className="hidden"
           />
+
           {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
 
           {content.image_url && (
@@ -236,8 +288,10 @@ const AdminEditWeOffer = () => {
         </div>
 
         {/* Image URL */}
-        <div>
-          <label className="block mb-1 font-semibold">Image URL</label>
+        {/* <div>
+          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            Image URL
+          </Label>
           <input
             type="text"
             className="w-full border border-gray-300 rounded px-3 py-2"
@@ -248,7 +302,7 @@ const AdminEditWeOffer = () => {
             placeholder="Image URL will appear here after upload"
             required
           />
-        </div>
+        </div> */}
 
         {/* Submit button */}
         <button

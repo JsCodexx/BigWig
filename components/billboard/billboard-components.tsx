@@ -12,52 +12,49 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 export function BillboardCard({ board }: { board: Billboard }) {
   const router = useRouter();
-  return (
-    <div
-      key={board?.id}
-      className="border rounded-sm overflow-hidden md:w-[350px] w-[300px]"
-    >
-      <div className="relative">
-        {/* Swiper Slider replacing single <img> */}
 
+  return (
+    <div className="border rounded-xl overflow-hidden shadow-sm bg-white transition hover:shadow-md md:w-[350px] w-[300px]">
+      {/* Slider */}
+      <div className="relative">
         <Swiper
-          modules={[Pagination, Navigation]} // ✅ Add Navigation module
+          modules={[Pagination, Navigation]}
           pagination={{ clickable: true }}
           navigation
-          className="w-full"
+          className="w-full h-full"
         >
           <style>
             {`
-      .swiper-pagination-bullet {
-        background-color: rgb(111, 114, 111) !important; /* Gray-500 */
-        opacity: 1;
-      }
-      .swiper-pagination-bullet-active {
-        background-color: rgb(220, 38, 38) !important; /* Darker Red */
-      }
-      /* ✅ Smaller Navigation Buttons */
-      .swiper-button-next, .swiper-button-prev {
-        color: white !important;
-        background: rgba(0, 0, 0, 0.5); /* Dark transparent background */
-        width: 25px !important; /* Smaller Width */
-        height: 25px !important; /* Smaller Height */
-        border-radius: 50%; /* Circular Buttons */
-        font-size: 12px !important; /* Smaller Icons */
-      }
-      .swiper-button-next::after, .swiper-button-prev::after {
-        font-size: 14px !important; /* Reduce Icon Size */
-        font-weight: bold;
-      }
-    `}
+              .swiper-pagination-bullet {
+                background-color: #9ca3af !important;
+                opacity: 1;
+              }
+              .swiper-pagination-bullet-active {
+                background-color: #dc2626 !important;
+              }
+              .swiper-button-next,
+              .swiper-button-prev {
+                color: white !important;
+                background: rgba(0,0,0,0.7);
+                width: 28px !important;
+                height: 28px !important;
+                border-radius: 50%;
+              }
+              .swiper-button-next::after,
+              .swiper-button-prev::after {
+                font-size: 14px !important;
+              }
+            `}
           </style>
 
-          {board?.gallery && board?.gallery.length > 0 ? (
-            board?.gallery.map((imgUrl, index) => (
-              <SwiperSlide key={index}>
+          {(board?.gallery?.length ?? 0) > 0 ? (
+            board.gallery &&
+            board.gallery.map((imgUrl, idx) => (
+              <SwiperSlide key={idx}>
                 <img
                   src={imgUrl || "/placeholder.jpg"}
-                  alt="Property"
-                  className="w-full h-36 object-cover"
+                  alt={`Slide ${idx}`}
+                  className="w-full h-40 object-cover"
                 />
               </SwiperSlide>
             ))
@@ -65,73 +62,64 @@ export function BillboardCard({ board }: { board: Billboard }) {
             <SwiperSlide>
               <img
                 src={board?.avatar || "/placeholder.jpg"}
-                alt="Property"
-                className="w-full h-36 object-cover"
+                alt="Default"
+                className="w-full h-40 object-cover"
               />
             </SwiperSlide>
           )}
         </Swiper>
 
-        {/* Favorite / Heart Button */}
-        <button className="absolute bottom-2 z-10 right-2 bg-white/20 p-1 rounded-full shadow">
+        {/* Heart */}
+        <button className="absolute bottom-2 right-2 z-10 bg-white/20 p-1 rounded-full backdrop-blur">
           <Heart className="text-white w-4 h-4" />
         </button>
       </div>
 
-      <div className="p-2 min-h-[120px]">
-        <p className=" mt-1 text-[18px] font-semibold text-[#37474F]">
+      {/* Content */}
+      <div className="p-3 space-y-2">
+        <p className="text-[18px] font-semibold text-gray-800">
           {board?.location}
         </p>
-        <div className="flex justify-between items-center">
-          <h2 className="text-[#37474F] text-[12px]">
-            Facing {board?.facing_to}
-          </h2>
 
-          <span className="flex items-center justify-center">
-            <MapPin className="text-gray-600" size={12} />
-            <p
-              className={`text-sm capitalize ${
-                board?.status === "equipped" ? "text-red-600" : "text-green-500"
+        <div className="flex justify-between text-xs text-gray-600">
+          <span>Facing {board?.facing_to}</span>
+          <span className="flex items-center gap-1">
+            <MapPin size={12} />
+            <span
+              className={`capitalize ${
+                board?.status === "equipped" ? "text-red-600" : "text-green-600"
               }`}
             >
               {board?.status}
-            </p>
+            </span>
           </span>
         </div>
-        <div className="flex justify-between items-center mb-1">
-          {board?.equipped_until && (
-            <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F] ">
-              <Calendar size={10} className="text-gray-600" /> Equipped:
-              <a
-                href="https://www.flaticon.com/free-icons/out-of-stock"
-                title="out of stock icons"
-              >
-                {formatDistanceToNow(new Date(board?.equipped_until))}
-              </a>
-            </p>
-          )}
-        </div>
-        {/* Created At & Updated At */}
+
+        {board?.equipped_until && (
+          <div className="text-xs text-gray-700 flex items-center gap-1">
+            <Calendar size={12} /> Equipped:{" "}
+            {formatDistanceToNow(new Date(board.equipped_until))}
+          </div>
+        )}
+
         {board?.created_at && (
-          <p className="text-[12px] flex items-center gap-2 mt-1 text-[#37474F]  mb-2">
-            <Calendar size={10} className="text-gray-600" /> Added:{" "}
-            {formatDistanceToNow(new Date(board?.created_at))} ago
-          </p>
+          <div className="text-xs text-gray-700 flex items-center gap-1">
+            <Calendar size={12} /> Added:{" "}
+            {formatDistanceToNow(new Date(board.created_at))} ago
+          </div>
         )}
       </div>
-      {/* Example 'View Details' */}
-      <div className="w-full flex justify-center items-center">
-        <div className="w-[85%] h-[1px] bg-gray-200"></div>
-      </div>
-      <div className="w-full h-6 md:h-10 flex justify-center items-center p-1 sm:py-2">
+
+      {/* Divider */}
+      <div className="mx-auto w-[85%] h-[1px] bg-gray-200" />
+
+      {/* CTA */}
+      <div className="w-full text-center py-2">
         <Link
           href={`/products/${board?.id}`}
-          className="mt-1 text-[14px] font-semibold text-[#37474F] flex justify-center items-center"
+          className="text-sm font-semibold text-gray-800 hover:text-red-600 flex items-center justify-center gap-1"
         >
-          {`View Details`}
-          <span>
-            <ChevronRight />
-          </span>
+          View Details <ChevronRight size={16} />
         </Link>
       </div>
     </div>

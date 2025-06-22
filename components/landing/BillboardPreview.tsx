@@ -77,25 +77,6 @@ const BillboardPreview = () => {
             No billboards available.
           </p>
         )}
-
-        {/* Navigation Buttons - Positioned at Bottom */}
-        {/* <div className="absolute top-[50px] left-0 z-10">
-          <button
-            ref={prevRef}
-            className="text-red-700 min:w-5 p-2 rounded-lg shadow-lg"
-          >
-            <ChevronLeft className="text-4xl" />
-          </button>
-        </div>
-
-        <div className="absolute top-[50px] right-0 z-10">
-          <button
-            ref={nextRef}
-            className="text-red-700 min:w-5 p-2 rounded-lg shadow-lg"
-          >
-            <ChevronRight className="text-4xl" />
-          </button>
-        </div> */}
       </div>
 
       <div className="flex justify-center mt-12">

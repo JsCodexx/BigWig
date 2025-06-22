@@ -23,7 +23,7 @@ export default function Footer() {
               priority
             /> */}
             <Image
-              src="/wLogo.webp"
+              src="/wlogo.webp"
               alt="BigWig Logo"
               width={150}
               height={50}

@@ -31,7 +31,7 @@ export default function Footer() {
             />
           </div>
           <p className="text-gray-400 text-sm mt-2">
-            Designed by Flipper Devices Inc. <br />© 2025. All rights reserved.
+            Designed by CafeDeTech. <br />© 2025. All rights reserved.
           </p>
         </div>
 
@@ -42,8 +42,14 @@ export default function Footer() {
             SadarBazar, RWP <br />
             Dial: +923106030609
           </p>
-          <div className="flex justify-center md:justify-end gap-4 text-gray-300">
-            <Facebook className="w-6 h-6 cursor-pointer hover:text-white" />
+          <div className="flex justify-center md:justify-end gap-4 text-gray-300 cursor-pointer">
+            <a
+              href="https://www.facebook.com/people/Bigwig-Advertisers/100068356630488/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Facebook className="w-6 h-6 cursor-pointer hover:text-white" />
+            </a>
           </div>
         </div>
       </div>

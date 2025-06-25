@@ -123,7 +123,7 @@ const WeOffer = () => {
       </div>
 
       {/* CTA Button (Not from DB) */}
-      <div className="mt-12 text-center">
+      {/* <div className="mt-12 text-center">
         <Button
           className={`text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 ${
             theme === "dark"
@@ -133,7 +133,7 @@ const WeOffer = () => {
         >
           Explore Services
         </Button>
-      </div>
+      </div> */}
     </section>
   );
 };

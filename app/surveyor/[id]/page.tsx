@@ -27,6 +27,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
+import BillboardEditor from "./components/billboard-editor";
+import BillboardCard from "./components/board-chips";
 
 export default function EditSurvey() {
   const { user } = useUser();
@@ -110,7 +112,6 @@ export default function EditSurvey() {
             // ✅ Already a URL, keep it
             uploadedUrls.push(img);
           } else if (typeof img === "object" && img?.file instanceof File) {
-            // ✅ New image that needs uploading
             const fileUpload = new FormData();
             fileUpload.append("file", img.file);
 
@@ -125,16 +126,26 @@ export default function EditSurvey() {
                 uploadedUrls.push(imgData.url);
               } else {
                 console.warn("One board image failed to upload");
+                toast({
+                  title: "Image upload failed",
+                  description: "One of the board images failed to upload.",
+                  variant: "destructive",
+                });
               }
             } catch (err) {
               console.error("Upload error:", err);
+              toast({
+                title: "Upload Error",
+                description: "An error occurred while uploading an image.",
+                variant: "destructive",
+              });
             }
           }
         }
 
         return {
           ...board,
-          board_images: uploadedUrls, // ✅ Now a clean array of strings
+          board_images: uploadedUrls,
         };
       })
     );
@@ -144,23 +155,40 @@ export default function EditSurvey() {
       billboards: updatedBillboards,
     };
 
-    const response = await fetch(`/api/surveys/${surveyId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(`/api/surveys/${surveyId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (response.ok) {
-      alert("Survey updated successfully!");
-      if (user.user_role === "surveyor") {
-        router.push("/surveyor");
-      } else if (user.user_role === "client") {
-        router.push("/client/surveys");
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Survey updated successfully.",
+        });
+
+        if (user.user_role === "surveyor") {
+          router.push("/surveyor");
+        } else if (user.user_role === "client") {
+          router.push("/client/surveys");
+        } else {
+          router.push("/surveyor");
+        }
       } else {
-        router.push("/surveyor");
+        toast({
+          title: "Update Failed",
+          description: "Something went wrong while updating the survey.",
+          variant: "destructive",
+        });
       }
-    } else {
-      alert("Something went wrong while updating.");
+    } catch (error) {
+      console.error("Update error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving the survey.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -324,21 +352,27 @@ export default function EditSurvey() {
       return updated;
     });
   };
-  useEffect(() => {
-    console.log(loading);
-  }, [loading]);
+
   return (
     <div className="py-16 px-6 max-w-7xl space-y-8 mx-auto bg-secondary/50 dark:bg-gray-800 rounded-xl shadow-md">
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink
+              href={user.user_role === "client" ? "/client" : "/"}
+            >
+              Dashboard
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/surveyor">Surveys</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
+          {user.user_role !== "client" && (
+            <>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/surveyor">Surveys</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+            </>
+          )}
           <BreadcrumbItem>
             <BreadcrumbPage>Details</BreadcrumbPage>
           </BreadcrumbItem>
@@ -377,210 +411,56 @@ export default function EditSurvey() {
         previewImage={previewImage}
         handleImageChange={handleImageChange}
       />
-      {/* List of Existing Billboards with Edit & Remove */}
       {billboards.length > 0 && (
         <div className="space-y-6 mt-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+          <h2 className="text-lg font-semibold text-red-700 dark:text-gray-100">
             Existing Boards
           </h2>
 
-          {billboards.map((board, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md"
-            >
-              {/* Billboard Name */}
-              <div>
-                <Label className="mb-2 font-semibold text-gray-700">
-                  Billboard Name
-                </Label>
-                <select
-                  disabled={readOnlyMode}
-                  value={board.billboard_name_id}
-                  onChange={(e) =>
-                    handleBoardChange(
-                      index,
-                      "billboard_name_id",
-                      e.target.value
-                    )
-                  }
-                  className="mt-1 block w-full border rounded-md p-2"
-                >
-                  <option value="">Select</option>
-                  {billboardNames.map((name) => (
-                    <option key={name.id} value={name.id}>
-                      {name.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {billboards.map((board, index) => {
+            const { surveyStatus } = formData;
+            const userRole = user.user_role;
 
-              {/* Billboard Type */}
-              <div>
-                <Label className="mb-2 font-semibold text-gray-700">
-                  Billboard Type
-                </Label>
-                <select
-                  disabled={readOnlyMode}
-                  value={board.billboard_type_id}
-                  onChange={(e) =>
-                    handleBoardChange(
-                      index,
-                      "billboard_type_id",
-                      e.target.value
-                    )
-                  }
-                  className="mt-1 block w-full border rounded-md p-2"
-                >
-                  <option value="">Select</option>
-                  {billboardTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.type_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            const canEdit =
+              (surveyStatus === "client_approved" ||
+                surveyStatus === "installation_completed") &&
+              (userRole === "admin" || userRole === "surveyor");
 
-              {/* Width */}
-              <div>
-                <Label className="mb-2 font-semibold text-gray-700">
-                  Width
-                </Label>
-                <Input
-                  disabled={readOnlyMode}
-                  type="number"
-                  value={board.width}
-                  onChange={(e) =>
-                    handleBoardChange(index, "width", e.target.value)
-                  }
-                />
-              </div>
-
-              {/* Height */}
-              <div>
-                <Label className="mb-2 font-semibold text-gray-700">
-                  Height
-                </Label>
-                <Input
-                  disabled={readOnlyMode}
-                  type="number"
-                  value={board.height}
-                  onChange={(e) =>
-                    handleBoardChange(index, "height", e.target.value)
-                  }
-                />
-              </div>
-
-              {/* Quantity */}
-              <div className="w-full">
-                <Label className="mb-2 font-semibold text-gray-700">
-                  Quantity
-                </Label>
-                <Input
-                  disabled={readOnlyMode}
-                  type="number"
-                  value={board.quantity}
-                  onChange={(e) =>
-                    handleBoardChange(index, "quantity", e.target.value)
-                  }
-                />
-              </div>
-              {/* Board Images */}
-              <div>
-                {!formData.surveyStatus ? (
-                  <div>
-                    <Label className="mb-2 font-semibold text-gray-700">
-                      Upload Board Images
-                    </Label>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => handleBoardImageChange(e, index)}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-    file:rounded-lg file:border-0
-    file:text-sm file:font-semibold
-    file:bg-red-50 file:text-red-700
-    hover:file:bg-red-100
-    dark:file:bg-gray-700 dark:file:text-white dark:hover:file:bg-gray-600"
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <Label className="mb-2 font-semibold text-gray-700">
-                      Board Images
-                    </Label>
-                  </>
-                )}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {board.board_images.map((img: ImageType, idx: number) => {
-                    const imageUrl =
-                      typeof img === "string" ? img : img.preview;
-
-                    return (
-                      <img
-                        key={idx}
-                        src={imageUrl}
-                        alt={`preview-${idx}`}
-                        className="w-20 h-20 object-cover rounded-md border"
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Remove Button */}
-                {!formData.surveyStatus && (
-                  <div className="flex items-end justify-end">
-                    <Button
-                      variant="destructive"
-                      onClick={() => removeBillboard(index)}
-                      className="bg-red-500 hover:bg-red-700"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                )}
-              </div>
-              {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-
-              {(formData.surveyStatus === "client_approved" ||
-                formData.surveyStatus === "installation_completed" ||
-                formData.surveyStatus === "completed") && (
-                <div>
-                  <BoardDesignManager
-                    board={board}
-                    index={index}
-                    surveyStatus={formData.surveyStatus}
-                    mode="design"
-                    handleUpload={handleUpload}
-                    handleUpdates={handleDesignUpdate}
-                  />
-                </div>
-              )}
-              {(formData.surveyStatus === "installation_completed" ||
-                formData.surveyStatus === "completed") && (
-                <div>
-                  <BoardDesignManager
-                    board={board}
-                    index={index}
-                    surveyStatus={formData.surveyStatus}
-                    mode="installation"
-                    handleUpload={handleUpload}
-                    handleUpdates={handleDesignUpdate}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+            return canEdit ? (
+              <BillboardEditor
+                key={index}
+                board={board}
+                index={index}
+                readOnly={readOnlyMode}
+                formData={formData}
+                user={user}
+                loading={loading}
+                billboardNames={billboardNames}
+                billboardTypes={billboardTypes}
+                handleBoardChange={handleBoardChange}
+                handleBoardImageChange={handleBoardImageChange}
+                removeBillboard={removeBillboard}
+                handleUpload={handleUpload}
+                handleDesignUpdate={handleDesignUpdate}
+              />
+            ) : (
+              <BillboardCard
+                key={index}
+                board={board}
+                index={index}
+                billboardNames={billboardNames}
+                billboardTypes={billboardTypes}
+                formData={formData}
+                onDelete={removeBillboard}
+                userRole={userRole}
+              />
+            );
+          })}
         </div>
       )}
 
       <div className="w-full flex justify-start gap-4 items-center">
-        {user?.user_role === "admin" &&
+        {/* {user?.user_role === "admin" &&
           formData?.surveyStatus === "pending_admin_review" && (
             <Button
               onClick={addBillboard}
@@ -588,9 +468,9 @@ export default function EditSurvey() {
             >
               Add Shopboard
             </Button>
-          )}
+          )} */}
 
-        {(user?.user_role === "admin" || user?.user_role === "client") &&
+        {user?.user_role === "admin" &&
           (formData?.surveyStatus === "pending_admin_review" ||
             formData?.surveyStatus === "client_review") && (
             <Button

@@ -59,7 +59,7 @@ const GalleryAdmin = () => {
 
   const fetchSection = async () => {
     const { data, error } = await supabase
-      .from("gallery_sections")
+      .from("gallery_section")
       .select("id, title, subtitle, gallery_images(*)")
       .single();
 
@@ -82,7 +82,7 @@ const GalleryAdmin = () => {
 
     if (!selectedSectionId) {
       const { data, error } = await supabase
-        .from("gallery_sections")
+        .from("gallery_section")
         .insert([{ title: sectionTitle, subtitle: sectionSubtitle }])
         .select()
         .single();
@@ -274,17 +274,14 @@ const GalleryAdmin = () => {
 
         <div>
           <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
-            <Edit className="text-red-600" /> Edit Our Gallery Section
+            <Edit className="text-red-600" /> Gallery
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Edit your landing page
+            Edit your landing page gallery
           </p>
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-red-700">
-            Gallery Section Title & Subtitle
-          </h2>
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
             Title
           </Label>

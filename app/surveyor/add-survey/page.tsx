@@ -33,6 +33,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useToast } from "@/hooks/use-toast";
 interface Errors {
   shopName?: string;
   shopAddress?: string;
@@ -65,8 +66,9 @@ export default function SubmitSurvey() {
   const [previewImage, setPreviewImage] = useState<string>("");
   const [resetPreview, setResetPreview] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setSelectedQuote, selectedQuote } = useUi();
+  const { selectedQuote } = useUi();
   const router = useRouter();
+  const { toast } = useToast();
   const [formData, setFormData] = useState<FormDataType>({
     shopName: "",
     shopAddress: "",
@@ -181,6 +183,7 @@ export default function SubmitSurvey() {
     }
 
     // 🔁 Upload each image inside billboards[].board_images using same `/api/upload`
+
     const updatedBillboards = await Promise.all(
       billboards.map(async (board) => {
         const imagesToUpload = board.board_images
@@ -199,7 +202,11 @@ export default function SubmitSurvey() {
               });
 
               if (!res.ok) {
-                console.warn("Upload failed with status:", res.status);
+                toast({
+                  title: "Upload Failed",
+                  description: `Image upload failed with status ${res.status}`,
+                  variant: "destructive",
+                });
                 return null;
               }
 
@@ -207,6 +214,12 @@ export default function SubmitSurvey() {
               return imgData.url || null;
             } catch (err) {
               console.error("Upload error:", err);
+              toast({
+                title: "Upload Error",
+                description:
+                  "An unexpected error occurred during image upload.",
+                variant: "destructive",
+              });
               return null;
             }
           })
@@ -218,6 +231,13 @@ export default function SubmitSurvey() {
         };
       })
     );
+
+    // Later after saving the payload, for example:
+    toast({
+      title: "Success",
+      description: "Billboards updated successfully.",
+      variant: "default",
+    });
 
     // 🎯 Final payload to save
     const payload = {

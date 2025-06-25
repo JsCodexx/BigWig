@@ -23,6 +23,7 @@ const SurveyorQuotesPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const { setSelectedClient, setSelectedQuote } = useUi();
+  const [selectedComment, setSelectedComment] = useState(null);
 
   const fetchquotes = async () => {
     setLoading(true);
@@ -111,6 +112,7 @@ const SurveyorQuotesPage = () => {
                 <th className="py-4 px-6 text-left">Email</th>
                 <th className="py-4 px-6 text-left">Phone</th>
                 <th className="py-4 px-6 text-left">Status</th>
+                <th className="py-4 px-6 text-left">Comments</th>
                 <th className="py-4 px-6 text-left rounded-r-lg">Action</th>
               </tr>
             </thead>
@@ -141,6 +143,21 @@ const SurveyorQuotesPage = () => {
                     </Badge>
                   </td>
                   <td className="py-4 px-6">
+                    {quote.comments?.length > 5 ? (
+                      <>
+                        {quote.comments.slice(0, 5)}...
+                        <button
+                          onClick={() => setSelectedComment(quote.comments)}
+                          className="text-blue-500 underline ml-1"
+                        >
+                          view
+                        </button>
+                      </>
+                    ) : (
+                      quote.comments
+                    )}
+                  </td>
+                  <td className="py-4 px-6">
                     <div className="flex gap-1">
                       {quote.status === "pending" && (
                         <button
@@ -167,6 +184,22 @@ const SurveyorQuotesPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {selectedComment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+            <h2 className="text-lg font-semibold mb-2">Full Comment</h2>
+            <p className="text-gray-700">{selectedComment}</p>
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setSelectedComment(null)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

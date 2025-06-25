@@ -34,11 +34,10 @@ const supabase = createClient(
 
 const Carousel = () => {
   const [slides, setSlides] = useState<any[]>([]);
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [slideToDelete, setSlideToDelete] = useState<{
     id: string;
     imageUrl?: string;
@@ -85,11 +84,6 @@ const Carousel = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setImage(file);
-  };
-
   const handleUpload = async () => {
     if (!image || uploading) return;
     setUploading(true);
@@ -131,8 +125,6 @@ const Carousel = () => {
     const { error: insertError } = await supabase.from("slides").insert([
       {
         image_url: publicURL.publicUrl,
-        title,
-        subtitle,
         is_main: isMain || slides.length === 0,
       },
     ]);
@@ -142,10 +134,9 @@ const Carousel = () => {
     } else {
       toast({ title: "Slide uploaded successfully" });
       await fetchSlides();
-      setTitle("");
-      setSubtitle("");
       setImage(null);
       setIsMain(false);
+      setImagePreview(null);
       const fileInput =
         document.querySelector<HTMLInputElement>('input[type="file"]');
       if (fileInput) fileInput.value = "";
@@ -154,29 +145,13 @@ const Carousel = () => {
     setUploading(false);
   };
 
-  const handleDelete = async (id: string, imageUrl?: string) => {
-    if (!confirm("Are you sure you want to delete this slide?")) return;
-
-    if (imageUrl) {
-      const filePath = imageUrl.split("/public/files/")[1];
-      if (filePath) {
-        await supabase.storage.from("files").remove([filePath]);
-      }
-    }
-
-    const { error: dbError } = await supabase
-      .from("slides")
-      .delete()
-      .match({ id });
-
-    if (dbError) {
-      toast({ title: "Error deleting slide", variant: "destructive" });
-    } else {
-      toast({ title: "Deleted" });
-      fetchSlides();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file)); // 🔥 this creates a preview
     }
   };
-
   const handleSetMain = async (id: string) => {
     const { error: clearError } = await supabase
       .from("slides")
@@ -228,54 +203,71 @@ const Carousel = () => {
         <p className="text-gray-500 text-sm">Manage your homepage slides</p>
       </div>
 
-      {/* Upload Slide Form */}
-      <Card id="upload-form">
-        <CardHeader>
-          <CardTitle>Add New Slide</CardTitle>
+      <Card id="upload-form" className="border shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg text-red-600">Add New Slide</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            disabled={uploading}
-          />
-          {/* <Input
-            type="text"
-            placeholder="Slide Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            type="text"
-            placeholder="Slide Subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-          /> */}
+
+        <CardContent className="space-y-4">
+          {/* File Upload */}
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 p-4 rounded-md text-center hover:border-red-400 transition">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={uploading}
+              className="cursor-pointer"
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              Supported formats: JPG, PNG, WEBP
+            </p>
+          </div>
+
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="w-full max-w-sm mx-auto rounded-md overflow-hidden border">
+              <Image
+                src={imagePreview}
+                alt="Preview"
+                width={600}
+                height={340}
+                className="object-cover w-full h-48"
+              />
+            </div>
+          )}
+
+          {/* Main checkbox */}
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={isMain}
               onCheckedChange={(checked: any) => setIsMain(!!checked)}
               id="main-image-checkbox"
             />
-            <label htmlFor="main-image-checkbox" className="text-sm">
+            <label
+              htmlFor="main-image-checkbox"
+              className="text-sm font-medium"
+            >
               Set as Main Image
             </label>
           </div>
 
-          <Button
-            disabled={!image || uploading}
-            onClick={handleUpload}
-            className="w-fit"
-          >
-            {uploading ? (
-              "Uploading..."
-            ) : (
-              <>
-                <Upload className="w-4 h-4 mr-2" /> Upload Slide
-              </>
-            )}
-          </Button>
+          {/* Upload Button */}
+          <div className="pt-2">
+            <Button
+              disabled={!image || uploading}
+              onClick={handleUpload}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {uploading ? (
+                "Uploading..."
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Slide
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

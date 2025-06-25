@@ -20,7 +20,7 @@ interface Props {
   handleUpdates: (
     board: SurveyBillboard,
     mode: "design" | "installation"
-  ) => void;
+  ) => Promise<void>;
 }
 
 const BoardDesignManager: React.FC<Props> = ({

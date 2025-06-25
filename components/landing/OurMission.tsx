@@ -96,7 +96,7 @@ const OurMission = () => {
         </motion.div>
       </div>
 
-      <div className="mt-12 text-center">
+      {/* <div className="mt-12 text-center">
         <a href={"/"}>
           <Button
             className={`text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 ${
@@ -108,7 +108,7 @@ const OurMission = () => {
             {"Learn More"}
           </Button>
         </a>
-      </div>
+      </div> */}
     </section>
   );
 };

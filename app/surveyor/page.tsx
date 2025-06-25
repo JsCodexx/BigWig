@@ -237,7 +237,8 @@ const SurveyorDashboard = () => {
 
                       if (
                         (role === "admin" &&
-                          status === "pending_admin_review") ||
+                          (status === "pending_admin_review" ||
+                            status === "client_review")) ||
                         (role === "client" && status === "client_review")
                       ) {
                         return (

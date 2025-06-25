@@ -467,14 +467,14 @@ export default function PaymentsPage() {
               {/* Calculated Summary */}
               <div className="text-sm text-gray-600">
                 <p>
-                  <strong>Total:</strong> $
+                  <strong>Total:</strong>
                   {(
                     selectedSurvey.payment_billboard_total +
                     (parseFloat(newInstallation) || 0)
                   ).toFixed(2)}
                 </p>
                 <p>
-                  <strong>Pending:</strong> $
+                  <strong>Pending:</strong>
                   {(
                     selectedSurvey.payment_billboard_total +
                     (parseFloat(newInstallation) || 0) -

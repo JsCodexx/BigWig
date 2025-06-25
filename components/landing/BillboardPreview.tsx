@@ -35,17 +35,26 @@ const BillboardPreview = () => {
 
   return (
     <section className="py-12 px-6 bg-white dark:bg-gray-900">
-      <motion.h2
-        className="text-3xl font-bold text-center text-red-700 dark:text-red-500"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-      >
-        Featured Billboards
-      </motion.h2>
-      <p className="text-center text-gray-600 dark:text-gray-300 mt-2">
-        Explore a selection of our premium billboard locations.
-      </p>
+      <div className="max-w-6xl mx-auto text-center">
+        <motion.h2
+          className="text-4xl font-bold text-red-500"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          Featured Billboards
+        </motion.h2>
+        <motion.p
+          className="mt-4 text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          Explore a curated selection of our most impactful billboard locations.
+          Each site is strategically chosen to maximize visibility and brand
+          reach
+        </motion.p>
+      </div>
 
       <div className="relative w-full mt-6 ">
         {billboards.length > 0 ? (

@@ -14,9 +14,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className="min-h-screen flex flex-col w-full">
         <UiProvider>
           <UserProvider>
+            <Toaster />
             <AppContent>{children}</AppContent>
           </UserProvider>
         </UiProvider>
@@ -46,8 +50,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
       >
         {children}
       </main>
-
-      <Toaster />
 
       {/* Show Footer only on the homepage */}
       {pathname === "/" && <Footer />}

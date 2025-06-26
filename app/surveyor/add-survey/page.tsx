@@ -131,24 +131,35 @@ export default function SubmitSurvey() {
   // Submit the Survey
   const handleSubmit = async () => {
     setLoading(true);
+
     if (!user) {
-      alert("User not logged in");
+      toast({
+        title: "User Not Logged In",
+        description: "Please log in to submit the survey.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
     const result = generalSurveySchema.safeParse(formData);
 
     if (!result.success) {
-      // Map Zod errors to your Errors object
       const fieldErrors: Errors = {};
       result.error.errors.forEach((err) => {
         const field = err.path[0] as keyof Errors;
         fieldErrors[field] = err.message;
       });
       setErrors(fieldErrors);
+      toast({
+        title: "Validation Error",
+        description: "Please correct the highlighted fields.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
+
     let surveyStatus = "";
     if (user?.user_role === "client") {
       surveyStatus = "client_approved";
@@ -161,12 +172,15 @@ export default function SubmitSurvey() {
     }
 
     if (!image) {
+      toast({
+        title: "Missing Image",
+        description: "Please upload the form image before submitting.",
+        variant: "destructive",
+      });
       setLoading(false);
-      alert("Please upload a form image");
       return;
     }
 
-    // 🔼 Upload main form image
     const formUpload = new FormData();
     formUpload.append("file", image);
 
@@ -177,12 +191,14 @@ export default function SubmitSurvey() {
 
     const formDataJson = await formRes.json();
     if (!formDataJson.url) {
+      toast({
+        title: "Form Upload Failed",
+        description: "Could not upload the main form image.",
+        variant: "destructive",
+      });
       setLoading(false);
-      alert("Form image upload failed!");
       return;
     }
-
-    // 🔁 Upload each image inside billboards[].board_images using same `/api/upload`
 
     const updatedBillboards = await Promise.all(
       billboards.map(async (board) => {
@@ -232,14 +248,6 @@ export default function SubmitSurvey() {
       })
     );
 
-    // Later after saving the payload, for example:
-    toast({
-      title: "Success",
-      description: "Billboards updated successfully.",
-      variant: "default",
-    });
-
-    // 🎯 Final payload to save
     const payload = {
       description: formData.description,
       client_id: formData.clientId,
@@ -250,7 +258,7 @@ export default function SubmitSurvey() {
       shopAddress: formData.shopAddress,
       shopName: formData.shopName,
       survey_status: surveyStatus,
-      publicURL: formDataJson.url, // ✅ Main image
+      publicURL: formDataJson.url,
     };
 
     const saveRes = await fetch("/api/submit-survey", {
@@ -260,47 +268,22 @@ export default function SubmitSurvey() {
     });
 
     if (saveRes.ok) {
-      setLoading(false);
       markQuoteAsConducted();
-      alert("Survey Submitted!");
+      toast({
+        title: "Survey Submitted",
+        description: "Your survey has been successfully submitted.",
+      });
       router.push("/surveyor");
     } else {
-      setLoading(false);
-      alert("Survey submission failed.");
+      toast({
+        title: "Submission Failed",
+        description: "Could not submit the survey. Please try again.",
+        variant: "destructive",
+      });
       router.push("/surveyor");
     }
+
     setLoading(false);
-  };
-
-  const openModal = (type: "name" | "type") => {
-    setModalType(type);
-    setModalOpen(true);
-  };
-
-  const handleAddNew = async () => {
-    if (!newValue.trim()) return;
-
-    const endpoint =
-      modalType === "name"
-        ? "/api/billboards/billboard-names"
-        : "/api/billboards/billboard-types";
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ value: newValue }),
-    });
-
-    if (response.ok) {
-      const newItem = await response.json();
-      if (modalType === "name") setBillboardNames([...billboardNames, newItem]);
-      else setBillboardTypes([...billboardTypes, newItem]);
-
-      setNewValue("");
-      setModalOpen(false);
-    } else {
-      alert("Error adding new item.");
-    }
   };
 
   useEffect(() => {
@@ -353,116 +336,85 @@ export default function SubmitSurvey() {
     setTimeout(() => setResetPreview(false), 100);
   };
   return (
-    <div className="w-full flex flex-col justify-center items-center">
-      {/* Left Side: Survey Form */}
-      <div className="py-16 px-6 max-w-7xl w-full mx-auto ">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Create Survey</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div>
-          <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
-            <File className="text-red-600" /> Create Survey
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Create,View and Edit your surveys at one place.
-          </p>
-        </div>
-        {/* Left: Submit Survey + Board Form (60%) */}
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="w-full flex flex-col justify-center items-center">
+        {/* Left Side: Survey Form */}
+        <div className="py-16 px-6 max-w-7xl w-full mx-auto ">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Create Survey</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div>
+            <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+              <File className="text-red-600" /> Create Survey
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              Create,View and Edit your surveys at one place.
+            </p>
+          </div>
+          {/* Left: Submit Survey + Board Form (60%) */}
 
-        <div className="w-full space-y-6">
-          {/* General Survey Details */}
-          <div className="bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
-            <GeneralSurveyDetails
-              errors={errors}
-              formData={formData}
-              setFormData={setFormData}
-              handleChange={handleChange}
-              clients={clients}
-              previewImage={previewImage}
-              handleImageChange={handleImageChange}
-            />
-            {/* Conditional: Boards Table (Full Width) */}
-            {billboards.length > 0 && (
-              <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                  Added Shopboard
-                </h2>
-                <BoardsTable
-                  billboards={billboards}
-                  onRemoveBoard={removeBillboard}
-                  billboardNames={billboardNames}
-                  billboardTypes={billboardTypes}
-                  onEditBoard={handleEditBoard}
-                />
+          <div className="w-full space-y-6">
+            {/* General Survey Details */}
+            <div className="bg-secondary/50 dark:bg-gray-800 p-6 rounded-xl shadow-md space-y-8">
+              <GeneralSurveyDetails
+                errors={errors}
+                formData={formData}
+                setFormData={setFormData}
+                handleChange={handleChange}
+                clients={clients}
+                previewImage={previewImage}
+                handleImageChange={handleImageChange}
+              />
+              {/* Conditional: Boards Table (Full Width) */}
+              {billboards.length > 0 && (
+                <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                    Added Shopboard
+                  </h2>
+                  <BoardsTable
+                    billboards={billboards}
+                    onRemoveBoard={removeBillboard}
+                    billboardNames={billboardNames}
+                    billboardTypes={billboardTypes}
+                    onEditBoard={handleEditBoard}
+                  />
+                </div>
+              )}
+
+              <DialogWrapper
+                billboardNames={billboardNames}
+                billboardTypes={billboardTypes}
+                newBoard={newBoard}
+                user={user}
+                updateNewBoard={updateNewBoard}
+                resetPreview={resetPreview}
+                setNewBoard={setNewBoard}
+                onAddBoard={addOrUpdateBoard}
+                open={showDialog}
+                setOpen={setShowDialog}
+              />
+
+              <div className="flex justify-between gap-4 items-center">
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting.." : "Submit Survey"}
+                </Button>
               </div>
-            )}
-            {/* Billboard Details Form */}
-            {/* <BoardDetailsForm
-              billboardNames={billboardNames}
-              billboardTypes={billboardTypes}
-              newBoard={newBoard}
-              userRole={user?.user_role || ""}
-              updateNewBoard={updateNewBoard}
-              openModal={openModal}
-              resetPreview={resetPreview}
-              setNewBoard={setNewBoard}
-            /> */}
-            <DialogWrapper
-              billboardNames={billboardNames}
-              billboardTypes={billboardTypes}
-              newBoard={newBoard}
-              user={user}
-              updateNewBoard={updateNewBoard}
-              resetPreview={resetPreview}
-              setNewBoard={setNewBoard}
-              onAddBoard={addOrUpdateBoard}
-              open={showDialog}
-              setOpen={setShowDialog}
-            />
-
-            <div className="flex justify-between gap-4 items-center">
-              <Button
-                onClick={handleSubmit}
-                className="bg-red-600 hover:bg-red-700 text-white"
-                disabled={loading}
-              >
-                {loading ? "Submitting.." : "Submit Survey"}
-              </Button>
             </div>
           </div>
         </div>
       </div>
-      {/* Modal for Adding Name/Type */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {modalType === "name"
-                ? "Add Shopboard Name"
-                : "Add Shopboard Type"}
-            </DialogTitle>
-          </DialogHeader>
-          <Input
-            placeholder={`Enter ${
-              modalType === "name" ? "Shopboard Name" : "Type"
-            }`}
-            value={newValue}
-            onChange={(e) => setNewValue(e.target.value)}
-            className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          />
-          <Button onClick={handleAddNew} className="bg-red-500 text-white">
-            Add
-          </Button>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -5,6 +5,14 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+// Utility: Capitalize words (e.g., "facia board" → "Facia Board")
+function normalizeName(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ") // remove extra spaces
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 // Handle GET request: Fetch all billboard names
 export async function GET() {
@@ -19,29 +27,39 @@ export async function GET() {
   return NextResponse.json(data, { status: 200 });
 }
 
-// Handle POST request: Add a new billboard name
 export async function POST(req: Request) {
   try {
-    const { value } = await req.json();
+    const { name } = await req.json();
 
-    if (!value) {
+    if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
+    const normalizedName = normalizeName(name);
+
+    // 1. Check for duplicate
+    const { data: existing } = await supabase
+      .from("billboard_names")
+      .select("id")
+      .eq("name", normalizedName)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "Name already exists", duplicate: true },
+        { status: 409 }
+      );
+    }
+
+    // 2. Insert if not duplicate
     const { data, error } = await supabase
       .from("billboard_names")
-      .insert([{ name: value }]) // Correct format
+      .insert([{ name: normalizedName }])
       .select()
       .single();
 
     if (error) {
       console.error("Error inserting:", error.message);
-    } else {
-      console.log("Inserted data:", data);
-    }
-
-    if (error) {
-      console.log(error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

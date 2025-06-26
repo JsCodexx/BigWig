@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import type { ImageType } from "@/types/survey";
 import ImageUploader from "../ImageUploader";
 import { useParams } from "next/navigation";
+import AddBillboardItemDialog from "@/components/landing/billboard-name-type";
 
 // ✅ Define Zod validation schema
 const boardSchema = z.object({
@@ -25,7 +26,11 @@ const boardSchema = z.object({
 interface BoardDetailsProps {
   newBoard: any;
   billboardNames: { id: string; name: string }[];
-  billboardTypes: { id: string; type_name: string }[];
+  billboardTypes: {
+    billboard_name_id: any;
+    id: string;
+    type_name: string;
+  }[];
   updateNewBoard: (field: any, value: string | number | any[]) => void;
   userRole: string;
   openModal?: (type: "name" | "type") => void;
@@ -38,8 +43,6 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
   billboardNames,
   billboardTypes,
   updateNewBoard,
-  userRole,
-  openModal,
   resetPreview,
   setNewBoard,
 }) => {
@@ -116,6 +119,29 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
       setBoardImagePreviews([]);
     }
   }, [resetPreview]);
+  // inside your parent component or page
+  const [dialogType, setDialogType] = useState<"name" | "type" | null>(null);
+
+  const handleAddDialogSubmit = async (data: any) => {
+    if (dialogType === "name") {
+      await fetch("/api/billboard-names", {
+        method: "POST",
+        body: JSON.stringify({ name: data.name }),
+        headers: { "Content-Type": "application/json" },
+      });
+    } else if (dialogType === "type") {
+      await fetch("/api/billboard-types", {
+        method: "POST",
+        body: JSON.stringify({
+          type_name: data.type_name,
+          billboard_name_id: data.nameId,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Optionally refresh your names/types from DB here
+  };
 
   return (
     <div className="mt-4 p-4 space-y-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900">
@@ -127,14 +153,6 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             <Label htmlFor="board_type" className="font-semibold text-gray-700">
               Select Board Type <span className="text-red-600">*</span>
             </Label>
-            {userRole === "admin" && openModal && (
-              <Button
-                onClick={() => openModal("name")}
-                className=" text-gray-600 hover:bg-white underline bg-white  text-sm "
-              >
-                + Add Type
-              </Button>
-            )}
           </div>
           <select
             required
@@ -166,14 +184,6 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             >
               Select Board Detail <span className="text-red-600">*</span>
             </Label>
-            {userRole === "admin" && openModal && (
-              <Button
-                onClick={() => openModal("type")}
-                className=" text-gray-600 hover:bg-white underline bg-white  text-sm "
-              >
-                + Add Detail
-              </Button>
-            )}
           </div>
           <select
             required
@@ -185,16 +195,24 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             className="dark:bg-gray-700 dark:text-white dark:border-gray-600 p-2 rounded-md border"
           >
             <option value="">Select Details</option>
-            {billboardTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.type_name}
-              </option>
-            ))}
+            {billboardTypes
+              .filter(
+                (type) => type.billboard_name_id === newBoard.billboard_name_id
+              )
+              .map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.type_name}
+                </option>
+              ))}
           </select>
           {errors.billboard_type_id && (
             <p className="text-red-500 text-sm">{errors.billboard_type_id}</p>
           )}
         </div>
+
+        {errors.billboard_type_id && (
+          <p className="text-red-500 text-sm">{errors.billboard_type_id}</p>
+        )}
       </div>
 
       {/* Height & Width */}

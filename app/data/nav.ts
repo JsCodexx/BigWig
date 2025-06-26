@@ -38,6 +38,10 @@ export const landingSubLinks = [
     name: "Gallery",
     href: "/admin/add-gallery",
   },
+  {
+    name: "Name & Details",
+    href: "/admin/add-name-type",
+  },
 ];
 
 export const navItems: Record<Role, NavItem[]> = {

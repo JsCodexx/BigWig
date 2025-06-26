@@ -6,8 +6,10 @@ import {
   Hourglass,
   BarChart3,
   LucideLayoutDashboard,
+  Loader2, // Spinner
 } from "lucide-react";
 
+import CountUp from "react-countup";
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalRevenue: 0,
@@ -18,6 +20,7 @@ const Dashboard = () => {
     totalSurveys: 0,
     totalReviews: 0,
   });
+  const [isLoading, setIsLoading] = useState(true); // ✅ new loading state
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,16 +60,28 @@ const Dashboard = () => {
           totalSurveys: data.length,
           totalReviews: formData.length,
         });
+        setIsLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
       }
+      setIsLoading(false);
     };
 
     fetchData();
   }, []);
+  if (isLoading) {
+    return (
+      <div className="min-h-[90vh] flex items-center justify-center bg-white dark:bg-black">
+        <div className="flex items-center gap-3 text-red-600 dark:text-red-400 animate-pulse">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-lg font-medium">Loading Dashboard...</span>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="min-h-[90vh] flex items-center justify-center bg-white dark:from-gray-900 dark:to-black p-6">
-      <div className="w-full max-w-7xl bg-white/80 dark:bg-black/40 backdrop-blur-xl rounded-3xl shadow-2xl p-10 space-y-10 border border-gray-200 dark:border-gray-800 transition-all">
+    <div className="min-h-[90vh] flex items-start justify-center bg-white dark:from-gray-900 dark:to-black p-6">
+      <div className="w-full max-w-7xl bg-white/80 dark:bg-black/40 backdrop-blur-xl  p-10 space-y-10  transition-all">
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-4xl font-bold text-red-700 dark:text-red-400 flex items-center gap-3">
@@ -110,7 +125,7 @@ const Dashboard = () => {
               ))}
 
             <StatusCard status="Pending Quotes" count={stats.pendingQuotes} />
-            <StatusCard status="Total Surveys" count={stats.totalSurveys} />
+            <StatusCard status="Total Projects" count={stats.totalSurveys} />
           </div>
         </div>
       </div>
@@ -160,7 +175,12 @@ function StatCard({
         </h2>
         <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
           <span className="text-sm text-gray-500">Rs</span>{" "}
-          {value.toLocaleString()}
+          <CountUp
+            end={value}
+            duration={1.5}
+            separator=","
+            preserveValue={false}
+          />
         </p>
       </div>
     </div>
@@ -173,9 +193,10 @@ function StatusCard({ status, count }: { status: string; count: number }) {
       <BarChart3 className="text-red-600 dark:text-red-400 mb-3 w-10 h-10" />
       <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center break-words capitalize">
         {status.replace(/_/g, " ")}
+        {status === "completed" ? " projects" : null}
       </h3>
       <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-        {count}
+        <CountUp end={count} duration={1.2} />
       </p>
     </div>
   );

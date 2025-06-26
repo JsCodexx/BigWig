@@ -3,8 +3,9 @@
 import "./globals.css";
 import { UiProvider } from "@/context/UiContext";
 import { UserProvider } from "@/context/UserContext";
-import AppContent from "./app-content"; // your client layout
-import ErrorBoundary from "./ErrorBoundary";
+import AppContent from "./app-content";
+import ErrorBoundary from "./error-boundry";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "BigWig",
@@ -25,7 +26,12 @@ export default function RootLayout({
         <UiProvider>
           <UserProvider>
             <ErrorBoundary>
-              <AppContent>{children}</AppContent>
+              <AppContent>
+                {" "}
+                <Suspense fallback={<div className="p-8">Loading...</div>}>
+                  {children}
+                </Suspense>
+              </AppContent>
             </ErrorBoundary>
           </UserProvider>
         </UiProvider>

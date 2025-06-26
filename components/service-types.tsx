@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Save, Trash2, Edit, X } from "lucide-react";
 import { supabase } from "@/app/lib/supabase/Clientsupabase";
 import { Label } from "./ui/label";

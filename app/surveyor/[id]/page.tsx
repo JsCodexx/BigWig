@@ -359,7 +359,7 @@ export default function EditSurvey() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
-              href={user?.user_role === "client" ? "/client" : "/"}
+              href={user?.user_role === "client" ? "/client" : "/admin"}
             >
               Dashboard
             </BreadcrumbLink>

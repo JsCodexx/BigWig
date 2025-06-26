@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "../../lib/supabase/Clientsupabase";
 import { useUser } from "@/context/UserContext";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function PaymentsPage() {
   const [surveys, setSurveys] = useState<any[]>([]);
@@ -87,6 +95,17 @@ export default function PaymentsPage() {
 
   return (
     <div className="py-16 px-6 max-w-7xl mx-auto  flex flex-col space-y-4">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/surveyor">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Payments</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div>
         <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
           Payments

@@ -170,7 +170,7 @@ export default function AddBillboardItemPage() {
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -284,7 +284,7 @@ export default function AddBillboardItemPage() {
       {existingBillboards.length > 0 && (
         <div className="mt-10">
           <h2 className="text-xl font-semibold text-red-600 mb-4">
-            Existing Billboards
+            Existing Names and Details
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full border border-gray-200 dark:border-gray-700 text-left">

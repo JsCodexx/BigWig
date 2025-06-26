@@ -359,13 +359,13 @@ export default function EditSurvey() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
-              href={user.user_role === "client" ? "/client" : "/"}
+              href={user?.user_role === "client" ? "/client" : "/"}
             >
               Dashboard
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          {user.user_role !== "client" && (
+          {user?.user_role !== "client" && (
             <>
               <BreadcrumbItem>
                 <BreadcrumbLink href="/surveyor">Surveys</BreadcrumbLink>

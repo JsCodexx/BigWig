@@ -131,7 +131,7 @@ const SurveyorDashboard = () => {
     }
   }, [statuses, activeTab]);
   return (
-    <div className="py-16  max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-6 py-12">
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>

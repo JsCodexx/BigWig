@@ -192,7 +192,7 @@ const ManageServices = () => {
   };
   return (
     <div className="">
-      <div className="max-w-7xl mx-auto p-6rounded shadow space-y-8 px-6 py-12">
+      <div className="max-w-7xl mx-auto p-6 space-y-8 px-6 py-12">
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
             <BreadcrumbItem>

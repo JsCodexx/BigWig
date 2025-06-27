@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import BoardDesignManager from "../../components/BoardDesignManager";
 import { SurveyBillboard } from "@/types/survey";
+import { useState } from "react";
 
 interface ImageType {
   file?: File;
@@ -17,7 +18,11 @@ interface BillboardEditorProps {
   user: any;
   loading: boolean;
   billboardNames: Array<{ id: string; name: string }>;
-  billboardTypes: Array<{ id: string; type_name: string }>;
+  billboardTypes: Array<{
+    billboard_name_id: string;
+    id: string;
+    type_name: string;
+  }>;
   handleBoardChange: (
     index: number,
     field: keyof SurveyBillboard,
@@ -55,6 +60,7 @@ const BillboardEditor: React.FC<BillboardEditorProps> = ({
   handleUpload,
   handleDesignUpdate,
 }) => {
+  const [selectedImage, setSelectedImage] = useState("");
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md">
       {/* Billboard Name */}
@@ -93,11 +99,15 @@ const BillboardEditor: React.FC<BillboardEditorProps> = ({
           className="mt-1 block w-full border rounded-md p-2"
         >
           <option value="">Select</option>
-          {billboardTypes.map((type) => (
-            <option key={type.id} value={type.id}>
-              {type.type_name}
-            </option>
-          ))}
+          {billboardTypes
+            .filter(
+              (type) => type.billboard_name_id === board.billboard_name_id
+            )
+            .map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.type_name}
+              </option>
+            ))}
         </select>
       </div>
 
@@ -136,7 +146,7 @@ const BillboardEditor: React.FC<BillboardEditorProps> = ({
 
       {/* Board Images */}
       <div>
-        {!formData.surveyStatus ? (
+        {board.board_images ? (
           <>
             <Label className="mb-2 font-semibold text-gray-700">
               Upload Board Images
@@ -166,7 +176,8 @@ const BillboardEditor: React.FC<BillboardEditorProps> = ({
                 key={idx}
                 src={imageUrl}
                 alt={`preview-${idx}`}
-                className="w-20 h-20 object-cover rounded-md border"
+                className="w-20 h-20 object-cover rounded-md border cursor-pointer"
+                onClick={() => setSelectedImage(imageUrl)}
               />
             );
           })}
@@ -216,6 +227,18 @@ const BillboardEditor: React.FC<BillboardEditorProps> = ({
           handleUpload={handleUpload}
           handleUpdates={handleDesignUpdate}
         />
+      )}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage("")}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-full max-h-full rounded-lg"
+          />
+        </div>
       )}
     </div>
   );

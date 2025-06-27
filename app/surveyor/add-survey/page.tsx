@@ -376,7 +376,7 @@ export default function SubmitSurvey() {
               {/* Conditional: Boards Table (Full Width) */}
               {billboards.length > 0 && (
                 <div className="w-full bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md">
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                  <h2 className="text-xl text-red-600 font-semibold  dark:text-white mb-4">
                     Added Shopboard
                   </h2>
                   <BoardsTable

@@ -48,7 +48,7 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
 }) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [boardImagePreviews, setBoardImagePreviews] = useState<string[]>([]);
-
+  const [selectedImage, setSelectedImage] = useState("");
   const handleValidation = (field: string, value: string | number) => {
     let parsedValue = value;
     if (["height", "width", "quantity"].includes(field)) {
@@ -297,7 +297,8 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
             <img
               src={url}
               alt={`preview-${idx}`}
-              className="w-full object-cover rounded-md border"
+              className="w-full object-cover rounded-md border cursor-pointer"
+              onClick={() => setSelectedImage(url)}
             />
             <span
               onClick={() => removeImage(url)}
@@ -324,6 +325,19 @@ const BoardDetailsForm: React.FC<BoardDetailsProps> = ({
           </div>
         )}
       </div>
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage("")}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-full max-h-full rounded-lg"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when image is clicked
+          />
+        </div>
+      )}
     </div>
   );
 };

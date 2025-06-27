@@ -37,7 +37,9 @@ const DialogWrapper = ({
 
         <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Board Details</DialogTitle>
+            <DialogTitle className="text-lg text-red-600">
+              Board Details
+            </DialogTitle>
           </DialogHeader>
 
           <BoardDetailsForm

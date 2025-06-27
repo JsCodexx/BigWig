@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -29,6 +29,7 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
   billboardTypes,
   onEditBoard,
 }) => {
+  const [selectedImage, setSelectedImage] = useState("");
   return (
     <div className="w-full">
       <Card className="">
@@ -96,7 +97,8 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
                               alt={`preview-${i}`}
                               width={70}
                               height={70}
-                              className="rounded-md object-cover border w-full h-full"
+                              onClick={() => setSelectedImage(image.preview)}
+                              className="rounded-md object-cover border w-full h-full cursor-pointer"
                             />
                             <button
                               onClick={() => {
@@ -151,6 +153,18 @@ export const BoardsTable: React.FC<BoardsTableProps> = ({
           </Table>
         </CardContent>
       </Card>
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage("")}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-full max-h-full rounded-lg"
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -32,7 +32,7 @@ export function Navbar() {
 
   // Determine current nav items based on user role, fallback to empty array
   const currentNavItems = (() => {
-    if (role && ["admin", "surveyor"].includes(role)) {
+    if (role && ["admin", "surveyor", "client"].includes(role)) {
       return navItems[role as Role];
     }
     return [];
@@ -66,7 +66,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Nav - show for all users */}
-          {user && (
+          {user && user.user_role !== "client" && (
             <div className="hidden lg:flex lg:space-x-6 space-x-2">
               {currentNavItems.map((item: any) =>
                 item.children ? (
@@ -178,6 +178,14 @@ export function Navbar() {
                     <LogOut size={22} />
                     <span>Logout</span>
                   </button>
+                  {user.user_role === "client" && (
+                    <Link
+                      href={"/client"}
+                      className="flex items-center px-6 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <span className="ml-2">Dashboard</span>
+                    </Link>
+                  )}
                 </motion.div>
               </div>
             ) : (

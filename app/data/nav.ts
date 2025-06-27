@@ -1,15 +1,4 @@
-import {
-  Clapperboard,
-  Users,
-  LayoutDashboard,
-  FileText,
-  DollarSign,
-  ListOrdered,
-  ShoppingCart,
-  PenLine,
-  LucideIcon,
-} from "lucide-react";
-export type Role = "admin" | "surveyor";
+export type Role = "admin" | "surveyor" | "client";
 
 interface NavItem {
   name: string;
@@ -87,10 +76,7 @@ export const navItems: Record<Role, NavItem[]> = {
       name: "Submitted Surveys",
       href: "/surveyor",
     },
-    {
-      name: "Create a Survey",
-      href: "/surveyor/add-survey",
-    },
+
     {
       name: "Assigned Quotes",
       href: "/surveyor/quotes",
@@ -100,18 +86,10 @@ export const navItems: Record<Role, NavItem[]> = {
       href: "/surveyor/payments",
     },
   ],
-  // client: [
-  //   {
-  //     name: "My Quotes",
-  //     href: "/client/quotes",
-  //   },
-  //   {
-  //     name: "My Surveys",
-  //     href: "/client/surveys",
-  //   },
-  //   {
-  //     name: "Payments",
-  //     href: "/client/payments",
-  //   },
-  // ],
+  client: [
+    {
+      name: "Dashboard",
+      href: "/client",
+    },
+  ],
 };

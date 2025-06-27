@@ -25,7 +25,10 @@ import { useToast } from "@/hooks/use-toast";
 const formSchema = z
   .object({
     fullName: z.string().min(2, "Full name is required"),
-    phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
+    phone_number: z
+      .string()
+      .min(10, "Phone number must be at least 10 digits")
+      .max(11, "phone number can not be greater then 11 digit"),
     address: z.string().min(5, "Address is required"),
     email: z.string().optional(),
     user_role: z.enum(["client", "surveyor"], {
@@ -34,6 +37,7 @@ const formSchema = z
     cnic: z
       .string()
       .regex(/^[0-9]{13}$/, "CNIC must be 13 digits")
+      .min(13, "CNIC should be of 13 digits")
       .optional(),
   })
   .refine((data) => (data.user_role === "surveyor" ? !!data.cnic : true), {
@@ -198,7 +202,7 @@ export default function AdminCreateUserForm() {
                   id="cnic"
                   {...register("cnic")}
                   disabled={isLoading}
-                  placeholder="1234512345671"
+                  placeholder="1234567891234"
                   aria-invalid={errors.cnic ? "true" : "false"}
                   maxLength={13}
                 />

@@ -152,15 +152,17 @@ const SurveyorDashboard = () => {
             View, filter, and manage all surveys in the system.
           </p>
         </div>
-        <div>
-          <Button
-            className="bg-red-600 hover:bg-red-700"
-            onClick={() => router.push("/surveyor/add-survey")}
-          >
-            <Plus />
-            Add Survey
-          </Button>
-        </div>
+        {user.user_role === "admin" && (
+          <div>
+            <Button
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => router.push("/surveyor/add-survey")}
+            >
+              <Plus />
+              Add Survey
+            </Button>
+          </div>
+        )}
       </div>
       {/* Tabs Navigation */}
       <Tabs

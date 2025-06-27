@@ -80,7 +80,7 @@ export default function EditSurvey() {
   const [readOnlyMode, setReadOnlyMode] = useState(false);
   useEffect(() => {
     if (id) {
-      setReadOnlyMode(true);
+      setReadOnlyMode(false);
     }
   }, [id, params]);
   useEffect(() => {
@@ -111,7 +111,12 @@ export default function EditSurvey() {
           if (typeof img === "string") {
             // ✅ Already a URL, keep it
             uploadedUrls.push(img);
-          } else if (typeof img === "object" && img?.file instanceof File) {
+          } else if (
+            typeof img === "object" &&
+            typeof window !== "undefined" &&
+            typeof File !== "undefined" &&
+            img?.file?.constructor?.name === "File"
+          ) {
             const fileUpload = new FormData();
             fileUpload.append("file", img.file);
 
@@ -394,8 +399,9 @@ export default function EditSurvey() {
             <div>
               <p className="font-semibold">Notice:</p>
               <p className="text-sm">
-                You cannot change the survey details. Only removal of boards is
-                allowed.
+                {user.user_role === "client"
+                  ? "You cannot change the survey details. Contact admin for changes"
+                  : "You cannot change the survey details only boards can be edit"}
               </p>
             </div>
           </div>
@@ -423,7 +429,9 @@ export default function EditSurvey() {
 
             const canEdit =
               (surveyStatus === "client_approved" ||
-                surveyStatus === "installation_completed") &&
+                surveyStatus === "installation_completed" ||
+                surveyStatus === "client_review" ||
+                surveyStatus === "pending_admin_review") &&
               (userRole === "admin" || userRole === "surveyor");
 
             return canEdit ? (
@@ -460,15 +468,16 @@ export default function EditSurvey() {
       )}
 
       <div className="w-full flex justify-start gap-4 items-center">
-        {/* {user?.user_role === "admin" &&
-          formData?.surveyStatus === "pending_admin_review" && (
+        {user?.user_role === "admin" &&
+          (formData?.surveyStatus === "pending_admin_review" ||
+            formData?.surveyStatus === "client_review") && (
             <Button
               onClick={addBillboard}
               className="mt-4 bg-red-600 hover:bg-red-700 text-white"
             >
               Add Shopboard
             </Button>
-          )} */}
+          )}
 
         {user?.user_role === "admin" &&
           (formData?.surveyStatus === "pending_admin_review" ||

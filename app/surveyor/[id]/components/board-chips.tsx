@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 interface ImageType {
   preview: string;
@@ -24,6 +25,7 @@ const BillboardCard: React.FC<BillboardCardProps> = ({
   userRole,
   onDelete,
 }) => {
+  const [selectedImage, setSelectedImage] = useState("");
   const billboardName =
     billboardNames.find((n) => n.id === board.billboard_name_id)?.name || "N/A";
   const billboardType =
@@ -75,7 +77,8 @@ const BillboardCard: React.FC<BillboardCardProps> = ({
               key={idx}
               src={imageUrl}
               alt={`preview-${idx}`}
-              className="w-10 h-10 rounded-md object-cover border"
+              className="w-10 h-10 rounded-md object-cover border cursor-pointer"
+              onClick={() => setSelectedImage(imageUrl)}
             />
           );
         })}
@@ -97,6 +100,18 @@ const BillboardCard: React.FC<BillboardCardProps> = ({
           >
             Remove
           </Button>
+        </div>
+      )}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage("")}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-full max-h-full rounded-lg"
+          />
         </div>
       )}
     </div>

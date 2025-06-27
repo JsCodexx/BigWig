@@ -31,6 +31,7 @@ export interface Shopboard {
 export interface BillboardType {
   id: string;
   type_name: string;
+  billboard_name_id: string;
 }
 export interface FormDataType {
   shopName: string;

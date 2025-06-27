@@ -17,7 +17,6 @@ const Surveys = () => {
     assigned: 0,
     completed: 0,
     assignedQuotes: 0,
-    others: 0,
   });
 
   useEffect(() => {
@@ -29,9 +28,6 @@ const Surveys = () => {
         `/api/quotes?surveyor_id=${user?.id}`
       );
       const data = await responseForSurveys.json();
-      const others = data.filter(
-        (s: any) => !["completed"].includes(s.survey_status)
-      ).length;
       const data2 = await responseForQuotes.json();
       setSurveys(data);
       const assignedQuotes = data2.length;
@@ -44,7 +40,6 @@ const Surveys = () => {
         assigned,
         completed,
         assignedQuotes,
-        others,
       });
     }
     fetchSurveys();
@@ -112,13 +107,6 @@ const Surveys = () => {
             <p className="text-2xl font-bold text-gray-700">
               {counts.completed}
             </p>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow flex items-center space-x-3">
-          <FileQuestion className="text-gray-500" size={28} />
-          <div>
-            <p className="text-lg font-medium text-gray-500">Others</p>
-            <p className="text-2xl font-bold text-gray-700">{counts.others}</p>
           </div>
         </div>
       </div>

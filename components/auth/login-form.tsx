@@ -35,7 +35,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
-
+    console.log("role", role);
     try {
       if (role === "admin") {
         const { data: authData, error: authError } =
@@ -47,7 +47,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
         if (authError || !authData.user) {
           throw authError || new Error("Invalid admin credentials");
         }
-
+        console.log(authData);
         setUser(authData.user);
         router.push("/admin");
       } else {
@@ -62,6 +62,7 @@ export function LoginForm({ role }: { role: "admin" | "user" }) {
         }
 
         const result = await response.json();
+        console.log(result);
         setUser(result);
         if (result.user.user_role === "client") {
           router.push("/client");

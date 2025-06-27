@@ -105,7 +105,7 @@ const GalleryAdmin = () => {
       fetchSection();
     } else {
       const { error } = await supabase
-        .from("gallery_sections")
+        .from("gallery_section")
         .update({ title: sectionTitle, subtitle: sectionSubtitle })
         .eq("id", selectedSectionId);
 

@@ -48,6 +48,7 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
 }) => {
   const { selectedClient, setSelectedClient } = useUi();
   const [readOnlyMode, setReadOnlyMode] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
   const params = useParams();
   const id = params?.id; // this will be your UUID string
   useEffect(() => {
@@ -233,6 +234,9 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
               width={300}
               height={200}
               className="rounded-lg object-cover"
+              onClick={() =>
+                setSelectedImage(previewImage || formData.form_image)
+              }
             />
           ) : (
             <span className="text-gray-500 dark:text-gray-300">
@@ -255,6 +259,18 @@ const GeneralSurveyDetails: React.FC<GeneralSurveyDetailsProps> = ({
           </label>
         )}
       </div>
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage("")}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-full max-h-full rounded-lg"
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -33,6 +33,7 @@ const ContactUs = () => {
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [responseData, setResponseData] = useState<any>(null);
+  const [rawPassword, setRawPassword] = useState<string>("");
   const { toast } = useToast();
   const {
     register,
@@ -44,9 +45,14 @@ const ContactUs = () => {
   });
 
   const onSubmit = async (data: any) => {
-    setLoading(true);
-
     try {
+      setLoading(true);
+      const [first, ...rest] = data.full_name.trim().split(" ");
+      const last = rest.join("_").toLowerCase();
+      const phoneLast4 = data.phone_number.slice(-4);
+      const raw = `${first.toLowerCase()}_${last}@${phoneLast4}`;
+      setRawPassword(raw);
+      const hashedPassword = await bcrypt.hash(raw, 10);
       // Step 1: Create a new quote
       const { data: quote, error: quoteError } = await supabase
         .from("quotes")
@@ -61,7 +67,15 @@ const ContactUs = () => {
         .select("email, phone_number, full_name")
         .single();
 
-      if (quoteError) throw quoteError;
+      if (quoteError) {
+        console.log(quoteError);
+        setLoading(false);
+        toast({
+          title: "Unable to create Quote",
+          description: "Failed to create the quote  check the log for error",
+          variant: "default",
+        });
+      }
 
       // Step 2: Check if the user already exists
       const { data: existingUser } = await supabase
@@ -72,7 +86,6 @@ const ContactUs = () => {
 
       // Step 3: If user doesn't exist, create a new client user
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash("12345678", 10);
         const { error: userError } = await supabase.from("users").insert([
           {
             full_name: data.full_name,
@@ -84,7 +97,16 @@ const ContactUs = () => {
           },
         ]);
 
-        if (userError) throw userError;
+        if (userError) {
+          console.log(userError);
+          setLoading(false);
+          toast({
+            title: "Unable to create user",
+            description:
+              "Failed to create the new user check the log for error",
+            variant: "default",
+          });
+        }
       }
 
       setResponseData(quote);
@@ -94,7 +116,6 @@ const ContactUs = () => {
           "Your request was submitted successfully. We'll contact you soon!",
         variant: "default",
       });
-
       reset();
     } catch (error: any) {
       console.error("Submission Error:", error.message);
@@ -236,7 +257,7 @@ const ContactUs = () => {
             <div className="mt-4 p-4 bg-green-200 border border-green-400 rounded">
               <p>
                 You can login using your <strong>phone number</strong> and the
-                default password <strong>12345678</strong>.
+                default password <strong>{rawPassword}</strong>.
               </p>
             </div>
           </div>

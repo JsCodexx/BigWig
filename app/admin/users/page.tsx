@@ -96,7 +96,6 @@ export default function AdminDashboard() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="surveyor">Surveyor</SelectItem>
             <SelectItem value="client">Client</SelectItem>
           </SelectContent>

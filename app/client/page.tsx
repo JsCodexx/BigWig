@@ -180,7 +180,7 @@ const ClientDashboard = () => {
 
       {/* PROFILE SECTION */}
       <div className="bg-white/80 backdrop-blur-md border border-white/30 shadow-xl rounded-3xl p-6 space-y-4">
-        <h3 className="text-xl text-red-600 font-semibold flex items-center gap-2 text-gray-800">
+        <h3 className="text-xl text-red-600 font-semibold flex items-center gap-2 ">
           <UserIcon className="w-6 h-6 text-indigo-600" /> Your Profile
         </h3>
         <div>

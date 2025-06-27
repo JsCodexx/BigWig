@@ -44,8 +44,8 @@ const SurveyorDashboard = () => {
           "id, description, client_id, client_name, phone_number, shop_name, shop_address, survey_status, created_at, form_image"
         );
 
-      if (user.user_role !== "admin") {
-        query = query.eq("surveyor_id", user.id);
+      if (user?.user_role !== "admin") {
+        query = query.eq("surveyor_id", user?.id);
       }
 
       const { data, error } = await query;
@@ -152,7 +152,7 @@ const SurveyorDashboard = () => {
             View, filter, and manage all surveys in the system.
           </p>
         </div>
-        {user.user_role === "admin" && (
+        {user?.user_role === "admin" && (
           <div>
             <Button
               className="bg-red-600 hover:bg-red-700"
@@ -300,7 +300,7 @@ const SurveyorDashboard = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {getAllowedStatusOptions(
-                          user.user_role ? user?.user_role : "",
+                          user?.user_role ? user?.user_role : "",
                           survey.survey_status
                         ).map((status) => (
                           <SelectItem

@@ -19,6 +19,7 @@ export const getAllowedStatusOptions = (
       // installation_pending: ["installation_in_progress"],
       // installation_in_progress: ["installation_completed"],
       installation_completed: ["completed"],
+      client_review: ["client_approved"],
     },
     client: {
       client_review: ["client_approved"],

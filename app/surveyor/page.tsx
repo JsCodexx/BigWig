@@ -213,8 +213,11 @@ const SurveyorDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-700 dark:text-gray-300">
-                      {survey.description || "No description provided."}
+                      {(survey.description?.slice(0, 100) ||
+                        "No description provided.") +
+                        (survey.description?.length > 100 ? "..." : "")}
                     </p>
+
                     <div className="mt-1 space-y-1">
                       <p>
                         <strong>Client:</strong>{" "}
